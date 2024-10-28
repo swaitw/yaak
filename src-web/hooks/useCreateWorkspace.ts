@@ -4,7 +4,7 @@ import { useSetAtom } from 'jotai/index';
 import { invokeCmd } from '../lib/tauri';
 import { useAppRoutes } from './useAppRoutes';
 import { usePrompt } from './usePrompt';
-import {updateModelList} from "./useSyncModelStores";
+import { updateModelList } from './useSyncModelStores';
 import { workspacesAtom } from './useWorkspaces';
 
 export function useCreateWorkspace() {
@@ -34,7 +34,11 @@ export function useCreateWorkspace() {
       // Optimistic update
       setWorkspaces(updateModelList(workspace));
 
-      routes.navigate('workspace', { workspaceId: workspace.id });
+      routes.navigate('workspace', {
+        workspaceId: workspace.id,
+        environmentId: null,
+        cookieJarId: null,
+      });
     },
   });
 }

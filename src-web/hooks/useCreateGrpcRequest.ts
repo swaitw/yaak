@@ -3,6 +3,7 @@ import type { GrpcRequest } from '@yaakapp-internal/models';
 import {useSetAtom} from "jotai";
 import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
+import {useActiveCookieJar} from "./useActiveCookieJar";
 import { useActiveEnvironment } from './useActiveEnvironment';
 import { useActiveRequest } from './useActiveRequest';
 import { useActiveWorkspace } from './useActiveWorkspace';
@@ -13,6 +14,7 @@ import {updateModelList} from "./useSyncModelStores";
 export function useCreateGrpcRequest() {
   const workspace = useActiveWorkspace();
   const [activeEnvironment] = useActiveEnvironment();
+  const [activeCookieJar] = useActiveCookieJar();
   const activeRequest = useActiveRequest();
   const routes = useAppRoutes();
   const setGrpcRequests = useSetAtom(grpcRequestsAtom);
@@ -51,7 +53,8 @@ export function useCreateGrpcRequest() {
       routes.navigate('request', {
         workspaceId: request.workspaceId,
         requestId: request.id,
-        environmentId: activeEnvironment?.id,
+        environmentId: activeEnvironment?.id ?? null,
+        cookieJarId: activeCookieJar?.id ?? null,
       });
     },
   });

@@ -13,6 +13,7 @@ import React, { Fragment, useCallback, useMemo, useRef, useState } from 'react';
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
 import { useKey, useKeyPressEvent } from 'react-use';
+import { useActiveCookieJar } from '../hooks/useActiveCookieJar';
 import { useActiveEnvironment } from '../hooks/useActiveEnvironment';
 
 import { useActiveRequest } from '../hooks/useActiveRequest';
@@ -73,6 +74,7 @@ export function Sidebar({ className }: Props) {
   const sidebarRef = useRef<HTMLLIElement>(null);
   const activeRequest = useActiveRequest();
   const [activeEnvironment] = useActiveEnvironment();
+  const [activeCookieJar] = useActiveCookieJar();
   const folders = useFolders();
   const requests = useRequests();
   const activeWorkspace = useActiveWorkspace();
@@ -221,14 +223,22 @@ export function Sidebar({ className }: Props) {
         routes.navigate('request', {
           requestId: id,
           workspaceId: item.workspaceId,
-          environmentId: activeEnvironment?.id,
+          environmentId: activeEnvironment?.id ?? null,
+          cookieJarId: activeCookieJar?.id ?? null,
         });
         setSelectedId(id);
         setSelectedTree(tree);
         if (!opts.noFocus) focusActiveRequest({ forced: { id, tree } });
       }
     },
-    [treeParentMap, collapsed, routes, activeEnvironment, focusActiveRequest],
+    [
+      treeParentMap,
+      collapsed,
+      routes,
+      activeEnvironment?.id,
+      activeCookieJar?.id,
+      focusActiveRequest,
+    ],
   );
 
   const handleClearSelected = useCallback(() => {
@@ -273,8 +283,9 @@ export function Sidebar({ className }: Props) {
     e.preventDefault();
     routes.navigate('request', {
       requestId: selected.id,
-      workspaceId: activeWorkspace?.id,
-      environmentId: activeEnvironment?.id,
+      workspaceId: activeWorkspace?.id ?? null,
+      environmentId: activeEnvironment?.id ?? null,
+      cookieJarId: activeCookieJar?.id ?? null,
     });
   });
 
@@ -747,8 +758,8 @@ function SidebarItem({
   }, [setEditing, itemModel]);
 
   const handleBlur = useCallback(
-    (e: React.FocusEvent<HTMLInputElement>) => {
-      handleSubmitNameEdit(e.currentTarget);
+    async (e: React.FocusEvent<HTMLInputElement>) => {
+      await handleSubmitNameEdit(e.currentTarget);
     },
     [handleSubmitNameEdit],
   );

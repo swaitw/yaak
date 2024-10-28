@@ -271,7 +271,8 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
           return routes.navigate('request', {
             workspaceId: r.workspaceId,
             requestId: r.id,
-            environmentId: activeEnvironment?.id,
+            environmentId: activeEnvironment?.id ?? null,
+            cookieJarId: activeCookieJar?.id ?? null,
           });
         },
       });
@@ -313,7 +314,8 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     workspaceCommands,
     sortedRequests,
     routes,
-    activeEnvironment,
+    activeEnvironment?.id,
+    activeCookieJar?.id,
     sortedEnvironments,
     setActiveEnvironmentId,
     sortedWorkspaces,

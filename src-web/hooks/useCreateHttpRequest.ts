@@ -3,6 +3,7 @@ import type { HttpRequest } from '@yaakapp-internal/models';
 import { useSetAtom } from 'jotai/index';
 import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
+import { useActiveCookieJar } from './useActiveCookieJar';
 import { useActiveEnvironment } from './useActiveEnvironment';
 import { useActiveRequest } from './useActiveRequest';
 import { useActiveWorkspace } from './useActiveWorkspace';
@@ -13,6 +14,7 @@ import { updateModelList } from './useSyncModelStores';
 export function useCreateHttpRequest() {
   const workspace = useActiveWorkspace();
   const [activeEnvironment] = useActiveEnvironment();
+  const [activeCookieJar] = useActiveCookieJar();
   const activeRequest = useActiveRequest();
   const routes = useAppRoutes();
   const setHttpRequests = useSetAtom(httpRequestsAtom);
@@ -25,7 +27,7 @@ export function useCreateHttpRequest() {
       }
       if (patch.sortPriority === undefined) {
         if (activeRequest != null) {
-          // Place above currently-active request
+          // Place above currently active request
           patch.sortPriority = activeRequest.sortPriority - 0.0001;
         } else {
           // Place at the very top
@@ -45,7 +47,8 @@ export function useCreateHttpRequest() {
       routes.navigate('request', {
         workspaceId: request.workspaceId,
         requestId: request.id,
-        environmentId: activeEnvironment?.id,
+        environmentId: activeEnvironment?.id ?? null,
+        cookieJarId: activeCookieJar?.id ?? null,
       });
     },
   });
