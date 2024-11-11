@@ -1,5 +1,8 @@
 # Yaak API Client
 
+> [!IMPORTANT]  
+> Yaak will soon be rebranding to Octoput, due to a trademark conflict
+
 Yaak is a desktop API client for organizing and executing REST, GraphQL, and gRPC
 requests. It's built using [Tauri](https://tauri.app), Rust, and ReactJS.
 
