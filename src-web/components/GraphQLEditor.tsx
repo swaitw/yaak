@@ -65,11 +65,7 @@ export function GraphQLEditor({ body, onChange, baseRequest, ...extraEditorProps
   const actions = useMemo<EditorProps['actions']>(
     () => [
       <div key="introspection" className="!opacity-100">
-        {isLoading ? (
-          <Button size="sm" variant="border" onClick={refetch} isLoading>
-            {isLoading ? 'Introspecting' : 'Schema'}
-          </Button>
-        ) : !error ? (
+        {schema === undefined ? null /* Initializing */ : !error ? (
           <Dropdown
             items={[
               {
@@ -86,7 +82,7 @@ export function GraphQLEditor({ body, onChange, baseRequest, ...extraEditorProps
                 variant: 'danger',
                 leftSlot: <Icon icon="trash" />,
               },
-              {type: 'separator', label: 'Setting'},
+              { type: 'separator', label: 'Setting' },
               {
                 key: 'auto_fetch',
                 label: 'Automatic Introspection',
@@ -112,9 +108,10 @@ export function GraphQLEditor({ body, onChange, baseRequest, ...extraEditorProps
               size="sm"
               variant="border"
               title="Refetch Schema"
-              color={schema ? 'default' : 'warning'}
+              isLoading={isLoading}
+              color={isLoading || schema ? 'default' : 'warning'}
             >
-              {schema ? 'Schema' : 'No Schema'}
+              {isLoading ? 'Introspecting' : schema ? 'Schema' : 'No Schema'}
             </Button>
           </Dropdown>
         ) : (

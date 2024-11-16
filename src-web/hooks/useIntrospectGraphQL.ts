@@ -85,8 +85,11 @@ export function useIntrospectGraphQL(
   }, [setIntrospection]);
 
   const schema = useMemo(() => {
+    if (introspection == null) {
+      return introspection;
+    }
     try {
-      return introspection ? buildClientSchema(introspection) : undefined;
+      return buildClientSchema(introspection);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       setError('message' in e ? e.message : String(e));
