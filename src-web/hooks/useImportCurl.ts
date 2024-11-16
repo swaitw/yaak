@@ -1,11 +1,11 @@
 import { useMutation } from '@tanstack/react-query';
+import type { HttpRequest } from '@yaakapp-internal/models';
 import { useToast } from '../components/ToastContext';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveWorkspace } from './useActiveWorkspace';
 import { useCreateHttpRequest } from './useCreateHttpRequest';
 import { useRequestUpdateKey } from './useRequestUpdateKey';
 import { useUpdateAnyHttpRequest } from './useUpdateAnyHttpRequest';
-import type { HttpRequest } from '@yaakapp-internal/models';
 
 export function useImportCurl() {
   const workspace = useActiveWorkspace();
@@ -34,17 +34,19 @@ export function useImportCurl() {
         await createRequest.mutateAsync(request);
       } else {
         verb = 'Updated';
-        let update = (r: HttpRequest) => ({
-          ...r,
-          ...request,
-          id: r.id,
-          createdAt: r.createdAt,
-          workspaceId: r.workspaceId,
-          folderId: r.folderId,
-          name: r.name,
-          sortPriority: r.sortPriority,
+        await updateRequest.mutateAsync({
+          id: overwriteRequestId,
+          update: (r: HttpRequest) => ({
+            ...request,
+            id: r.id,
+            createdAt: r.createdAt,
+            workspaceId: r.workspaceId,
+            folderId: r.folderId,
+            name: r.name,
+            sortPriority: r.sortPriority,
+          }),
         });
-        await updateRequest.mutateAsync({ id: overwriteRequestId, update: update });
+
         setTimeout(() => wasUpdatedExternally(overwriteRequestId), 100);
       }
 
