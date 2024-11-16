@@ -2,12 +2,15 @@ import type { HttpRequest } from '@yaakapp-internal/models';
 import { updateSchema } from 'cm6-graphql';
 import type { EditorView } from 'codemirror';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useLocalStorage } from 'react-use';
 import { useIntrospectGraphQL } from '../hooks/useIntrospectGraphQL';
 import { tryFormatJson } from '../lib/formatters';
 import { Button } from './core/Button';
+import { Dropdown } from './core/Dropdown';
 import type { EditorProps } from './core/Editor';
 import { Editor, formatGraphQL } from './core/Editor';
 import { FormattedError } from './core/FormattedError';
+import { Icon } from './core/Icon';
 import { Separator } from './core/Separator';
 import { useDialog } from './DialogContext';
 
@@ -19,18 +22,25 @@ type Props = Pick<EditorProps, 'heightMode' | 'className' | 'forceUpdateKey'> & 
 
 export function GraphQLEditor({ body, onChange, baseRequest, ...extraEditorProps }: Props) {
   const editorViewRef = useRef<EditorView>(null);
-  const { schema, isLoading, error, refetch } = useIntrospectGraphQL(baseRequest);
-  const [currentBody, setCurrentBody] = useState<{ query: string; variables: string | undefined }>(() => {
-    // Migrate text bodies to GraphQL format
-    // NOTE: This is how GraphQL used to be stored
-    if ('text' in body) {
-      const b = tryParseJson(body.text, {});
-      const variables = JSON.stringify(b.variables || undefined, null, 2);
-      return { query: b.query ?? '', variables };
-    }
-
-    return { query: body.query ?? '', variables: body.variables ?? '' };
+  const [autoIntrospectDisabled, setAutoIntrospectDisabled] = useLocalStorage<
+    Record<string, boolean>
+  >('graphQLAutoIntrospectDisabled', {});
+  const { schema, isLoading, error, refetch, clear } = useIntrospectGraphQL(baseRequest, {
+    disabled: autoIntrospectDisabled?.[baseRequest.id],
   });
+  const [currentBody, setCurrentBody] = useState<{ query: string; variables: string | undefined }>(
+    () => {
+      // Migrate text bodies to GraphQL format
+      // NOTE: This is how GraphQL used to be stored
+      if ('text' in body) {
+        const b = tryParseJson(body.text, {});
+        const variables = JSON.stringify(b.variables || undefined, null, 2);
+        return { query: b.query ?? '', variables };
+      }
+
+      return { query: body.query ?? '', variables: body.variables ?? '' };
+    },
+  );
 
   const handleChangeQuery = (query: string) => {
     const newBody = { query, variables: currentBody.variables || undefined };
@@ -52,52 +62,109 @@ export function GraphQLEditor({ body, onChange, baseRequest, ...extraEditorProps
 
   const dialog = useDialog();
 
-  const actions = useMemo<EditorProps['actions']>(() => {
-    const isValid = error || isLoading;
-    if (!isValid) {
-      return [];
-    }
-
-    const actions: EditorProps['actions'] = [
+  const actions = useMemo<EditorProps['actions']>(
+    () => [
       <div key="introspection" className="!opacity-100">
-        <Button
-          key="introspection"
-          size="xs"
-          color={error ? 'danger' : 'secondary'}
-          isLoading={isLoading}
-          onClick={() => {
-            dialog.show({
-              title: 'Introspection Failed',
-              size: 'dynamic',
-              id: 'introspection-failed',
-              render: () => (
-                <>
-                  <FormattedError>{error ?? 'unknown'}</FormattedError>
-                  <div className="w-full my-4">
-                    <Button
-                      onClick={() => {
-                        dialog.hide('introspection-failed');
-                        refetch();
-                      }}
-                      className="ml-auto"
-                      color="primary"
-                      size="sm"
-                    >
-                      Try Again
-                    </Button>
-                  </div>
-                </>
-              ),
-            });
-          }}
-        >
-          {error ? 'Introspection Failed' : 'Introspecting'}
-        </Button>
+        {isLoading ? (
+          <Button size="sm" variant="border" onClick={refetch} isLoading>
+            {isLoading ? 'Introspecting' : 'Schema'}
+          </Button>
+        ) : !error ? (
+          <Dropdown
+            items={[
+              {
+                key: 'refresh',
+                label: 'Refetch',
+                leftSlot: <Icon icon="refresh" />,
+                onSelect: refetch,
+              },
+              {
+                key: 'clear',
+                label: 'Clear',
+                onSelect: clear,
+                hidden: !schema,
+                variant: 'danger',
+                leftSlot: <Icon icon="trash" />,
+              },
+              {type: 'separator', label: 'Setting'},
+              {
+                key: 'auto_fetch',
+                label: 'Automatic Introspection',
+                onSelect: () => {
+                  setAutoIntrospectDisabled({
+                    ...autoIntrospectDisabled,
+                    [baseRequest.id]: !autoIntrospectDisabled?.[baseRequest.id],
+                  });
+                },
+                leftSlot: (
+                  <Icon
+                    icon={
+                      autoIntrospectDisabled?.[baseRequest.id]
+                        ? 'check_square_unchecked'
+                        : 'check_square_checked'
+                    }
+                  />
+                ),
+              },
+            ]}
+          >
+            <Button
+              size="sm"
+              variant="border"
+              title="Refetch Schema"
+              color={schema ? 'default' : 'warning'}
+            >
+              {schema ? 'Schema' : 'No Schema'}
+            </Button>
+          </Dropdown>
+        ) : (
+          <Button
+            size="sm"
+            color="danger"
+            isLoading={isLoading}
+            onClick={() => {
+              dialog.show({
+                title: 'Introspection Failed',
+                size: 'dynamic',
+                id: 'introspection-failed',
+                render: ({ hide }) => (
+                  <>
+                    <FormattedError>{error ?? 'unknown'}</FormattedError>
+                    <div className="w-full my-4">
+                      <Button
+                        onClick={async () => {
+                          hide();
+                          await refetch();
+                        }}
+                        className="ml-auto"
+                        color="primary"
+                        size="sm"
+                      >
+                        Try Again
+                      </Button>
+                    </div>
+                  </>
+                ),
+              });
+            }}
+          >
+            Introspection Failed
+          </Button>
+        )}
       </div>,
-    ];
-
-    return actions;
-  }, [dialog, error, isLoading, refetch]);
+    ],
+    [
+      isLoading,
+      refetch,
+      error,
+      autoIntrospectDisabled,
+      baseRequest.id,
+      clear,
+      schema,
+      setAutoIntrospectDisabled,
+      dialog,
+    ],
+  );
 
   return (
     <div className="h-full w-full grid grid-cols-1 grid-rows-[minmax(0,100%)_auto]">
