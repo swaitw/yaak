@@ -4,7 +4,7 @@ const path = require('node:path');
 const { rmSync, mkdirSync, cpSync, existsSync } = require('node:fs');
 const { execSync } = require('node:child_process');
 
-const VERSION = '27.2';
+const VERSION = '28.3';
 
 // `${process.platform}_${process.arch}`
 const MAC_ARM = 'darwin_arm64';
