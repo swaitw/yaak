@@ -80,7 +80,8 @@
     },
     "windows": {
       "digestAlgorithm": "sha256",
-      "timestampUrl": ""
+      "timestampUrl": "",
+      "signCommand": "trusted-signing-cli -e https://eus.codesigning.azure.net/ -a YaakApp -c yaakapp %1"
     }
   }
 }
