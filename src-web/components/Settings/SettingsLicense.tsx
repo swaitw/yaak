@@ -21,7 +21,7 @@ export function SettingsLicense() {
   const [activateFormVisible, toggleActivateFormVisible] = useToggle(false);
   const settings = useSettings();
   const specialAnnouncement =
-    settings.createdAt < '2024-12-02' && check.data?.type === 'trial_ended';
+    settings.createdAt < '2024-12-03' && check.data?.type !== 'commercial_use';
   const [copied, setCopied] = useTimedBoolean();
   const copy = useCopy({ disableToast: true });
 
