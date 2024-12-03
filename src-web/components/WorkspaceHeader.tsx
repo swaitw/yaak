@@ -1,12 +1,15 @@
 import classNames from 'classnames';
 import React, { memo } from 'react';
+import { appInfo } from '../hooks/useAppInfo';
 import { useToggleCommandPalette } from '../hooks/useToggleCommandPalette';
 import { CookieDropdown } from './CookieDropdown';
+import { Button } from './core/Button';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { HStack } from './core/Stacks';
 import { EnvironmentActionsDropdown } from './EnvironmentActionsDropdown';
 import { ImportCurlButton } from './ImportCurlButton';
+import { LicenseBadge } from './LicenseBadge';
 import { RecentRequestsDropdown } from './RecentRequestsDropdown';
 import { SettingsDropdown } from './SettingsDropdown';
 import { SidebarActions } from './SidebarActions';
@@ -37,7 +40,7 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
       <div className="pointer-events-none w-full max-w-[30vw] mx-auto">
         <RecentRequestsDropdown />
       </div>
-      <div className="flex-1 flex gap-1 items-center h-full justify-end pointer-events-none pr-0.5">
+      <div className="flex-1 flex gap-1 items-center h-full justify-end pointer-events-none pr-1">
         <ImportCurlButton />
         <IconButton
           icon="search"
@@ -46,6 +49,7 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
           onClick={togglePalette}
         />
         <SettingsDropdown />
+        <LicenseBadge />
       </div>
     </div>
   );
