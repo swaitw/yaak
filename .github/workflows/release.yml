@@ -64,7 +64,7 @@ jobs:
 
       - name: install dependencies (windows only)
         if: matrix.platform == 'windows-latest'
-        run: cargo install trusted-signing-cli
+        run: cargo install --force trusted-signing-cli
 
       - name: Install NPM Dependencies
         run: |
