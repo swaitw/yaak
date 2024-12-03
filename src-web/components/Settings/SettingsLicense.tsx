@@ -1,8 +1,11 @@
-import { useLicense } from '@yaakapp-internal/license';
-import { format, formatDistanceToNow } from 'date-fns';
 import { open } from '@tauri-apps/plugin-shell';
+import { useLicense } from '@yaakapp-internal/license';
+import classNames from 'classnames';
+import { format, formatDistanceToNow } from 'date-fns';
 import React, { useState } from 'react';
+import { useCopy } from '../../hooks/useCopy';
 import { useSettings } from '../../hooks/useSettings';
+import { useTimedBoolean } from '../../hooks/useTimedBoolean';
 import { useToggle } from '../../hooks/useToggle';
 import { Banner } from '../core/Banner';
 import { Button } from '../core/Button';
@@ -19,26 +22,28 @@ export function SettingsLicense() {
   const settings = useSettings();
   const specialAnnouncement =
     settings.createdAt < '2024-12-02' && check.data?.type === 'trial_ended';
+  const [copied, setCopied] = useTimedBoolean();
+  const copy = useCopy({ disableToast: true });
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
+      {check.data?.type === 'personal_use' && <Banner color="info">You&apos;re</Banner>}
+      {check.data?.type === 'commercial_use' && (
+        <Banner color="success">
+          <strong>License active!</strong> Enjoy using Yaak for commercial use.
+        </Banner>
+      )}
       {check.data?.type === 'trialing' && (
         <Banner color="success">
           <strong>Your trial ends in {formatDistanceToNow(check.data.end)}</strong>. If you&apos;re
           using Yaak for commercial use, please purchase a commercial use license.
         </Banner>
       )}
-      {check.data?.type === 'trial_ended' && (
-        <Banner color={'primary'}>
+      {check.data?.type === 'trial_ended' && !specialAnnouncement && (
+        <Banner color="primary">
           <strong>Your trial ended on {format(check.data.end, 'MMMM dd, yyyy')}</strong>. A
           commercial-use license is required if you use Yaak within a for-profit organization of two
           or more people.
-        </Banner>
-      )}
-      {check.data?.type === 'personal_use' && <Banner color="info">You&apos;re</Banner>}
-      {check.data?.type === 'commercial_use' && (
-        <Banner color="success">
-          <strong>License active!</strong> Enjoy using Yaak for commercial use.
         </Banner>
       )}
 
@@ -46,7 +51,7 @@ export function SettingsLicense() {
       {activate.error && <Banner color="danger">{activate.error}</Banner>}
 
       {specialAnnouncement && (
-        <VStack className="my-4 max-w-lg" space={4}>
+        <VStack className="max-w-lg" space={4}>
           <p>
             <strong>Thank you for being an early supporter of Yaak!</strong>
           </p>
@@ -60,8 +65,25 @@ export function SettingsLicense() {
             <Link href="https://yaak.app/blog/commercial-use">Announcement Post</Link>.
           </p>
           <p>
-            As a thank-you, enter code <InlineCode>EARLYAAK</InlineCode> at checkout for 50% off
-            your first year of the individual plan.
+            As a thank-you, enter code{' '}
+            <button
+              title="Copy coupon code"
+              className="hover:text-notice"
+              onClick={() => {
+                setCopied();
+                copy('EARLYAAK');
+              }}
+            >
+              <InlineCode className="inline-flex items-center gap-1">
+                EARLYAAK{' '}
+                <Icon
+                  icon={copied ? 'check' : 'copy'}
+                  size="xs"
+                  className={classNames(copied && 'text-success')}
+                />
+              </InlineCode>
+            </button>{' '}
+            at checkout for 50% off your first year of the individual plan.
           </p>
           <p>~ Greg</p>
         </VStack>
