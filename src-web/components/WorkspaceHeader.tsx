@@ -23,7 +23,7 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
     <div
       className={classNames(
         className,
-        'grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center w-full h-full',
+        'grid grid-cols-[auto_minmax(0,1fr)_auto] items-center w-full h-full',
       )}
     >
       <HStack space={0.5} className="flex-1 pointer-events-none">
@@ -35,10 +35,11 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
           <EnvironmentActionsDropdown className="w-auto pointer-events-auto" />
         </HStack>
       </HStack>
-      <div className="pointer-events-none w-full max-w-[30vw] mx-auto">
+      <div className="pointer-events-none w-full max-w-[30vw] mx-auto flex justify-center">
         <RecentRequestsDropdown />
       </div>
       <div className="flex-1 flex gap-1 items-center h-full justify-end pointer-events-none pr-1">
+        <LicenseBadge />
         <ImportCurlButton />
         <IconButton
           icon="search"
@@ -47,7 +48,6 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
           onClick={togglePalette}
         />
         <SettingsDropdown />
-        <LicenseBadge />
       </div>
     </div>
   );
