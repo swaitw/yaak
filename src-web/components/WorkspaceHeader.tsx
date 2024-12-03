@@ -1,9 +1,7 @@
 import classNames from 'classnames';
 import React, { memo } from 'react';
-import { appInfo } from '../hooks/useAppInfo';
 import { useToggleCommandPalette } from '../hooks/useToggleCommandPalette';
 import { CookieDropdown } from './CookieDropdown';
-import { Button } from './core/Button';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { HStack } from './core/Stacks';

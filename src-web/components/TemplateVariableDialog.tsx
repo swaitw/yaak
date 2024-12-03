@@ -1,4 +1,4 @@
-import type { Tokens } from '@yaakapp-internal/template';
+import type { Tokens } from '@yaakapp-internal/templates';
 import { useCallback, useMemo, useState } from 'react';
 import { useActiveEnvironmentVariables } from '../hooks/useActiveEnvironmentVariables';
 import { useRenderTemplate } from '../hooks/useRenderTemplate';

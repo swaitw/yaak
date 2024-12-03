@@ -12,7 +12,7 @@ const labels: Record<LicenseCheckStatus['type'], string | null> = {
 };
 
 export function LicenseBadge() {
-  const openSettings = useOpenSettings();
+  const openSettings = useOpenSettings(SettingsTab.License);
   const { check } = useLicense();
 
   if (check.data == null) {
@@ -29,7 +29,7 @@ export function LicenseBadge() {
       size="2xs"
       variant="border"
       className="!rounded-full mx-1"
-      onClick={() => openSettings.mutate(SettingsTab.License)}
+      onClick={() => openSettings.mutate()}
       color={
         check.data.type == 'trial_ended' || check.data.type === 'personal_use'
           ? 'primary'
