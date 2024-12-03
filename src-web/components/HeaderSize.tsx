@@ -36,9 +36,9 @@ export function HeaderSize({
         paddingLeft: stoplightsVisible ? 72 / settings.interfaceScale : undefined,
         ...(size === 'md' ? { height: HEADER_SIZE_MD } : {}),
         ...(size === 'lg' ? { height: HEADER_SIZE_LG } : {}),
-        ...(stoplightsVisible || ignoreControlsSpacing
+        ...(osInfo.osType === 'macos' || ignoreControlsSpacing
           ? { paddingRight: '2px' }
-          : { paddingLeft: '2px', paddingRight: osInfo.osType !== 'macos' ? WINDOW_CONTROLS_WIDTH : '2px' }),
+          : { paddingLeft: '2px', paddingRight: WINDOW_CONTROLS_WIDTH }),
       }}
       className={classNames(
         className,
@@ -50,7 +50,7 @@ export function HeaderSize({
       <div className="pointer-events-none h-full w-full overflow-x-auto hide-scrollbars grid">
         {children}
       </div>
-      <WindowControls onlyX={onlyXWindowControl} macos={osInfo.osType === 'macos'} />
+      <WindowControls onlyX={onlyXWindowControl} />
     </div>
   );
 }
