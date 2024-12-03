@@ -6,7 +6,10 @@ import { PluginHandle } from './PluginHandle';
 
 const port = process.env.PORT || '50051';
 
-const channel = createChannel(`localhost:${port}`);
+const channel = createChannel(`localhost:${port}`, undefined, {
+  'grpc.max_receive_message_length': Number.MAX_SAFE_INTEGER,
+  'grpc.max_send_message_length': Number.MAX_SAFE_INTEGER,
+});
 const client: PluginRuntimeClient = createClient(PluginRuntimeDefinition, channel);
 
 const events = new EventChannel();

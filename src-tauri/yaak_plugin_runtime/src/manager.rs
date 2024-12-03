@@ -31,7 +31,7 @@ pub struct PluginManager {
     subscribers: Arc<Mutex<HashMap<String, mpsc::Sender<InternalEvent>>>>,
     plugins: Arc<Mutex<Vec<PluginHandle>>>,
     kill_tx: tokio::sync::watch::Sender<bool>,
-    server: Arc<PluginRuntimeServerImpl>,
+    grpc_service: Arc<PluginRuntimeServerImpl>,
 }
 
 #[derive(Clone)]
@@ -47,13 +47,13 @@ impl PluginManager {
 
         let (client_disconnect_tx, mut client_disconnect_rx) = mpsc::channel(128);
         let (client_connect_tx, mut client_connect_rx) = tokio::sync::watch::channel(false);
-        let server =
+        let grpc_service =
             PluginRuntimeServerImpl::new(events_tx, client_disconnect_tx, client_connect_tx);
 
         let plugin_manager = PluginManager {
             plugins: Arc::new(Mutex::new(Vec::new())),
             subscribers: Arc::new(Mutex::new(HashMap::new())),
-            server: Arc::new(server.clone()),
+            grpc_service: Arc::new(grpc_service.clone()),
             kill_tx: kill_server_tx,
         };
 
@@ -78,15 +78,15 @@ impl PluginManager {
 
         info!("Starting plugin server");
 
-        let svc = PluginRuntimeServer::new(server.to_owned());
+        let svc = PluginRuntimeServer::new(grpc_service.to_owned())
+            .max_encoding_message_size(usize::MAX)
+            .max_decoding_message_size(usize::MAX);
         let listen_addr = match option_env!("PORT") {
             None => "localhost:0".to_string(),
             Some(port) => format!("localhost:{port}"),
         };
         let listener = tauri::async_runtime::block_on(async move {
-            TcpListener::bind(listen_addr)
-                .await
-                .expect("Failed to bind TCP listener")
+            TcpListener::bind(listen_addr).await.expect("Failed to bind TCP listener")
         });
         let addr = listener.local_addr().expect("Failed to get local address");
 
@@ -123,9 +123,7 @@ impl PluginManager {
 
         // 2. Start Node.js runtime and initialize plugins
         tauri::async_runtime::block_on(async move {
-            start_nodejs_plugin_runtime(&app_handle, addr, &kill_server_rx)
-                .await
-                .unwrap();
+            start_nodejs_plugin_runtime(&app_handle, addr, &kill_server_rx).await.unwrap();
         });
 
         plugin_manager
@@ -173,10 +171,7 @@ impl PluginManager {
     }
 
     pub async fn uninstall(&self, window_context: WindowContext, dir: &str) -> Result<()> {
-        let plugin = self
-            .get_plugin_by_dir(dir)
-            .await
-            .ok_or(PluginNotFoundErr(dir.to_string()))?;
+        let plugin = self.get_plugin_by_dir(dir).await.ok_or(PluginNotFoundErr(dir.to_string()))?;
         self.remove_plugin(window_context, &plugin).await
     }
 
@@ -205,7 +200,7 @@ impl PluginManager {
         watch: bool,
     ) -> Result<()> {
         info!("Adding plugin by dir {dir}");
-        let maybe_tx = self.server.app_to_plugin_events_tx.lock().await;
+        let maybe_tx = self.grpc_service.app_to_plugin_events_tx.lock().await;
         let tx = match &*maybe_tx {
             None => return Err(ClientNotInitializedErr),
             Some(tx) => tx,
@@ -251,9 +246,8 @@ impl PluginManager {
                     warn!("Failed to remove plugin {} {e:?}", d.dir);
                 }
             }
-            if let Err(e) = self
-                .add_plugin_by_dir(window_context.to_owned(), d.dir.as_str(), d.watch)
-                .await
+            if let Err(e) =
+                self.add_plugin_by_dir(window_context.to_owned(), d.dir.as_str(), d.watch).await
             {
                 warn!("Failed to add plugin {} {e:?}", d.dir);
             }
@@ -307,21 +301,11 @@ impl PluginManager {
     }
 
     pub async fn get_plugin_by_ref_id(&self, ref_id: &str) -> Option<PluginHandle> {
-        self.plugins
-            .lock()
-            .await
-            .iter()
-            .find(|p| p.ref_id == ref_id)
-            .cloned()
+        self.plugins.lock().await.iter().find(|p| p.ref_id == ref_id).cloned()
     }
 
     pub async fn get_plugin_by_dir(&self, dir: &str) -> Option<PluginHandle> {
-        self.plugins
-            .lock()
-            .await
-            .iter()
-            .find(|p| p.dir == dir)
-            .cloned()
+        self.plugins.lock().await.iter().find(|p| p.dir == dir).cloned()
     }
 
     pub async fn get_plugin_by_name(&self, name: &str) -> Option<PluginHandle> {
@@ -340,9 +324,8 @@ impl PluginManager {
         plugin: &PluginHandle,
         payload: &InternalEventPayload,
     ) -> Result<InternalEvent> {
-        let events = self
-            .send_to_plugins_and_wait(window_context, payload, vec![plugin.to_owned()])
-            .await?;
+        let events =
+            self.send_to_plugins_and_wait(window_context, payload, vec![plugin.to_owned()]).await?;
         Ok(events.first().unwrap().to_owned())
     }
 
@@ -352,8 +335,7 @@ impl PluginManager {
         payload: &InternalEventPayload,
     ) -> Result<Vec<InternalEvent>> {
         let plugins = { self.plugins.lock().await.clone() };
-        self.send_to_plugins_and_wait(window_context, payload, plugins)
-            .await
+        self.send_to_plugins_and_wait(window_context, payload, plugins).await
     }
 
     async fn send_to_plugins_and_wait(
@@ -440,8 +422,7 @@ impl PluginManager {
         &self,
         window: &WebviewWindow<R>,
     ) -> Result<Vec<GetTemplateFunctionsResponse>> {
-        self.get_template_functions_with_context(WindowContext::from_window(window))
-            .await
+        self.get_template_functions_with_context(WindowContext::from_window(window)).await
     }
 
     pub async fn get_template_functions_with_context(
@@ -449,10 +430,7 @@ impl PluginManager {
         window_context: WindowContext,
     ) -> Result<Vec<GetTemplateFunctionsResponse>> {
         let reply_events = self
-            .send_and_wait(
-                window_context,
-                &InternalEventPayload::GetTemplateFunctionsRequest,
-            )
+            .send_and_wait(window_context, &InternalEventPayload::GetTemplateFunctionsRequest)
             .await?;
 
         let mut all_actions = Vec::new();
@@ -471,10 +449,8 @@ impl PluginManager {
         req: CallHttpRequestActionRequest,
     ) -> Result<()> {
         let ref_id = req.plugin_ref_id.clone();
-        let plugin = self
-            .get_plugin_by_ref_id(ref_id.as_str())
-            .await
-            .ok_or(PluginNotFoundErr(ref_id))?;
+        let plugin =
+            self.get_plugin_by_ref_id(ref_id.as_str()).await.ok_or(PluginNotFoundErr(ref_id))?;
         let event = plugin.build_event_to_send(
             WindowContext::from_window(window),
             &InternalEventPayload::CallHttpRequestActionRequest(req),
@@ -500,10 +476,7 @@ impl PluginManager {
         };
 
         let events = self
-            .send_and_wait(
-                window_context,
-                &InternalEventPayload::CallTemplateFunctionRequest(req),
-            )
+            .send_and_wait(window_context, &InternalEventPayload::CallTemplateFunctionRequest(req))
             .await?;
 
         let value = events.into_iter().find_map(|e| match e.payload {
@@ -537,9 +510,7 @@ impl PluginManager {
         });
 
         match result {
-            None => Err(PluginErr(
-                "No importers found for file contents".to_string(),
-            )),
+            None => Err(PluginErr("No importers found for file contents".to_string())),
             Some((resp, ref_id)) => {
                 let plugin = self
                     .get_plugin_by_ref_id(ref_id.as_str())
@@ -613,14 +584,10 @@ fn fix_windows_paths(p: &PathBuf) -> String {
     let safe_path = dunce::simplified(p.as_path()).to_string_lossy().to_string();
 
     // 2. Remove the drive letter
-    let safe_path = Regex::new("^[a-zA-Z]:")
-        .unwrap()
-        .replace(safe_path.as_str(), "");
+    let safe_path = Regex::new("^[a-zA-Z]:").unwrap().replace(safe_path.as_str(), "");
 
     // 3. Convert backslashes to forward
-    let safe_path = PathBuf::from(safe_path.to_string())
-        .to_slash_lossy()
-        .to_string();
+    let safe_path = PathBuf::from(safe_path.to_string()).to_slash_lossy().to_string();
 
     safe_path
 }
