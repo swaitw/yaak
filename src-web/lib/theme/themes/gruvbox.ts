@@ -3,27 +3,19 @@ import { YaakColor } from '../yaakColor';
 
 export const gruvboxDefault: YaakTheme = {
   id: 'gruvbox',
-  name: 'gruvbox',
-  surface: new YaakColor('#282828', 'dark'),             // Gruvbox bg
-  surfaceHighlight: new YaakColor('#3c3836', 'dark'),    // Gruvbox bg1
-  text: new YaakColor('#ebdbb2', 'dark'),                // Gruvbox fg
-  textSubtle: new YaakColor('#fe8019', 'dark'),          // Gruvbox orange
-  textSubtlest: new YaakColor('#665c54', 'dark'),        // Gruvbox bg4
-  primary: new YaakColor('#d3869b', 'dark'),             // Gruvbox purple
-  secondary: new YaakColor('#83a598', 'dark'),           // Gruvbox blue
-  info: new YaakColor('#8ec07c', 'dark'),                // Gruvbox aqua
-  success: new YaakColor('#b8bb26', 'dark'),             // Gruvbox green
-  notice: new YaakColor('#fabd2f', 'dark'),              // Gruvbox yellow
-  warning: new YaakColor('#fe8019', 'dark'),             // Gruvbox orange
-  danger: new YaakColor('#fb4934', 'dark'),              // Gruvbox red
-  components: {
-    sidebar: {
-      backdrop: new YaakColor('#282828', 'dark'),        // Gruvbox bg
-    },
-    appHeader: {
-      backdrop: new YaakColor('#3c3836', 'dark'),        // Gruvbox bg1
-    },
-  },
+  name: 'Gruvbox',
+  surface: new YaakColor('#282828', 'dark'),
+  surfaceHighlight: new YaakColor('#32302f', 'dark'),
+  text: new YaakColor('#f9f5d7', 'dark'),
+  textSubtle: new YaakColor('#bdae93', 'dark'),
+  textSubtlest: new YaakColor('#928374', 'dark'),
+  primary: new YaakColor('#d3869b', 'dark'),
+  secondary: new YaakColor('#83a598', 'dark'),
+  info: new YaakColor('#8ec07c', 'dark'),
+  success: new YaakColor('#b8bb26', 'dark'),
+  notice: new YaakColor('#fabd2f', 'dark'),
+  warning: new YaakColor('#fe8019', 'dark'),
+  danger: new YaakColor('#fb4934', 'dark'),
 };
 
 export const gruvbox = [gruvboxDefault];
