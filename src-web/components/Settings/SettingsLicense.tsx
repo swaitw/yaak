@@ -1,16 +1,11 @@
 import { open } from '@tauri-apps/plugin-shell';
 import { useLicense } from '@yaakapp-internal/license';
-import classNames from 'classnames';
-import { format, formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 import React, { useState } from 'react';
-import { useCopy } from '../../hooks/useCopy';
-import { useSettings } from '../../hooks/useSettings';
-import { useTimedBoolean } from '../../hooks/useTimedBoolean';
 import { useToggle } from '../../hooks/useToggle';
 import { Banner } from '../core/Banner';
 import { Button } from '../core/Button';
 import { Icon } from '../core/Icon';
-import { InlineCode } from '../core/InlineCode';
 import { Link } from '../core/Link';
 import { PlainInput } from '../core/PlainInput';
 import { HStack, VStack } from '../core/Stacks';
@@ -19,15 +14,13 @@ export function SettingsLicense() {
   const { check, activate } = useLicense();
   const [key, setKey] = useState<string>('');
   const [activateFormVisible, toggleActivateFormVisible] = useToggle(false);
-  const settings = useSettings();
-  const specialAnnouncement =
-    settings.createdAt < '2024-12-03' && check.data?.type !== 'commercial_use';
-  const [copied, setCopied] = useTimedBoolean();
-  const copy = useCopy({ disableToast: true });
+
+  if (check.isPending) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-6">
-      {check.data?.type === 'personal_use' && <Banner color="info">You&apos;re</Banner>}
       {check.data?.type === 'commercial_use' && (
         <Banner color="success">
           <strong>License active!</strong> Enjoy using Yaak for commercial use.
@@ -39,55 +32,23 @@ export function SettingsLicense() {
           using Yaak for commercial use, please purchase a commercial use license.
         </Banner>
       )}
-      {check.data?.type === 'trial_ended' && !specialAnnouncement && (
-        <Banner color="primary">
-          <strong>Your trial ended on {format(check.data.end, 'MMMM dd, yyyy')}</strong>. A
-          commercial-use license is required if you use Yaak within a for-profit organization of two
-          or more people.
+      {check.data?.type === 'personal_use' && (
+        <Banner color="primary" className="flex flex-col gap-2">
+          <h2 className="text-lg font-semibold">Commercial License</h2>
+          <p>
+            A commercial license is required if you use Yaak within a for-profit organization of two
+            or more people.
+          </p>
+          <p>
+            <Link href="https://yaak.app/pricing" className="text-sm">
+              Learn More
+            </Link>
+          </p>
         </Banner>
       )}
 
       {check.error && <Banner color="danger">{check.error}</Banner>}
       {activate.error && <Banner color="danger">{activate.error}</Banner>}
-
-      {specialAnnouncement && (
-        <VStack className="max-w-lg" space={4}>
-          <p>
-            <strong>Thank you for being an early supporter of Yaak!</strong>
-          </p>
-          <p>
-            To support the ongoing development of the best local-first API client, Yaak now requires
-            a paid license for the commercial use of prebuilt binaries (personal use and running the
-            open-source code remains free.)
-          </p>
-          <p>
-            For details, see the{' '}
-            <Link href="https://yaak.app/blog/commercial-use">Announcement Post</Link>.
-          </p>
-          <p>
-            As a thank-you, enter code{' '}
-            <button
-              title="Copy coupon code"
-              className="hover:text-notice"
-              onClick={() => {
-                setCopied();
-                copy('EARLYAAK');
-              }}
-            >
-              <InlineCode className="inline-flex items-center gap-1">
-                EARLYAAK{' '}
-                <Icon
-                  icon={copied ? 'check' : 'copy'}
-                  size="xs"
-                  className={classNames(copied && 'text-success')}
-                />
-              </InlineCode>
-            </button>{' '}
-            at checkout for 50% off your first year of the individual plan.
-          </p>
-          <p>~ Greg</p>
-        </VStack>
-      )}
 
       {check.data?.type === 'commercial_use' ? (
         <HStack space={2}>
@@ -105,6 +66,9 @@ export function SettingsLicense() {
         </HStack>
       ) : (
         <HStack space={2}>
+          <Button color="primary" size="sm" onClick={toggleActivateFormVisible}>
+            Activate License
+          </Button>
           <Button
             color="secondary"
             size="sm"
@@ -112,9 +76,6 @@ export function SettingsLicense() {
             rightSlot={<Icon icon="external_link" />}
           >
             Purchase
-          </Button>
-          <Button color="primary" size="sm" onClick={toggleActivateFormVisible}>
-            Activate License
           </Button>
         </HStack>
       )}
