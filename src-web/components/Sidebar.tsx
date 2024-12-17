@@ -680,6 +680,8 @@ function SidebarItem({
     () => ({
       type: ItemTypes.REQUEST,
       item: () => {
+        // Cancel drag when editing
+        if (editing) return null;
         onDragStart(itemId);
         return { id: itemId, itemName };
       },
@@ -943,7 +945,7 @@ function SidebarItem({
               <input
                 ref={handleFocus}
                 defaultValue={itemName}
-                className="bg-transparent outline-none w-full"
+                className="bg-transparent outline-none w-full cursor-text"
                 onBlur={handleBlur}
                 onKeyDown={handleInputKeyDown}
               />
