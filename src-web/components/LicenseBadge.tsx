@@ -10,9 +10,9 @@ const details: Record<
   { label: string; color: ButtonProps['color'] } | null
 > = {
   commercial_use: null,
-  invalid_license: { label: 'Invalid License', color: 'danger' },
-  personal_use: { label: 'Personal Use', color: 'success' },
-  trialing: { label: 'Personal Use', color: 'success' },
+  invalid_license: { label: 'License Error', color: 'danger' },
+  personal_use: { label: 'Personal Use', color: 'primary' },
+  trialing: { label: 'Personal Use', color: 'primary' },
 };
 
 export function LicenseBadge() {
@@ -35,6 +35,7 @@ export function LicenseBadge() {
       className="!rounded-full mx-1"
       onClick={() => openSettings.mutate()}
       color={detail.color}
+      event={{ id: 'license-badge', status: check.data.type }}
     >
       {detail.label}
     </Button>
