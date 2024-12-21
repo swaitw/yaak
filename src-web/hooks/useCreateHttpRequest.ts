@@ -1,18 +1,18 @@
-import { useFastMutation } from './useFastMutation';
 import type { HttpRequest } from '@yaakapp-internal/models';
 import { useSetAtom } from 'jotai/index';
 import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
-import { router } from '../main';
-import { Route } from '../routes/workspaces/$workspaceId/requests/$requestId';
 import { getActiveRequest } from './useActiveRequest';
 import { useActiveWorkspace } from './useActiveWorkspace';
+import { useFastMutation } from './useFastMutation';
 import { httpRequestsAtom } from './useHttpRequests';
 import { updateModelList } from './useSyncModelStores';
+import { useNavigate } from '@tanstack/react-router';
 
 export function useCreateHttpRequest() {
   const activeWorkspace = useActiveWorkspace();
   const setHttpRequests = useSetAtom(httpRequestsAtom);
+  const navigate = useNavigate();
 
   return useFastMutation<HttpRequest, unknown, Partial<HttpRequest>>({
     mutationKey: ['create_http_request'],
@@ -40,8 +40,8 @@ export function useCreateHttpRequest() {
       // Optimistic update
       setHttpRequests(updateModelList(request));
 
-      await router.navigate({
-        to: Route.fullPath,
+      await navigate({
+        to: '/workspaces/$workspaceId/requests/$requestId',
         params: { workspaceId: request.workspaceId, requestId: request.id },
         search: (prev) => ({ ...prev }),
       });

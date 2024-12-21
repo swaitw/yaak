@@ -1,9 +1,8 @@
-import { useFastMutation } from './useFastMutation';
+import { useNavigate } from '@tanstack/react-router';
 import type { Workspace } from '@yaakapp-internal/models';
 import { useSetAtom } from 'jotai/index';
 import { invokeCmd } from '../lib/tauri';
-import { router } from '../main';
-import { Route } from '../routes/workspaces/$workspaceId';
+import { useFastMutation } from './useFastMutation';
 import { usePrompt } from './usePrompt';
 import { updateModelList } from './useSyncModelStores';
 import { workspacesAtom } from './useWorkspaces';
@@ -11,6 +10,7 @@ import { workspacesAtom } from './useWorkspaces';
 export function useCreateWorkspace() {
   const prompt = usePrompt();
   const setWorkspaces = useSetAtom(workspacesAtom);
+  const navigate = useNavigate();
 
   return useFastMutation<Workspace | null, void, void>({
     mutationKey: ['create_workspace'],
@@ -34,8 +34,8 @@ export function useCreateWorkspace() {
       // Optimistic update
       setWorkspaces(updateModelList(workspace));
 
-      router.navigate({
-        to: Route.fullPath,
+      navigate({
+        to: '/workspaces/$workspaceId',
         params: { workspaceId: workspace.id },
       });
     },

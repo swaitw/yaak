@@ -1,3 +1,4 @@
+import { useNavigate } from '@tanstack/react-router';
 import classNames from 'classnames';
 import { useMemo, useRef } from 'react';
 import { useKeyPressEvent } from 'react-use';
@@ -7,8 +8,6 @@ import { useHotKey } from '../hooks/useHotKey';
 import { useRecentRequests } from '../hooks/useRecentRequests';
 import { useRequests } from '../hooks/useRequests';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
-import { router } from '../main';
-import { Route } from '../routes/workspaces/$workspaceId/requests/$requestId';
 import type { ButtonProps } from './core/Button';
 import { Button } from './core/Button';
 import type { DropdownItem, DropdownRef } from './core/Dropdown';
@@ -22,6 +21,7 @@ export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'classNa
   const allRecentRequestIds = useRecentRequests();
   const recentRequestIds = useMemo(() => allRecentRequestIds.slice(1), [allRecentRequestIds]);
   const requests = useRequests();
+  const navigate = useNavigate();
 
   // Handle key-up
   useKeyPressEvent('Control', undefined, () => {
@@ -52,9 +52,9 @@ export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'classNa
         label: fallbackRequestName(request),
         // leftSlot: <CountBadge className="!ml-0 px-0 w-5" count={recentRequestItems.length} />,
         leftSlot: <HttpMethodTag className="text-right" shortNames request={request} />,
-        onSelect: () => {
-          router.navigate({
-            to: Route.fullPath,
+        onSelect: async () => {
+          await navigate({
+            to: '/workspaces/$workspaceId/requests/$requestId',
             params: {
               requestId: request.id,
               workspaceId: activeWorkspace.id,
@@ -77,7 +77,7 @@ export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'classNa
     }
 
     return recentRequestItems.slice(0, 20);
-  }, [activeWorkspace, recentRequestIds, requests]);
+  }, [activeWorkspace, navigate, recentRequestIds, requests]);
 
   return (
     <Dropdown ref={dropdownRef} items={items}>

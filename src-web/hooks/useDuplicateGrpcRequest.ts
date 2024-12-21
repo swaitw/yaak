@@ -1,9 +1,8 @@
-import { useFastMutation } from './useFastMutation';
+import { useNavigate } from '@tanstack/react-router';
 import type { GrpcRequest } from '@yaakapp-internal/models';
 import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
-import { router } from '../main';
-import { Route } from '../routes/workspaces/$workspaceId/requests/$requestId';
+import { useFastMutation } from './useFastMutation';
 import { getGrpcProtoFiles, setGrpcProtoFiles } from './useGrpcProtoFiles';
 
 export function useDuplicateGrpcRequest({
@@ -13,6 +12,7 @@ export function useDuplicateGrpcRequest({
   id: string | null;
   navigateAfter: boolean;
 }) {
+  const navigate = useNavigate();
   return useFastMutation<GrpcRequest, string>({
     mutationKey: ['duplicate_grpc_request', id],
     mutationFn: async () => {
@@ -28,8 +28,8 @@ export function useDuplicateGrpcRequest({
       await setGrpcProtoFiles(request.id, protoFiles);
 
       if (navigateAfter) {
-        await router.navigate({
-          to: Route.fullPath,
+        await navigate({
+          to: '/workspaces/$workspaceId/requests/$requestId',
           params: { workspaceId: request.workspaceId, requestId: request.id },
           search: (prev) => ({ ...prev }),
         });

@@ -1,6 +1,6 @@
 import { useFastMutation } from './useFastMutation';
 import type { HttpUrlParameter } from '@yaakapp-internal/models';
-import { useToast } from '../components/ToastContext';
+import { useToast } from './useToast';
 import { pluralize } from '../lib/pluralize';
 import { getHttpRequest } from '../lib/store';
 import { useRequestEditor } from './useRequestEditor';

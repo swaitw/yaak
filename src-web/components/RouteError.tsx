@@ -1,12 +1,12 @@
+import { useNavigate } from '@tanstack/react-router';
 import { useRouteError } from 'react-router-dom';
-import { router } from '../main';
-import { Route } from '../routes/workspaces';
 import { Button } from './core/Button';
 import { FormattedError } from './core/FormattedError';
 import { Heading } from './core/Heading';
 import { VStack } from './core/Stacks';
 
 export default function RouteError() {
+  const navigate = useNavigate();
   const error = useRouteError();
   console.log('Error', error);
   const stringified = JSON.stringify(error);
@@ -20,8 +20,8 @@ export default function RouteError() {
         <VStack space={2}>
           <Button
             color="primary"
-            onClick={() => {
-              router.navigate({ to: Route.fullPath });
+            onClick={async () => {
+              await navigate({ to: '/workspaces' });
             }}
           >
             Go Home

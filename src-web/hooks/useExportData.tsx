@@ -1,10 +1,10 @@
+import {useDialog} from "./useDialog";
 import { useFastMutation } from './useFastMutation';
-import { useDialog } from '../components/DialogContext';
 import { ExportDataDialog } from '../components/ExportDataDialog';
 import { useActiveWorkspace } from './useActiveWorkspace';
 import { useAlert } from './useAlert';
 import { useWorkspaces } from './useWorkspaces';
-import { useToast } from '../components/ToastContext';
+import { useToast } from './useToast';
 
 export function useExportData() {
   const workspaces = useWorkspaces();

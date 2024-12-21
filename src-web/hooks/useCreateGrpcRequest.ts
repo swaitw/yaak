@@ -1,18 +1,18 @@
-import { useFastMutation } from './useFastMutation';
+import { useNavigate } from '@tanstack/react-router';
 import type { GrpcRequest } from '@yaakapp-internal/models';
 import { useSetAtom } from 'jotai';
 import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
-import { router } from '../main';
-import { Route } from '../routes/workspaces/$workspaceId/requests/$requestId';
 import { getActiveRequest } from './useActiveRequest';
 import { useActiveWorkspace } from './useActiveWorkspace';
+import { useFastMutation } from './useFastMutation';
 import { grpcRequestsAtom } from './useGrpcRequests';
 import { updateModelList } from './useSyncModelStores';
 
 export function useCreateGrpcRequest() {
   const workspace = useActiveWorkspace();
   const setGrpcRequests = useSetAtom(grpcRequestsAtom);
+  const navigate = useNavigate();
 
   return useFastMutation<
     GrpcRequest,
@@ -46,8 +46,8 @@ export function useCreateGrpcRequest() {
       // Optimistic update
       setGrpcRequests(updateModelList(request));
 
-      router.navigate({
-        to: Route.fullPath,
+      navigate({
+        to: '/workspaces/$workspaceId/requests/$requestId',
         params: {
           workspaceId: request.workspaceId,
           requestId: request.id,

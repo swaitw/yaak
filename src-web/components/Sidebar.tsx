@@ -1,6 +1,7 @@
+import { useNavigate } from '@tanstack/react-router';
 import type { Folder, GrpcRequest, HttpRequest, Workspace } from '@yaakapp-internal/models';
 import classNames from 'classnames';
-import { atom, useAtom } from 'jotai';
+import { useAtom } from 'jotai';
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { useKey, useKeyPressEvent } from 'react-use';
 import { getActiveRequest } from '../hooks/useActiveRequest';
@@ -16,9 +17,8 @@ import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useUpdateAnyFolder } from '../hooks/useUpdateAnyFolder';
 import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
-import { router } from '../main';
-import { Route } from '../routes/workspaces/$workspaceId/requests/$requestId';
 import { ContextMenu } from './core/Dropdown';
+import { sidebarSelectedIdAtom } from './SidebarAtoms';
 import type { SidebarItemProps } from './SidebarItem';
 import { SidebarItems } from './SidebarItems';
 
@@ -31,9 +31,6 @@ export interface SidebarTreeNode {
   children: SidebarTreeNode[];
   depth: number;
 }
-
-// This is an atom so we can use it in the child items to avoid re-rendering the entire list
-export const sidebarSelectedIdAtom = atom<string | null>(null);
 
 export const Sidebar = memo(function Sidebar({ className }: Props) {
   const [hidden, setHidden] = useSidebarHidden();
@@ -52,6 +49,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [hoveredTree, setHoveredTree] = useState<SidebarTreeNode | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const navigate = useNavigate();
   const { value: collapsed, set: setCollapsed } = useKeyValue<Record<string, boolean>>({
     key: ['sidebar_collapsed', activeWorkspace?.id ?? 'n/a'],
     fallback: {},
@@ -165,8 +163,8 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
       if (item.model === 'folder') {
         await setCollapsed((c) => ({ ...c, [item.id]: !c[item.id] }));
       } else {
-        router.navigate({
-          to: Route.fullPath,
+        await navigate({
+          to: '/workspaces/$workspaceId/requests/$requestId',
           params: {
             requestId: id,
             workspaceId: item.workspaceId,
@@ -179,7 +177,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
         setSelectedTree(tree);
       }
     },
-    [treeParentMap, setCollapsed, setHasFocus, setSelectedId],
+    [treeParentMap, setCollapsed, navigate, setSelectedId],
   );
 
   const handleClearSelected = useCallback(() => {
@@ -214,7 +212,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
     );
   });
 
-  useKeyPressEvent('Enter', (e) => {
+  useKeyPressEvent('Enter', async (e) => {
     if (!hasFocus) return;
     const selected = selectableRequests.find((r) => r.id === selectedId);
     if (!selected || activeWorkspace == null) {
@@ -222,8 +220,8 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
     }
 
     e.preventDefault();
-    router.navigate({
-      to: Route.fullPath,
+    await navigate({
+      to: '/workspaces/$workspaceId/requests/$requestId',
       params: {
         requestId: selected.id,
         workspaceId: activeWorkspace?.id ?? null,

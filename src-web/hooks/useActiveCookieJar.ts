@@ -1,6 +1,5 @@
-import { useSearch } from '@tanstack/react-router';
+import { getRouteApi, useSearch } from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo } from 'react';
-import { Route } from '../routes/workspaces/$workspaceId';
 import { useCookieJars } from './useCookieJars';
 
 export const QUERY_COOKIE_JAR_ID = 'cookie_jar_id';
@@ -39,13 +38,18 @@ export function useEnsureActiveCookieJar() {
   }, [activeCookieJarId, cookieJars, setActiveCookieJarId]);
 }
 
+const routeApi = getRouteApi('/workspaces/$workspaceId/');
+
 function useActiveCookieJarId() {
   // NOTE: This query param is accessed from Rust side, so do not change
-  const navigate = Route.useNavigate();
   const { cookieJarId: id } = useSearch({ strict: false });
+  const navigate = routeApi.useNavigate();
 
   const setId = useCallback(
-    (id: string) => navigate({ search: (prev) => ({ ...prev, cookieJarId: id }) }),
+    (id: string) =>
+      navigate({
+        search: (prev) => ({ ...prev, cookieJarId: id }),
+      }),
     [navigate],
   );
 

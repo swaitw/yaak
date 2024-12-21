@@ -8,14 +8,14 @@ import { activeRequestAtom } from '../hooks/useActiveRequest';
 import { useScrollIntoView } from '../hooks/useScrollIntoView';
 import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
+import { jotaiStore } from '../lib/jotai';
 import { isResponseLoading } from '../lib/model_util';
-import { jotaiStore } from '../routes/__root';
 import { HttpMethodTag } from './core/HttpMethodTag';
 import { Icon } from './core/Icon';
 import { StatusTag } from './core/StatusTag';
 import { RequestContextMenu } from './RequestContextMenu';
 import type { SidebarTreeNode } from './Sidebar';
-import { sidebarSelectedIdAtom } from './Sidebar';
+import {sidebarSelectedIdAtom} from "./SidebarAtoms";
 import type { SidebarItemsProps } from './SidebarItems';
 
 enum ItemTypes {
@@ -42,7 +42,7 @@ type DragItem = {
   itemName: string;
 };
 
-function SidebarItem_({
+export const SidebarItem = memo(function SidebarItem({
   itemName,
   itemId,
   itemModel,
@@ -106,7 +106,7 @@ function SidebarItem_({
   const [selected, setSelected] = useState<boolean>(
     jotaiStore.get(sidebarSelectedIdAtom) == itemId,
   );
-  useEffect(() => {
+  useEffect(() => {  
     jotaiStore.sub(sidebarSelectedIdAtom, () => {
       const value = jotaiStore.get(sidebarSelectedIdAtom);
       setSelected(value === itemId);
@@ -262,17 +262,4 @@ function SidebarItem_({
       {children}
     </li>
   );
-}
-
-export const SidebarItem = memo<SidebarItemProps>(SidebarItem_, (a, b) => {
-  const different = [];
-  for (const key of Object.keys(a) as (keyof SidebarItemProps)[]) {
-    if (a[key] !== b[key]) {
-      different.push(key);
-    }
-  }
-  if (different.length > 0) {
-    console.log('ITEM DIFFERENT -------------------', different.join(', '));
-  }
-  return different.length === 0;
 });

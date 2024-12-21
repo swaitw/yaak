@@ -1,10 +1,10 @@
 import './main.css';
-import { createRouter, RouterProvider } from '@tanstack/react-router';
+import { RouterProvider } from '@tanstack/react-router';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { type } from '@tauri-apps/plugin-os';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { routeTree } from './routeTree.gen';
+import { router } from './lib/router';
 
 import('react-pdf').then(({ pdfjs }) => {
   pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -25,18 +25,7 @@ window.addEventListener('keydown', (e) => {
   if (e.key === 'Backspace' && e.target === document.body) e.preventDefault();
 });
 
-// Create a new router instance
-export const router = createRouter({
-  routeTree,
-});
-
-// Register the router instance for type safety
-declare module '@tanstack/react-router' {
-  interface Register {
-    router: typeof router;
-  }
-}
-
+console.log('Creating React root');
 createRoot(document.getElementById('root') as HTMLElement).render(
   <StrictMode>
     <RouterProvider router={router} />

@@ -1,6 +1,6 @@
 import { useFastMutation } from './useFastMutation';
 import type { HttpRequest } from '@yaakapp-internal/models';
-import { useToast } from '../components/ToastContext';
+import { useToast } from './useToast';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveWorkspace } from './useActiveWorkspace';
 import { useCreateHttpRequest } from './useCreateHttpRequest';

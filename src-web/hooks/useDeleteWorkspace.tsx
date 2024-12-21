@@ -1,13 +1,12 @@
-import { useFastMutation } from './useFastMutation';
+import { useNavigate } from '@tanstack/react-router';
 import type { Workspace } from '@yaakapp-internal/models';
 import { useSetAtom } from 'jotai';
 import { InlineCode } from '../components/core/InlineCode';
 import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
-import { router } from '../main';
-import { Route } from '../routes/workspaces';
 import { useActiveWorkspace } from './useActiveWorkspace';
 import { useConfirm } from './useConfirm';
+import { useFastMutation } from './useFastMutation';
 import { removeModelById } from './useSyncModelStores';
 import { workspacesAtom } from './useWorkspaces';
 
@@ -15,6 +14,7 @@ export function useDeleteWorkspace(workspace: Workspace | null) {
   const activeWorkspace = useActiveWorkspace();
   const confirm = useConfirm();
   const setWorkspaces = useSetAtom(workspacesAtom);
+  const navigate = useNavigate();
 
   return useFastMutation<Workspace | null, string>({
     mutationKey: ['delete_workspace', workspace?.id],
@@ -41,7 +41,7 @@ export function useDeleteWorkspace(workspace: Workspace | null) {
 
       const { id: workspaceId } = workspace;
       if (workspaceId === activeWorkspace?.id) {
-        router.navigate({ to: Route.fullPath });
+        navigate({ to: '/workspaces' });
       }
     },
   });

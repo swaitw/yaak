@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import { motion } from 'framer-motion';
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useFloatingSidebarHidden } from '../hooks/useFloatingSidebarHidden';
@@ -40,10 +40,6 @@ export function Workspace() {
   const moveState = useRef<{ move: (e: MouseEvent) => void; up: (e: MouseEvent) => void } | null>(
     null,
   );
-
-  useEffect(() => {
-    console.log('RENDER WORKSPACE');
-  }, []);
 
   const unsub = () => {
     if (moveState.current !== null) {

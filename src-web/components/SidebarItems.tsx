@@ -23,7 +23,7 @@ export interface SidebarItemsProps {
   grpcConnections: GrpcConnection[];
 }
 
-function SidebarItems_({
+export const SidebarItems = memo(function SidebarItems({
   tree,
   selectedTree,
   draggingId,
@@ -102,17 +102,4 @@ function SidebarItems_({
       )}
     </VStack>
   );
-}
-
-export const SidebarItems = memo<SidebarItemsProps>(SidebarItems_, (a, b) => {
-  const different = [];
-  for (const key of Object.keys(a) as (keyof SidebarItemsProps)[]) {
-    if (a[key] !== b[key]) {
-      different.push(key);
-    }
-  }
-  if (different.length > 0) {
-    console.log('ITEMS DIFFERENT -------------------', different.join(', '));
-  }
-  return different.length === 0;
-});
+})
