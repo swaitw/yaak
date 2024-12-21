@@ -15,7 +15,7 @@ import { getHttpRequest } from '../lib/store';
 import type { DropdownItem } from './core/Dropdown';
 import { ContextMenu } from './core/Dropdown';
 import { Icon } from './core/Icon';
-import { useDialog } from './DialogContext';
+import { useDialog } from '../hooks/useDialog';
 import { FolderSettingsDialog } from './FolderSettingsDialog';
 import type { SidebarTreeNode } from './Sidebar';
 

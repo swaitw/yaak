@@ -1,13 +1,14 @@
-import { useFastMutation } from './useFastMutation';
+import { useNavigate, useRouter } from '@tanstack/react-router';
 import { invokeCmd } from '../lib/tauri';
-import { router } from '../main';
-import { Route as WorkspaceRoute } from '../routes/workspaces/$workspaceId';
-import { Route as RequestRoute } from '../routes/workspaces/$workspaceId/requests/$requestId';
+import { useFastMutation } from './useFastMutation';
 import { getRecentCookieJars } from './useRecentCookieJars';
 import { getRecentEnvironments } from './useRecentEnvironments';
 import { getRecentRequests } from './useRecentRequests';
 
 export function useOpenWorkspace() {
+  const router = useRouter();
+  const navigate = useNavigate();
+
   return useFastMutation({
     mutationKey: ['open_workspace'],
     mutationFn: async ({
@@ -24,18 +25,22 @@ export function useOpenWorkspace() {
 
       if (inNewWindow) {
         const location = router.buildLocation({
-          to: WorkspaceRoute.fullPath,
+          to: '/workspaces/$workspaceId',
           params: { workspaceId },
           search,
         });
-        await invokeCmd('cmd_new_main_window', { url: location });
+        await invokeCmd('cmd_new_main_window', { url: location.href });
         return;
       }
 
       if (requestId != null) {
-        router.navigate({ to: RequestRoute.fullPath, params: { workspaceId, requestId }, search });
+        await navigate({
+          to: '/workspaces/$workspaceId/requests/$requestId',
+          params: { workspaceId, requestId },
+          search,
+        });
       } else {
-        router.navigate({ to: WorkspaceRoute.fullPath, params: { workspaceId }, search });
+        await navigate({ to: '/workspaces/$workspaceId', params: { workspaceId }, search });
       }
     },
   });

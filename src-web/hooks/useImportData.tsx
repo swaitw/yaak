@@ -1,4 +1,4 @@
-import { useFastMutation } from './useFastMutation';
+import { useNavigate } from '@tanstack/react-router';
 import type {
   Environment,
   Folder,
@@ -9,19 +9,19 @@ import type {
 import { Button } from '../components/core/Button';
 import { FormattedError } from '../components/core/FormattedError';
 import { VStack } from '../components/core/Stacks';
-import { useDialog } from '../components/DialogContext';
 import { ImportDataDialog } from '../components/ImportDataDialog';
 import { count } from '../lib/pluralize';
 import { invokeCmd } from '../lib/tauri';
-import { Route } from '../routes/workspaces/$workspaceId';
 import { useActiveWorkspace } from './useActiveWorkspace';
 import { useAlert } from './useAlert';
-import { router } from '../main';
+import { useDialog } from './useDialog';
+import { useFastMutation } from './useFastMutation';
 
 export function useImportData() {
   const dialog = useDialog();
   const alert = useAlert();
   const activeWorkspace = useActiveWorkspace();
+  const navigate = useNavigate();
 
   const importData = async (filePath: string): Promise<boolean> => {
     const imported: {
@@ -65,8 +65,8 @@ export function useImportData() {
 
     if (importedWorkspace != null) {
       const environmentId = imported.environments[0]?.id ?? null;
-      router.navigate({
-        to: Route.fullPath,
+      await navigate({
+        to: '/workspaces/$workspaceId',
         params: { workspaceId: importedWorkspace.id },
         search: { environmentId },
       });

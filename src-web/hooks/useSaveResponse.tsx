@@ -3,7 +3,7 @@ import { save } from '@tauri-apps/plugin-dialog';
 import mime from 'mime';
 import slugify from 'slugify';
 import { InlineCode } from '../components/core/InlineCode';
-import { useToast } from '../components/ToastContext';
+import { useToast } from './useToast';
 import type { HttpResponse } from '@yaakapp-internal/models';
 import { getContentTypeHeader } from '../lib/model_util';
 import { getHttpRequest } from '../lib/store';

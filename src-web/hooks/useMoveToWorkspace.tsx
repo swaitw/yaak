@@ -1,6 +1,6 @@
+import {useDialog} from "./useDialog";
 import { useFastMutation } from './useFastMutation';
 import React from 'react';
-import { useDialog } from '../components/DialogContext';
 import { MoveToWorkspaceDialog } from '../components/MoveToWorkspaceDialog';
 import { useActiveWorkspace } from './useActiveWorkspace';
 import { useRequests } from './useRequests';

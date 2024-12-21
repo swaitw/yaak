@@ -2,7 +2,7 @@ import { useParams } from '@tanstack/react-router';
 import type { Workspace } from '@yaakapp-internal/models';
 import { atom, useAtomValue } from 'jotai/index';
 import { useEffect } from 'react';
-import { jotaiStore } from '../routes/__root';
+import { jotaiStore } from '../lib/jotai';
 import { useWorkspaces } from './useWorkspaces';
 
 export const activeWorkspaceIdAtom = atom<string>();
@@ -15,6 +15,10 @@ export function useActiveWorkspace(): Workspace | null {
 
 function useActiveWorkspaceId(): string | null {
   return useAtomValue(activeWorkspaceIdAtom) ?? null;
+}
+
+export function getActiveWorkspaceId() {
+  return jotaiStore.get(activeWorkspaceIdAtom);
 }
 
 export function useSubscribeActiveWorkspaceId() {

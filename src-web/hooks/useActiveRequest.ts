@@ -1,6 +1,6 @@
 import type { GrpcRequest, HttpRequest } from '@yaakapp-internal/models';
 import { atom, useAtomValue } from 'jotai';
-import { jotaiStore } from '../routes/__root';
+import {jotaiStore} from "../lib/jotai";
 import { activeRequestIdAtom } from './useActiveRequestId';
 import { grpcRequestsAtom } from './useGrpcRequests';
 import { httpRequestsAtom } from './useHttpRequests';

@@ -2,15 +2,16 @@ import { QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-qu
 import { createRootRoute, Outlet } from '@tanstack/react-router';
 import classNames from 'classnames';
 import { MotionConfig } from 'framer-motion';
-import { createStore, Provider as JotaiProvider } from 'jotai';
+import { Provider as JotaiProvider } from 'jotai';
 import React, { Suspense } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { HelmetProvider } from 'react-helmet-async';
-import { DialogProvider, Dialogs } from '../components/DialogContext';
 import { GlobalHooks } from '../components/GlobalHooks';
-import { ToastProvider, Toasts } from '../components/ToastContext';
 import { useOsInfo } from '../hooks/useOsInfo';
+import { jotaiStore } from '../lib/jotai';
+import { ToastProvider, Toasts } from '../components/Toasts';
+import { DialogProvider, Dialogs } from '../components/Dialogs';
 
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
@@ -52,8 +53,6 @@ const ReactQueryDevtools =
 export const Route = createRootRoute({
   component: RouteComponent,
 });
-
-export const jotaiStore = createStore();
 
 function RouteComponent() {
   const osInfo = useOsInfo();

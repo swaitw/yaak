@@ -1,16 +1,15 @@
+import { useNavigate } from '@tanstack/react-router';
 import type { GrpcRequest, HttpRequest } from '@yaakapp-internal/models';
 import React, { useState } from 'react';
+import { useToast } from '../hooks/useToast';
 import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
-import { router } from '../main';
-import { Route } from '../routes/workspaces/$workspaceId/index';
 import { Button } from './core/Button';
 import { InlineCode } from './core/InlineCode';
 import { Select } from './core/Select';
 import { VStack } from './core/Stacks';
-import { useToast } from './ToastContext';
 
 interface Props {
   activeWorkspaceId: string;
@@ -23,6 +22,7 @@ export function MoveToWorkspaceDialog({ onDone, request, activeWorkspaceId }: Pr
   const updateHttpRequest = useUpdateAnyHttpRequest();
   const updateGrpcRequest = useUpdateAnyGrpcRequest();
   const toast = useToast();
+  const navigate = useNavigate();
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string>(activeWorkspaceId);
 
   return (
@@ -69,10 +69,10 @@ export function MoveToWorkspaceDialog({ onDone, request, activeWorkspaceId }: Pr
                 size="xs"
                 color="secondary"
                 className="mr-auto min-w-[5rem]"
-                onClick={() => {
+                onClick={async () => {
                   toast.hide('workspace-moved');
-                  router.navigate({
-                    to: Route.fullPath,
+                  await navigate({
+                    to: '/workspaces/$workspaceId',
                     params: { workspaceId: selectedWorkspaceId },
                   });
                 }}

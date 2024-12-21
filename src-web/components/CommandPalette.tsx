@@ -1,3 +1,4 @@
+import { useNavigate } from '@tanstack/react-router';
 import classNames from 'classnames';
 import { fuzzyFilter } from 'fuzzbunny';
 import type { KeyboardEvent, ReactNode } from 'react';
@@ -11,6 +12,7 @@ import { useCreateHttpRequest } from '../hooks/useCreateHttpRequest';
 import { useCreateWorkspace } from '../hooks/useCreateWorkspace';
 import { useDebouncedState } from '../hooks/useDebouncedState';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
+import { useDialog } from '../hooks/useDialog';
 import { useEnvironments } from '../hooks/useEnvironments';
 import type { HotkeyAction } from '../hooks/useHotKey';
 import { useHotKey } from '../hooks/useHotKey';
@@ -27,8 +29,6 @@ import { useSendAnyHttpRequest } from '../hooks/useSendAnyHttpRequest';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
-import { router } from '../main';
-import { Route } from '../routes/workspaces/$workspaceId/requests/$requestId';
 import { CookieDialog } from './CookieDialog';
 import { Button } from './core/Button';
 import { Heading } from './core/Heading';
@@ -37,7 +37,6 @@ import { HttpMethodTag } from './core/HttpMethodTag';
 import { Icon } from './core/Icon';
 import { PlainInput } from './core/PlainInput';
 import { HStack } from './core/Stacks';
-import { useDialog } from './DialogContext';
 import { EnvironmentEditDialog } from './EnvironmentEditDialog';
 
 interface CommandPaletteGroup {
@@ -78,6 +77,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   const deleteRequest = useDeleteRequest(activeRequest?.id ?? null);
   const [, setSidebarHidden] = useSidebarHidden();
   const openSettings = useOpenSettings();
+  const navigate = useNavigate();
 
   const workspaceCommands = useMemo<CommandPaletteItem[]>(() => {
     const commands: CommandPaletteItem[] = [
@@ -267,9 +267,9 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
             <div className="truncate">{fallbackRequestName(r)}</div>
           </HStack>
         ),
-        onSelect: () => {
-          router.navigate({
-            to: Route.fullPath,
+        onSelect: async () => {
+          await navigate({
+            to: '/workspaces/$workspaceId/requests/$requestId',
             params: {
               workspaceId: r.workspaceId,
               requestId: r.id,
@@ -315,8 +315,9 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   }, [
     workspaceCommands,
     sortedRequests,
-    activeEnvironment?.id,
+    navigate,
     sortedEnvironments,
+    activeEnvironment?.id,
     setActiveEnvironmentId,
     sortedWorkspaces,
     openWorkspace,

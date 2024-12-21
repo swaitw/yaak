@@ -1,16 +1,15 @@
+import { useNavigate } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { getRecentCookieJars } from '../hooks/useRecentCookieJars';
 import { getRecentEnvironments } from '../hooks/useRecentEnvironments';
 import { getRecentRequests } from '../hooks/useRecentRequests';
 import { useRecentWorkspaces } from '../hooks/useRecentWorkspaces';
 import { useWorkspaces } from '../hooks/useWorkspaces';
-import { router } from '../main';
-import { Route as WorkspaceRoute } from '../routes/workspaces/$workspaceId';
-import { Route as RequestRoute } from '../routes/workspaces/$workspaceId/requests/$requestId';
 
 export function RedirectToLatestWorkspace() {
   const workspaces = useWorkspaces();
   const recentWorkspaces = useRecentWorkspaces();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (workspaces.length === 0) {
@@ -25,20 +24,20 @@ export function RedirectToLatestWorkspace() {
       const requestId = (await getRecentRequests(workspaceId))[0] ?? null;
 
       if (workspaceId != null && requestId != null) {
-        await router.navigate({
-          to: RequestRoute.fullPath,
+        await navigate({
+          to: '/workspaces/$workspaceId/requests/$requestId',
           params: { workspaceId, requestId },
           search: { cookieJarId, environmentId },
         });
       } else {
-        await router.navigate({
-          to: WorkspaceRoute.fullPath,
+        await navigate({
+          to: '/workspaces/$workspaceId',
           params: { workspaceId },
           search: { cookieJarId, environmentId },
         });
       }
     })();
-  }, [recentWorkspaces, workspaces, workspaces.length]);
+  }, [navigate, recentWorkspaces, workspaces, workspaces.length]);
 
   return <></>;
 }
