@@ -1,14 +1,11 @@
 import { getRouteApi, useSearch } from '@tanstack/react-router';
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { useEnvironments } from './useEnvironments';
 
 export function useActiveEnvironment() {
   const [id, setId] = useActiveEnvironmentId();
-  const environments = useEnvironments();
-  const environment = useMemo(
-    () => environments.find((w) => w.id === id) ?? null,
-    [environments, id],
-  );
+  const { subEnvironments } = useEnvironments();
+  const environment = subEnvironments.find((w) => w.id === id) ?? null;
   return [environment, setId] as const;
 }
 
