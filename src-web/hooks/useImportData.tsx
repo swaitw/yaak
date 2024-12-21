@@ -1,4 +1,4 @@
-import { useMutation } from './useMutation';
+import { useFastMutation } from './useFastMutation';
 import type {
   Environment,
   Folder,
@@ -75,7 +75,7 @@ export function useImportData() {
     return true;
   };
 
-  return useMutation({
+  return useFastMutation({
     mutationKey: ['import_data'],
     onError: (err: string) => {
       alert({

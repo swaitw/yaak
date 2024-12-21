@@ -1,4 +1,4 @@
-import { useMutation } from './useMutation';
+import { useFastMutation } from './useFastMutation';
 import type { HttpUrlParameter } from '@yaakapp-internal/models';
 import { useToast } from '../components/ToastContext';
 import { pluralize } from '../lib/pluralize';
@@ -11,7 +11,7 @@ export function useImportQuerystring(requestId: string) {
   const toast = useToast();
   const [, { focusParamsTab, forceParamsRefresh, forceUrlRefresh }] = useRequestEditor();
 
-  return useMutation({
+  return useFastMutation({
     mutationKey: ['import_querystring'],
     mutationFn: async (url: string) => {
       const split = url.split(/\?(.*)/s);

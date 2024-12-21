@@ -1,4 +1,4 @@
-import { useMutation } from './useMutation';
+import { useFastMutation } from './useFastMutation';
 import type { GrpcRequest } from '@yaakapp-internal/models';
 import { useSetAtom } from 'jotai';
 import { trackEvent } from '../lib/analytics';
@@ -14,7 +14,7 @@ export function useCreateGrpcRequest() {
   const workspace = useActiveWorkspace();
   const setGrpcRequests = useSetAtom(grpcRequestsAtom);
 
-  return useMutation<
+  return useFastMutation<
     GrpcRequest,
     unknown,
     Partial<Pick<GrpcRequest, 'name' | 'sortPriority' | 'folderId'>>

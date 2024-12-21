@@ -1,4 +1,4 @@
-import { useMutation } from './useMutation';
+import { useFastMutation } from './useFastMutation';
 import { SettingsTab } from '../components/Settings/Settings';
 import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
@@ -9,7 +9,7 @@ import { useActiveWorkspace } from './useActiveWorkspace';
 export function useOpenSettings(tab = SettingsTab.General) {
   const workspace = useActiveWorkspace();
 
-  return useMutation({
+  return useFastMutation({
     mutationKey: ['open_settings'],
     mutationFn: async () => {
       if (workspace == null) return;

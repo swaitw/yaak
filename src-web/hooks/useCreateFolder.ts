@@ -1,4 +1,4 @@
-import { useMutation } from './useMutation';
+import { useFastMutation } from './useFastMutation';
 import type { Folder } from '@yaakapp-internal/models';
 import { useSetAtom } from 'jotai';
 import { trackEvent } from '../lib/analytics';
@@ -13,7 +13,7 @@ export function useCreateFolder() {
   const prompt = usePrompt();
   const setFolders = useSetAtom(foldersAtom);
 
-  return useMutation<
+  return useFastMutation<
     Folder | null,
     unknown,
     Partial<Pick<Folder, 'name' | 'sortPriority' | 'folderId'>>

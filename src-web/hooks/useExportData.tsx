@@ -1,4 +1,4 @@
-import { useMutation } from './useMutation';
+import { useFastMutation } from './useFastMutation';
 import { useDialog } from '../components/DialogContext';
 import { ExportDataDialog } from '../components/ExportDataDialog';
 import { useActiveWorkspace } from './useActiveWorkspace';
@@ -13,7 +13,7 @@ export function useExportData() {
   const dialog = useDialog();
   const toast = useToast();
 
-  return useMutation({
+  return useFastMutation({
     mutationKey: ['export_data'],
     onError: (err: string) => {
       alert({ id: 'export-failed', title: 'Export Failed', body: err });

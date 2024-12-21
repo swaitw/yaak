@@ -1,4 +1,4 @@
-import { useMutation } from './useMutation';
+import { useFastMutation } from './useFastMutation';
 import type { Workspace } from '@yaakapp-internal/models';
 import { useSetAtom } from 'jotai/index';
 import { invokeCmd } from '../lib/tauri';
@@ -12,7 +12,7 @@ export function useCreateWorkspace() {
   const prompt = usePrompt();
   const setWorkspaces = useSetAtom(workspacesAtom);
 
-  return useMutation<Workspace | null, void, void>({
+  return useFastMutation<Workspace | null, void, void>({
     mutationKey: ['create_workspace'],
     mutationFn: async () => {
       const name = await prompt({

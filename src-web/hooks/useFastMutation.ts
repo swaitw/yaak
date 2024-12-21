@@ -1,15 +1,17 @@
 import type { MutationKey } from '@tanstack/react-query';
 import { useCallback } from 'react';
 
-export function useMutation<TData = unknown, TError = unknown, TVariables = void>({
+export function useFastMutation<TData = unknown, TError = unknown, TVariables = void>({
   mutationKey,
   mutationFn,
   onSuccess,
+  onError,
   onSettled,
 }: {
   mutationKey: MutationKey;
   mutationFn: (vars: TVariables) => Promise<TData>;
   onSettled?: () => void;
+  onError?: (err: TError) => void;
   onSuccess?: (data: TData) => void;
 }) {
   const mutateAsync = useCallback(
@@ -17,9 +19,11 @@ export function useMutation<TData = unknown, TError = unknown, TVariables = void
       try {
         const data = await mutationFn(variables);
         onSuccess?.(data);
+        return data;
       } catch (err: unknown) {
         const e = err as TError;
         console.log('MUTATION FAILED', mutationKey, e);
+        onError?.(e);
       } finally {
         onSettled?.();
       }

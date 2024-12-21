@@ -1,4 +1,4 @@
-import { useMutation } from './useMutation';
+import { useFastMutation } from './useFastMutation';
 import type { HttpRequest } from '@yaakapp-internal/models';
 import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
@@ -12,7 +12,7 @@ export function useDuplicateHttpRequest({
   id: string | null;
   navigateAfter: boolean;
 }) {
-  return useMutation<HttpRequest, string>({
+  return useFastMutation<HttpRequest, string>({
     mutationKey: ['duplicate_http_request', id],
     mutationFn: async () => {
       if (id === null) throw new Error("Can't duplicate a null request");

@@ -1,4 +1,4 @@
-import { useMutation } from './useMutation';
+import { useFastMutation } from './useFastMutation';
 import type { GrpcRequest } from '@yaakapp-internal/models';
 import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
@@ -13,7 +13,7 @@ export function useDuplicateGrpcRequest({
   id: string | null;
   navigateAfter: boolean;
 }) {
-  return useMutation<GrpcRequest, string>({
+  return useFastMutation<GrpcRequest, string>({
     mutationKey: ['duplicate_grpc_request', id],
     mutationFn: async () => {
       if (id === null) throw new Error("Can't duplicate a null grpc request");

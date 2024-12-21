@@ -1,4 +1,4 @@
-import { useMutation } from './useMutation';
+import { useFastMutation } from './useFastMutation';
 import type { Workspace } from '@yaakapp-internal/models';
 import { useSetAtom } from 'jotai';
 import { InlineCode } from '../components/core/InlineCode';
@@ -16,7 +16,7 @@ export function useDeleteWorkspace(workspace: Workspace | null) {
   const confirm = useConfirm();
   const setWorkspaces = useSetAtom(workspacesAtom);
 
-  return useMutation<Workspace | null, string>({
+  return useFastMutation<Workspace | null, string>({
     mutationKey: ['delete_workspace', workspace?.id],
     mutationFn: async () => {
       const confirmed = await confirm({

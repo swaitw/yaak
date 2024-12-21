@@ -1,4 +1,4 @@
-import { useMutation } from './useMutation';
+import { useFastMutation } from './useFastMutation';
 import { invokeCmd } from '../lib/tauri';
 import { router } from '../main';
 import { Route as WorkspaceRoute } from '../routes/workspaces/$workspaceId';
@@ -8,7 +8,7 @@ import { getRecentEnvironments } from './useRecentEnvironments';
 import { getRecentRequests } from './useRecentRequests';
 
 export function useOpenWorkspace() {
-  return useMutation({
+  return useFastMutation({
     mutationKey: ['open_workspace'],
     mutationFn: async ({
       workspaceId,

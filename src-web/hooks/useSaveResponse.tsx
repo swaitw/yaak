@@ -1,4 +1,4 @@
-import { useMutation } from './useMutation';
+import { useFastMutation } from './useFastMutation';
 import { save } from '@tauri-apps/plugin-dialog';
 import mime from 'mime';
 import slugify from 'slugify';
@@ -12,7 +12,7 @@ import { invokeCmd } from '../lib/tauri';
 export function useSaveResponse(response: HttpResponse) {
   const toast = useToast();
 
-  return useMutation({
+  return useFastMutation({
     mutationKey: ['save_response', response.id],
     mutationFn: async () => {
       const request = await getHttpRequest(response.requestId);

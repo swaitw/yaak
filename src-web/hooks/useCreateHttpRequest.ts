@@ -1,4 +1,4 @@
-import { useMutation } from './useMutation';
+import { useFastMutation } from './useFastMutation';
 import type { HttpRequest } from '@yaakapp-internal/models';
 import { useSetAtom } from 'jotai/index';
 import { trackEvent } from '../lib/analytics';
@@ -14,7 +14,7 @@ export function useCreateHttpRequest() {
   const activeWorkspace = useActiveWorkspace();
   const setHttpRequests = useSetAtom(httpRequestsAtom);
 
-  return useMutation<HttpRequest, unknown, Partial<HttpRequest>>({
+  return useFastMutation<HttpRequest, unknown, Partial<HttpRequest>>({
     mutationKey: ['create_http_request'],
     mutationFn: async (patch = {}) => {
       const activeRequest = getActiveRequest();

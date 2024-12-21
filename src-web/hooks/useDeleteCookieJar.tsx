@@ -1,4 +1,4 @@
-import { useMutation } from './useMutation';
+import { useFastMutation } from './useFastMutation';
 import type { CookieJar } from '@yaakapp-internal/models';
 import { useSetAtom } from 'jotai';
 import { InlineCode } from '../components/core/InlineCode';
@@ -12,7 +12,7 @@ export function useDeleteCookieJar(cookieJar: CookieJar | null) {
   const confirm = useConfirm();
   const setCookieJars = useSetAtom(cookieJarsAtom);
 
-  return useMutation<CookieJar | null, string>({
+  return useFastMutation<CookieJar | null, string>({
     mutationKey: ['delete_cookie_jar', cookieJar?.id],
     mutationFn: async () => {
       const confirmed = await confirm({
