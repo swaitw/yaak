@@ -29,8 +29,6 @@ export function useExportData() {
         render: ({ hide }) => (
           <ExportDataDialog
             onHide={hide}
-            workspaces={workspaces}
-            activeWorkspace={activeWorkspace}
             onSuccess={() => {
               toast.show({
                 color: 'success',

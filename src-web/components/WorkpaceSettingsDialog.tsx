@@ -17,6 +17,7 @@ export function WorkspaceSettingsDialog({ workspaceId }: Props) {
 
   return (
     <VStack space={3} className="pb-3 max-h-[50vh]">
+        {workspace.id}
       <PlainInput
         label="Workspace Name"
         defaultValue={workspace.name}

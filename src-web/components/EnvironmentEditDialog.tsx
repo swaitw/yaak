@@ -40,7 +40,8 @@ export const EnvironmentEditDialog = function ({ initialEnvironment }: Props) {
   const selectedEnvironment = allEnvironments.find((e) => e.id === selectedEnvironmentId);
 
   const handleCreateEnvironment = async () => {
-    const e = await createEnvironment.mutateAsync();
+    if (baseEnvironment == null) return;
+    const e = await createEnvironment.mutateAsync(baseEnvironment);
     if (e == null) return;
     setSelectedEnvironmentId(e.id);
   };

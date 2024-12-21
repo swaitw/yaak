@@ -98,6 +98,7 @@ function pluginHookImport(_ctx, contents) {
         workspaceId: workspace.id,
         folderId,
         name: v.name,
+        description: v.description,
         method: r.method || "GET",
         url,
         urlParameters,

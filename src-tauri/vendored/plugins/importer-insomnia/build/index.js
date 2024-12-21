@@ -7233,12 +7233,14 @@ function pluginHookImport(ctx, contents) {
   };
   const workspacesToImport = parsed.resources.filter(isWorkspace);
   for (const workspaceToImport of workspacesToImport) {
+    console.log("IMPORT WORKSPACE", workspaceToImport);
     resources.workspaces.push({
       id: convertId(workspaceToImport._id),
       createdAt: new Date(workspacesToImport.created ?? Date.now()).toISOString().replace("Z", ""),
       updatedAt: new Date(workspacesToImport.updated ?? Date.now()).toISOString().replace("Z", ""),
       model: "workspace",
-      name: workspaceToImport.name
+      name: workspaceToImport.name,
+      description: workspacesToImport.description
     });
     const environmentsToImport = parsed.resources.filter(
       (r) => isEnvironment(r)
@@ -7294,6 +7296,7 @@ function importFolder(f, workspaceId) {
     updatedAt: new Date(f.updated ?? Date.now()).toISOString().replace("Z", ""),
     folderId: f.parentId === workspaceId ? null : convertId(f.parentId),
     workspaceId: convertId(workspaceId),
+    description: f.description ?? null,
     model: "folder",
     name: f.name
   };
@@ -7311,6 +7314,7 @@ function importGrpcRequest(r, workspaceId, sortPriority = 0) {
     model: "grpc_request",
     sortPriority,
     name: r.name,
+    description: r.description ?? null,
     url: convertSyntax(r.url),
     service,
     method,
@@ -7377,6 +7381,7 @@ function importHttpRequest(r, workspaceId, sortPriority = 0) {
     model: "http_request",
     sortPriority,
     name: r.name,
+    description: r.description ?? null,
     url: convertSyntax(r.url),
     body,
     bodyType,

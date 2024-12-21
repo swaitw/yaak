@@ -152,6 +152,7 @@ pub async fn list_workspaces<R: Runtime>(mgr: &impl Manager<R>) -> Result<Vec<Wo
     let (sql, params) = Query::select()
         .from(WorkspaceIden::Table)
         .column(Asterisk)
+        .order_by(WorkspaceIden::Name, Order::Asc)
         .build_rusqlite(SqliteQueryBuilder);
     let mut stmt = db.prepare(sql.as_str())?;
     let items = stmt.query_map(&*params.as_params(), |row| row.try_into())?;
@@ -746,7 +747,7 @@ pub async fn list_environments<R: Runtime>(
             .from(EnvironmentIden::Table)
             .cond_where(Expr::col(EnvironmentIden::WorkspaceId).eq(workspace_id))
             .column(Asterisk)
-            .order_by(EnvironmentIden::CreatedAt, Order::Desc)
+            .order_by(EnvironmentIden::Name, Order::Asc)
             .build_rusqlite(SqliteQueryBuilder);
         let mut stmt = db.prepare(sql.as_str())?;
         let items = stmt.query_map(&*params.as_params(), |row| row.try_into())?;
@@ -757,6 +758,7 @@ pub async fn list_environments<R: Runtime>(
         environments.iter().find(|e| e.environment_id == None && e.workspace_id == workspace_id);
 
     if let None = base_environment {
+        info!("Creating base environment for {workspace_id}");
         let base_environment = upsert_environment(
             window,
             Environment {
@@ -766,7 +768,6 @@ pub async fn list_environments<R: Runtime>(
             },
         )
             .await?;
-        info!("Created base environment for {workspace_id}");
         environments.push(base_environment);
     }
 

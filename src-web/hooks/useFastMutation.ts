@@ -1,5 +1,6 @@
 import type { MutationKey } from '@tanstack/react-query';
 import { useCallback } from 'react';
+import { useToast } from './useToast';
 
 export function useFastMutation<TData = unknown, TError = unknown, TVariables = void>({
   mutationKey,
@@ -7,13 +8,17 @@ export function useFastMutation<TData = unknown, TError = unknown, TVariables = 
   onSuccess,
   onError,
   onSettled,
+  toastyError,
 }: {
   mutationKey: MutationKey;
   mutationFn: (vars: TVariables) => Promise<TData>;
   onSettled?: () => void;
   onError?: (err: TError) => void;
   onSuccess?: (data: TData) => void;
+  toastyError?: boolean;
 }) {
+  const toast = useToast();
+
   const mutateAsync = useCallback(
     async (variables: TVariables) => {
       try {
@@ -22,8 +27,14 @@ export function useFastMutation<TData = unknown, TError = unknown, TVariables = 
         return data;
       } catch (err: unknown) {
         const e = err as TError;
-        console.log('MUTATION FAILED', mutationKey, e);
+        console.log('Fast mutation error', mutationKey, e);
         onError?.(e);
+        if (toastyError) {
+          toast.show({
+            id: 'error-' + mutationKey.join('.'),
+            message: String(e),
+          });
+        }
       } finally {
         onSettled?.();
       }

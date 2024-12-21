@@ -1220,6 +1220,7 @@ async fn cmd_create_cookie_jar(
 #[tauri::command]
 async fn cmd_create_environment(
     workspace_id: &str,
+    environment_id: Option<&str>,
     name: &str,
     variables: Vec<EnvironmentVariable>,
     w: WebviewWindow,
@@ -1228,6 +1229,7 @@ async fn cmd_create_environment(
         &w,
         Environment {
             workspace_id: workspace_id.to_string(),
+            environment_id: environment_id.map(|s| s.to_string()),
             name: name.to_string(),
             variables,
             ..Default::default()

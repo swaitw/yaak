@@ -1,13 +1,13 @@
-import { useFastMutation } from './useFastMutation';
 import type { Environment } from '@yaakapp-internal/models';
-import {useSetAtom} from "jotai";
+import { useSetAtom } from 'jotai';
 import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveEnvironment } from './useActiveEnvironment';
 import { useActiveWorkspace } from './useActiveWorkspace';
-import {environmentsAtom} from "./useEnvironments";
+import { environmentsAtom } from './useEnvironments';
+import { useFastMutation } from './useFastMutation';
 import { usePrompt } from './usePrompt';
-import {updateModelList} from "./useSyncModelStores";
+import { updateModelList } from './useSyncModelStores';
 
 export function useCreateEnvironment() {
   const [, setActiveEnvironmentId] = useActiveEnvironment();
@@ -15,9 +15,9 @@ export function useCreateEnvironment() {
   const workspace = useActiveWorkspace();
   const setEnvironments = useSetAtom(environmentsAtom);
 
-  return useFastMutation<Environment | null, unknown, void>({
+  return useFastMutation<Environment | null, unknown, Environment>({
     mutationKey: ['create_environment'],
-    mutationFn: async () => {
+    mutationFn: async (baseEnvironment) => {
       const name = await prompt({
         id: 'new-environment',
         title: 'New Environment',
@@ -33,6 +33,7 @@ export function useCreateEnvironment() {
         name,
         variables: [],
         workspaceId: workspace?.id,
+        environmentId: baseEnvironment.id,
       });
     },
     onSettled: () => trackEvent('environment', 'create'),

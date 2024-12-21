@@ -80,5 +80,10 @@ type TauriCmd =
 
 export async function invokeCmd<T>(cmd: TauriCmd, args?: InvokeArgs): Promise<T> {
   // console.log('RUN COMMAND', cmd, args);
-  return invoke(cmd, args);
+  try {
+    return await invoke(cmd, args);
+  } catch (err) {
+    console.warn('Tauri command error', cmd, err);
+    throw err;
+  }
 }
