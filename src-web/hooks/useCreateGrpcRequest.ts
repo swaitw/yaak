@@ -1,22 +1,17 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation } from './useMutation';
 import type { GrpcRequest } from '@yaakapp-internal/models';
-import {useSetAtom} from "jotai";
+import { useSetAtom } from 'jotai';
 import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
-import {useActiveCookieJar} from "./useActiveCookieJar";
-import { useActiveEnvironment } from './useActiveEnvironment';
-import { useActiveRequest } from './useActiveRequest';
+import { router } from '../main';
+import { Route } from '../routes/workspaces/$workspaceId/requests/$requestId';
+import { getActiveRequest } from './useActiveRequest';
 import { useActiveWorkspace } from './useActiveWorkspace';
-import { useAppRoutes } from './useAppRoutes';
-import {grpcRequestsAtom} from "./useGrpcRequests";
-import {updateModelList} from "./useSyncModelStores";
+import { grpcRequestsAtom } from './useGrpcRequests';
+import { updateModelList } from './useSyncModelStores';
 
 export function useCreateGrpcRequest() {
   const workspace = useActiveWorkspace();
-  const [activeEnvironment] = useActiveEnvironment();
-  const [activeCookieJar] = useActiveCookieJar();
-  const activeRequest = useActiveRequest();
-  const routes = useAppRoutes();
   const setGrpcRequests = useSetAtom(grpcRequestsAtom);
 
   return useMutation<
@@ -29,6 +24,7 @@ export function useCreateGrpcRequest() {
       if (workspace === null) {
         throw new Error("Cannot create grpc request when there's no active workspace");
       }
+      const activeRequest = getActiveRequest();
       if (patch.sortPriority === undefined) {
         if (activeRequest != null) {
           // Place above currently active request
@@ -50,11 +46,13 @@ export function useCreateGrpcRequest() {
       // Optimistic update
       setGrpcRequests(updateModelList(request));
 
-      routes.navigate('request', {
-        workspaceId: request.workspaceId,
-        requestId: request.id,
-        environmentId: activeEnvironment?.id ?? null,
-        cookieJarId: activeCookieJar?.id ?? null,
+      router.navigate({
+        to: Route.fullPath,
+        params: {
+          workspaceId: request.workspaceId,
+          requestId: request.id,
+        },
+        search: (prev) => ({ ...prev }),
       });
     },
   });
