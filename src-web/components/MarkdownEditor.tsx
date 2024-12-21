@@ -4,13 +4,14 @@ import { useRef } from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useKeyValue } from '../hooks/useKeyValue';
-import {Editor} from "./core/Editor/Editor";
+import type { EditorProps } from './core/Editor/Editor';
+import { Editor } from './core/Editor/Editor';
 import { IconButton } from './core/IconButton';
 import { SplitLayout } from './core/SplitLayout';
 import { VStack } from './core/Stacks';
 import { Prose } from './Prose';
 
-interface Props {
+interface Props extends Pick<EditorProps, 'heightMode'> {
   placeholder: string;
   className?: string;
   defaultValue: string;
@@ -18,7 +19,14 @@ interface Props {
   name: string;
 }
 
-export function MarkdownEditor({ className, defaultValue, onChange, name, placeholder }: Props) {
+export function MarkdownEditor({
+  className,
+  defaultValue,
+  onChange,
+  name,
+  placeholder,
+  heightMode,
+}: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [width] = useSize(containerRef.current);
@@ -39,13 +47,14 @@ export function MarkdownEditor({ className, defaultValue, onChange, name, placeh
 
   const editor = (
     <Editor
-      className="max-w-xl"
+      hideGutter
+      wrapLines
+      className="max-w-2xl max-h-full"
       language="markdown"
       defaultValue={defaultValue}
       onChange={onChange}
       placeholder={placeholder}
-      hideGutter
-      wrapLines
+      heightMode={heightMode}
     />
   );
 
@@ -96,11 +105,11 @@ export function MarkdownEditor({ className, defaultValue, onChange, name, placeh
     <div
       ref={containerRef}
       className={classNames(
-        'w-full h-full pt-1.5 group rounded-md grid grid-cols-[minmax(0,1fr)_auto]',
+        'w-full h-full pt-1.5 group rounded-md grid grid-cols-[minmax(0,1fr)_auto] grid-rows-1 gap-x-1.5',
         className,
       )}
     >
-      <div className="pr-8 h-full w-full">{contents}</div>
+      <div className="h-full w-full">{contents}</div>
       <VStack
         space={1}
         className="bg-surface opacity-20 group-hover:opacity-100 transition-opacity transform-gpu"

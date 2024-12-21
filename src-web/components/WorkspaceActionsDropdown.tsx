@@ -49,7 +49,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
     const extraItems: DropdownItem[] = [
       {
         key: 'workspace-settings',
-        label: 'Settings',
+        label: 'Workspace Settings',
         leftSlot: <Icon icon="settings" />,
         onSelect: async () => {
           dialog.show({

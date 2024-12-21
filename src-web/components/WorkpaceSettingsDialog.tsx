@@ -16,7 +16,7 @@ export function WorkspaceSettingsDialog({ workspaceId }: Props) {
   if (workspace == null) return null;
 
   return (
-    <VStack space={3} className="pb-3">
+    <VStack space={3} className="pb-3 max-h-[50vh]">
       <PlainInput
         label="Workspace Name"
         defaultValue={workspace.name}
@@ -29,6 +29,7 @@ export function WorkspaceSettingsDialog({ workspaceId }: Props) {
         className="min-h-[10rem] border border-border px-2"
         defaultValue={workspace.description}
         onChange={(description) => updateWorkspace.mutate({ description })}
+        heightMode='auto'
       />
     </VStack>
   );
