@@ -7,7 +7,7 @@ import { Icon } from './Icon';
 export type RadioDropdownItem<T = string | null> =
   | {
       type?: 'default';
-      label: string;
+      label: ReactNode;
       shortLabel?: string;
       value: T;
       rightSlot?: ReactNode;

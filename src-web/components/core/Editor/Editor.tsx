@@ -19,7 +19,7 @@ import {
   useRef,
 } from 'react';
 import { useActiveEnvironmentVariables } from '../../../hooks/useActiveEnvironmentVariables';
-import {useDialog} from "../../../hooks/useDialog";
+import { useDialog } from '../../../hooks/useDialog';
 import { parseTemplate } from '../../../hooks/useParseTemplate';
 import { useRequestEditor } from '../../../hooks/useRequestEditor';
 import { useSettings } from '../../../hooks/useSettings';

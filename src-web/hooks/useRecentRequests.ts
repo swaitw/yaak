@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
+import { jotaiStore } from '../lib/jotai';
 import { getKeyValue } from '../lib/keyValueStore';
-import { useActiveRequestId } from './useActiveRequestId';
+import { activeRequestIdAtom } from './useActiveRequestId';
 import { useActiveWorkspace } from './useActiveWorkspace';
 import { useKeyValue } from './useKeyValue';
 import { useRequests } from './useRequests';
@@ -12,30 +13,38 @@ const fallback: string[] = [];
 export function useRecentRequests() {
   const requests = useRequests();
   const activeWorkspace = useActiveWorkspace();
-  const activeRequestId = useActiveRequestId();
 
-  const kv = useKeyValue<string[]>({
+  const { set: setRecentRequests, value: recentRequests } = useKeyValue<string[]>({
     key: kvKey(activeWorkspace?.id ?? 'n/a'),
     namespace,
     fallback,
   });
 
-  // Set history when active request changes
-  useEffect(() => {
-    kv.set((currentHistory) => {
-      if (activeRequestId === null) return currentHistory;
-      const withoutCurrentRequest = currentHistory.filter((id) => id !== activeRequestId);
-      return [activeRequestId, ...withoutCurrentRequest];
-    }).catch(console.error);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeRequestId]);
-
   const onlyValidIds = useMemo(
-    () => kv.value?.filter((id) => requests.some((r) => r.id === id)) ?? [],
-    [kv.value, requests],
+    () => recentRequests?.filter((id) => requests.some((r) => r.id === id)) ?? [],
+    [recentRequests, requests],
   );
 
-  return onlyValidIds;
+  return [onlyValidIds, setRecentRequests] as const;
+}
+
+export function useSubscribeRecentRequests() {
+  const [recentRequests, setRecentRequests] = useRecentRequests();
+
+  useEffect(() => {
+    return jotaiStore.sub(activeRequestIdAtom, () => {
+      const activeRequestId = jotaiStore.get(activeRequestIdAtom) ?? null;
+      if (recentRequests[0] === activeRequestId) {
+        // Nothing to do
+        return;
+      }
+      setRecentRequests((currentHistory) => {
+        if (activeRequestId === null) return currentHistory;
+        const withoutCurrentRequest = currentHistory.filter((id) => id !== activeRequestId);
+        return [activeRequestId, ...withoutCurrentRequest];
+      }).catch(console.error);
+    });
+  }, [recentRequests, setRecentRequests]);
 }
 
 export async function getRecentRequests(workspaceId: string) {

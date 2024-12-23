@@ -15,9 +15,14 @@ export function useCreateEnvironment() {
   const workspace = useActiveWorkspace();
   const setEnvironments = useSetAtom(environmentsAtom);
 
-  return useFastMutation<Environment | null, unknown, Environment>({
+  return useFastMutation<Environment | null, unknown, Environment | null>({
+    toastyError: true,
     mutationKey: ['create_environment'],
     mutationFn: async (baseEnvironment) => {
+      if (baseEnvironment == null) {
+        throw new Error('No base environment passed');
+      }
+
       const name = await prompt({
         id: 'new-environment',
         title: 'New Environment',

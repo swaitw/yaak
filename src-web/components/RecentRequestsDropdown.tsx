@@ -18,7 +18,7 @@ export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'classNa
   const dropdownRef = useRef<DropdownRef>(null);
   const activeRequest = useActiveRequest();
   const activeWorkspace = useActiveWorkspace();
-  const allRecentRequestIds = useRecentRequests();
+  const [allRecentRequestIds] = useRecentRequests();
   const recentRequestIds = useMemo(() => allRecentRequestIds.slice(1), [allRecentRequestIds]);
   const requests = useRequests();
   const navigate = useNavigate();

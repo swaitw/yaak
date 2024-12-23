@@ -6,6 +6,7 @@ import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
 import { activeRequestAtom } from '../hooks/useActiveRequest';
 import { useScrollIntoView } from '../hooks/useScrollIntoView';
+import { useSidebarItemCollapsed } from '../hooks/useSidebarItemCollapsed';
 import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
 import { jotaiStore } from '../lib/jotai';
@@ -15,7 +16,7 @@ import { Icon } from './core/Icon';
 import { StatusTag } from './core/StatusTag';
 import { RequestContextMenu } from './RequestContextMenu';
 import type { SidebarTreeNode } from './Sidebar';
-import {sidebarSelectedIdAtom} from "./SidebarAtoms";
+import { sidebarSelectedIdAtom } from './SidebarAtoms';
 import type { SidebarItemsProps } from './SidebarItems';
 
 enum ItemTypes {
@@ -35,7 +36,7 @@ export type SidebarItemProps = {
   child: SidebarTreeNode;
   latestHttpResponse: HttpResponse | null;
   latestGrpcConnection: GrpcConnection | null;
-} & Pick<SidebarItemsProps, 'isCollapsed' | 'onSelect'>;
+} & Pick<SidebarItemsProps, 'onSelect'>;
 
 type DragItem = {
   id: string;
@@ -51,7 +52,6 @@ export const SidebarItem = memo(function SidebarItem({
   onEnd,
   onDragStart,
   onSelect,
-  isCollapsed,
   className,
   itemFallbackName,
   latestHttpResponse,
@@ -59,6 +59,7 @@ export const SidebarItem = memo(function SidebarItem({
   children,
 }: SidebarItemProps) {
   const ref = useRef<HTMLLIElement>(null);
+  const [collapsed, toggleCollapsed] = useSidebarItemCollapsed(itemId);
 
   const [, connectDrop] = useDrop<DragItem, void>(
     {
@@ -106,20 +107,21 @@ export const SidebarItem = memo(function SidebarItem({
   const [selected, setSelected] = useState<boolean>(
     jotaiStore.get(sidebarSelectedIdAtom) == itemId,
   );
-  useEffect(() => {  
-    jotaiStore.sub(sidebarSelectedIdAtom, () => {
+  useEffect(() => {
+    return jotaiStore.sub(sidebarSelectedIdAtom, () => {
       const value = jotaiStore.get(sidebarSelectedIdAtom);
       setSelected(value === itemId);
     });
   }, [itemId]);
 
   const [active, setActive] = useState<boolean>(jotaiStore.get(activeRequestAtom)?.id === itemId);
-  useEffect(() => {
-    jotaiStore.sub(activeRequestAtom, () => {
-      const value = jotaiStore.get(activeRequestAtom);
-      setActive(value?.id === itemId);
-    });
-  }, [itemId]);
+  useEffect(
+    () =>
+      jotaiStore.sub(activeRequestAtom, () =>
+        setActive(jotaiStore.get(activeRequestAtom)?.id === itemId),
+      ),
+    [itemId],
+  );
 
   useScrollIntoView(ref.current, active);
 
@@ -175,7 +177,10 @@ export const SidebarItem = memo(function SidebarItem({
     [handleSubmitNameEdit],
   );
 
-  const handleSelect = useCallback(() => onSelect(itemId), [onSelect, itemId]);
+  const handleSelect = useCallback(async () => {
+    if (itemModel === 'folder') toggleCollapsed();
+    else onSelect(itemId);
+  }, [itemModel, toggleCollapsed, onSelect, itemId]);
   const [showContextMenu, setShowContextMenu] = useState<{
     x: number;
     y: number;
@@ -214,7 +219,7 @@ export const SidebarItem = memo(function SidebarItem({
             editing && 'ring-1 focus-within:ring-focus',
             active && 'bg-surface-highlight text-text',
             !active && 'text-text-subtle group-hover/item:text-text',
-            showContextMenu && '!text-text', // Show as "active" when context menu is open
+            showContextMenu && '!text-text', // Show as "active" when the context menu is open
           )}
         >
           {itemModel === 'folder' && (
@@ -224,7 +229,7 @@ export const SidebarItem = memo(function SidebarItem({
               className={classNames(
                 'text-text-subtlest',
                 'transition-transform',
-                !isCollapsed(itemId) && 'transform rotate-90',
+                !collapsed && 'transform rotate-90',
               )}
             />
           )}
@@ -259,7 +264,7 @@ export const SidebarItem = memo(function SidebarItem({
           ) : null}
         </button>
       </div>
-      {children}
+      {collapsed ? null : children}
     </li>
   );
 });

@@ -68,7 +68,7 @@ export function useImportData() {
       await navigate({
         to: '/workspaces/$workspaceId',
         params: { workspaceId: importedWorkspace.id },
-        search: { environmentId },
+        search: { environment_id: environmentId },
       });
     }
 

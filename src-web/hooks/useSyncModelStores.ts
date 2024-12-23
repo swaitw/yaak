@@ -1,8 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
-import type { AnyModel } from '@yaakapp-internal/models';
+import type { AnyModel, KeyValue } from '@yaakapp-internal/models';
 import { jotaiStore } from '../lib/jotai';
-import { extractKeyValue } from '../lib/keyValueStore';
+import { buildKeyValueKey } from '../lib/keyValueStore';
 import { modelsEq } from '../lib/model_util';
 import { useActiveWorkspace } from './useActiveWorkspace';
 import { cookieJarsAtom } from './useCookieJars';
@@ -13,7 +13,7 @@ import { grpcEventsQueryKey } from './useGrpcEvents';
 import { grpcRequestsAtom } from './useGrpcRequests';
 import { httpRequestsAtom } from './useHttpRequests';
 import { httpResponsesAtom } from './useHttpResponses';
-import { keyValueQueryKey } from './useKeyValue';
+import { keyValueQueryKey, keyValuesAtom } from './useKeyValue';
 import { useListenToTauriEvent } from './useListenToTauriEvent';
 import { pluginsAtom } from './usePlugins';
 import { useRequestUpdateKey } from './useRequestUpdateKey';
@@ -71,14 +71,11 @@ export function useSyncModelStores() {
       jotaiStore.set(cookieJarsAtom, updateModelList(model));
     } else if (model.model === 'settings') {
       jotaiStore.set(settingsAtom, model);
+    } else if (model.model === 'key_value') {
+      jotaiStore.set(keyValuesAtom, updateModelList(model));
     } else if (queryKey != null) {
       // TODO: Convert all models to use Jotai
       queryClient.setQueryData(queryKey, (current: unknown) => {
-        if (model.model === 'key_value') {
-          // Special-case for KeyValue
-          return extractKeyValue(model);
-        }
-
         if (Array.isArray(current)) {
           return updateModelList(model)(current);
         }
@@ -111,7 +108,7 @@ export function useSyncModelStores() {
     } else if (model.model === 'grpc_event') {
       queryClient.setQueryData(grpcEventsQueryKey(model), removeModelById(model));
     } else if (model.model === 'key_value') {
-      queryClient.setQueryData(keyValueQueryKey(model), undefined);
+      queryClient.setQueryData(keyValueQueryKey(model), removeModelByKeyValue(model));
     } else if (model.model === 'cookie_jar') {
       jotaiStore.set(cookieJarsAtom, removeModelById(model));
     }
@@ -134,6 +131,18 @@ export function updateModelList<T extends AnyModel>(model: T) {
 
 export function removeModelById<T extends { id: string }>(model: T) {
   return (entries: T[] | undefined) => entries?.filter((e) => e.id !== model.id) ?? [];
+}
+
+export function removeModelByKeyValue(model: KeyValue) {
+  return (entries: KeyValue[] | undefined) =>
+    entries?.filter(
+      (e) =>
+        !(
+          e.namespace === model.namespace &&
+          buildKeyValueKey(e.key) === buildKeyValueKey(model.key) &&
+          e.value == model.value
+        ),
+    ) ?? [];
 }
 
 const shouldIgnoreModel = (payload: AnyModel, windowLabel: string) => {

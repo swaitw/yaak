@@ -1,15 +1,14 @@
-import { useFastMutation } from './useFastMutation';
 import type { Folder } from '@yaakapp-internal/models';
 import { useSetAtom } from 'jotai';
 import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
-import { useActiveWorkspace } from './useActiveWorkspace';
+import { getActiveWorkspaceId } from './useActiveWorkspace';
+import { useFastMutation } from './useFastMutation';
 import { foldersAtom } from './useFolders';
 import { usePrompt } from './usePrompt';
 import { updateModelList } from './useSyncModelStores';
 
 export function useCreateFolder() {
-  const workspace = useActiveWorkspace();
   const prompt = usePrompt();
   const setFolders = useSetAtom(foldersAtom);
 
@@ -20,8 +19,8 @@ export function useCreateFolder() {
   >({
     mutationKey: ['create_folder'],
     mutationFn: async (patch) => {
-      console.log("FOLDER", workspace);
-      if (workspace === null) {
+      const workspaceId = getActiveWorkspaceId();
+      if (workspaceId == null) {
         throw new Error("Cannot create folder when there's no active workspace");
       }
 
@@ -40,7 +39,7 @@ export function useCreateFolder() {
       }
 
       patch.sortPriority = patch.sortPriority || -Date.now();
-      return await invokeCmd('cmd_create_folder', { workspaceId: workspace.id, ...patch });
+      return await invokeCmd('cmd_create_folder', { workspaceId, ...patch });
     },
     onSuccess: (folder) => {
       if (folder == null) return;

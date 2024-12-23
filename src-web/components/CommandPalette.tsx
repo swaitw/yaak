@@ -64,7 +64,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   const recentWorkspaces = useRecentWorkspaces();
   const requests = useRequests();
   const activeRequest = useActiveRequest();
-  const recentRequests = useRecentRequests();
+  const [recentRequests] = useRecentRequests();
   const openWorkspace = useOpenWorkspace();
   const createWorkspace = useCreateWorkspace();
   const createHttpRequest = useCreateHttpRequest();
@@ -78,6 +78,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   const [, setSidebarHidden] = useSidebarHidden();
   const openSettings = useOpenSettings();
   const navigate = useNavigate();
+  const { baseEnvironment } = useEnvironments();
 
   const workspaceCommands = useMemo<CommandPaletteItem[]>(() => {
     const commands: CommandPaletteItem[] = [
@@ -131,7 +132,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
       {
         key: 'environment.create',
         label: 'Create Environment',
-        onSelect: createEnvironment.mutate,
+        onSelect: () => createEnvironment.mutate(baseEnvironment),
       },
       {
         key: 'sidebar.toggle',
@@ -180,7 +181,8 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     activeCookieJar?.id,
     activeEnvironment,
     activeRequest,
-    createEnvironment.mutate,
+    baseEnvironment,
+    createEnvironment,
     createGrpcRequest,
     createHttpRequest,
     createWorkspace.mutate,
@@ -375,6 +377,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLInputElement>) => {
       const index = filteredAllItems.findIndex((v) => v.key === selectedItem?.key);
+      console.log("ENDER", e.key);
 
       if (e.key === 'ArrowDown' || (e.ctrlKey && e.key === 'n')) {
         const next = filteredAllItems[index + 1] ?? filteredAllItems[0];

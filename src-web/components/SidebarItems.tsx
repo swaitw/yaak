@@ -18,7 +18,6 @@ export interface SidebarItemsProps {
   handleEnd: (id: string) => void;
   handleDragStart: (id: string) => void;
   onSelect: (requestId: string) => void;
-  isCollapsed: (id: string) => boolean;
   httpResponses: HttpResponse[];
   grpcConnections: GrpcConnection[];
 }
@@ -29,7 +28,6 @@ export const SidebarItems = memo(function SidebarItems({
   draggingId,
   onSelect,
   treeParentMap,
-  isCollapsed,
   hoveredTree,
   hoveredIndex,
   handleEnd,
@@ -71,11 +69,9 @@ export const SidebarItems = memo(function SidebarItems({
               onEnd={handleEnd}
               onSelect={onSelect}
               onDragStart={handleDragStart}
-              isCollapsed={isCollapsed}
               child={child}
             >
               {child.item.model === 'folder' &&
-                !isCollapsed(child.item.id) &&
                 draggingId !== child.item.id && (
                   <SidebarItems
                     draggingId={draggingId}
@@ -86,7 +82,6 @@ export const SidebarItems = memo(function SidebarItems({
                     hoveredTree={hoveredTree}
                     httpResponses={httpResponses}
                     grpcConnections={grpcConnections}
-                    isCollapsed={isCollapsed}
                     onSelect={onSelect}
                     selectedTree={selectedTree}
                     tree={child}

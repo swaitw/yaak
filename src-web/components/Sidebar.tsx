@@ -11,9 +11,9 @@ import { useFolders } from '../hooks/useFolders';
 import { useGrpcConnections } from '../hooks/useGrpcConnections';
 import { useHotKey } from '../hooks/useHotKey';
 import { useHttpResponses } from '../hooks/useHttpResponses';
-import { useKeyValue } from '../hooks/useKeyValue';
 import { useRequests } from '../hooks/useRequests';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
+import { getSidebarCollapsedMap } from '../hooks/useSidebarItemCollapsed';
 import { useUpdateAnyFolder } from '../hooks/useUpdateAnyFolder';
 import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
@@ -50,13 +50,6 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
   const [hoveredTree, setHoveredTree] = useState<SidebarTreeNode | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const navigate = useNavigate();
-  const { value: collapsed, set: setCollapsed } = useKeyValue<Record<string, boolean>>({
-    key: ['sidebar_collapsed', activeWorkspace?.id ?? 'n/a'],
-    fallback: {},
-    namespace: 'no_sync',
-  });
-
-  const isCollapsed = useCallback((id: string) => collapsed?.[id] ?? false, [collapsed]);
 
   const { tree, treeParentMap, selectableRequests } = useMemo<{
     tree: SidebarTreeNode | null;
@@ -97,7 +90,6 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
       const childItems = childrenMap[node.item.id] ?? [];
 
       // Recurse to children
-      const isCollapsed = collapsed?.[node.item.id];
       const depth = node.depth + 1;
       childItems.sort((a, b) => a.sortPriority - b.sortPriority);
       for (const item of childItems) {
@@ -105,7 +97,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
         // Add to children
         node.children.push(next({ item, children: [], depth }));
         // Add to selectable requests
-        if (item.model !== 'folder' && !isCollapsed) {
+        if (item.model !== 'folder') {
           selectableRequests.push({ id: item.id, index: selectableRequestIndex++, tree: node });
         }
       }
@@ -116,7 +108,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
     const tree = next({ item: activeWorkspace, children: [], depth: 0 });
 
     return { tree, treeParentMap, selectableRequests, selectedRequest };
-  }, [activeWorkspace, requests, folders, collapsed]);
+  }, [activeWorkspace, requests, folders]);
 
   const focusActiveRequest = useCallback(
     (
@@ -160,9 +152,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
 
       const { item } = node;
 
-      if (item.model === 'folder') {
-        await setCollapsed((c) => ({ ...c, [item.id]: !c[item.id] }));
-      } else {
+      if (item.model === 'http_request' || item.model === 'grpc_request') {
         await navigate({
           to: '/workspaces/$workspaceId/requests/$requestId',
           params: {
@@ -177,7 +167,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
         setSelectedTree(tree);
       }
     },
-    [treeParentMap, setCollapsed, navigate, setSelectedId],
+    [treeParentMap, navigate, setSelectedId],
   );
 
   const handleClearSelected = useCallback(() => {
@@ -267,13 +257,14 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
   );
 
   const handleMove = useCallback<SidebarItemProps['onMove']>(
-    (id, side) => {
+    async (id, side) => {
       let hoveredTree = treeParentMap[id] ?? null;
       const dragIndex = hoveredTree?.children.findIndex((n) => n.item.id === id) ?? -99;
       const hoveredItem = hoveredTree?.children[dragIndex]?.item ?? null;
       let hoveredIndex = dragIndex + (side === 'above' ? 0 : 1);
 
-      if (hoveredItem?.model === 'folder' && side === 'below' && !isCollapsed(hoveredItem.id)) {
+      const isHoveredItemCollapsed = hoveredItem != null ? getSidebarCollapsedMap()[hoveredItem.id] : false;
+      if (hoveredItem?.model === 'folder' && side === 'below' && !isHoveredItemCollapsed) {
         // Move into the folder if it's open and we're moving below it
         hoveredTree = hoveredTree?.children.find((n) => n.item.id === id) ?? null;
         hoveredIndex = 0;
@@ -282,7 +273,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
       setHoveredTree(hoveredTree);
       setHoveredIndex(hoveredIndex);
     },
-    [isCollapsed, treeParentMap],
+    [treeParentMap],
   );
 
   const handleDragStart = useCallback<SidebarItemProps['onDragStart']>((id: string) => {
@@ -385,7 +376,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
   const mainContextMenuItems = useCreateDropdownItems();
 
   // Not ready to render yet
-  if (tree == null || collapsed == null) {
+  if (tree == null) {
     return null;
   }
 
@@ -415,7 +406,6 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
         <SidebarItems
           treeParentMap={treeParentMap}
           selectedTree={selectedTree}
-          isCollapsed={isCollapsed}
           httpResponses={httpResponses}
           grpcConnections={grpcConnections}
           tree={tree}

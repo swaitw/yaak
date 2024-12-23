@@ -32,6 +32,8 @@ export function useFastMutation<TData = unknown, TError = unknown, TVariables = 
         if (toastyError) {
           toast.show({
             id: 'error-' + mutationKey.join('.'),
+            color: 'danger',
+            timeout: 8000,
             message: String(e),
           });
         }

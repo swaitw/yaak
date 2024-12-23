@@ -18,7 +18,7 @@ function useActiveWorkspaceId(): string | null {
 }
 
 export function getActiveWorkspaceId() {
-  return jotaiStore.get(activeWorkspaceIdAtom);
+  return jotaiStore.get(activeWorkspaceIdAtom) ?? null;
 }
 
 export function useSubscribeActiveWorkspaceId() {

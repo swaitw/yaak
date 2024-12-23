@@ -22,18 +22,19 @@ export function RedirectToLatestWorkspace() {
       const environmentId = (await getRecentEnvironments(workspaceId))[0] ?? null;
       const cookieJarId = (await getRecentCookieJars(workspaceId))[0] ?? null;
       const requestId = (await getRecentRequests(workspaceId))[0] ?? null;
+      const search = { cookie_jar_id: cookieJarId, environment_id: environmentId };
 
       if (workspaceId != null && requestId != null) {
         await navigate({
           to: '/workspaces/$workspaceId/requests/$requestId',
           params: { workspaceId, requestId },
-          search: { cookieJarId, environmentId },
+          search,
         });
       } else {
         await navigate({
           to: '/workspaces/$workspaceId',
           params: { workspaceId },
-          search: { cookieJarId, environmentId },
+          search,
         });
       }
     })();

@@ -1,16 +1,14 @@
-import { useFastMutation } from './useFastMutation';
 import type { HttpResponse } from '@yaakapp-internal/models';
 import { trackEvent } from '../lib/analytics';
 import { getHttpRequest } from '../lib/store';
 import { invokeCmd } from '../lib/tauri';
-import { useActiveCookieJar } from './useActiveCookieJar';
-import { useActiveEnvironment } from './useActiveEnvironment';
+import { getActiveCookieJar } from './useActiveCookieJar';
+import { getActiveEnvironment } from './useActiveEnvironment';
 import { useAlert } from './useAlert';
+import { useFastMutation } from './useFastMutation';
 
 export function useSendAnyHttpRequest() {
   const alert = useAlert();
-  const [environment] = useActiveEnvironment();
-  const [activeCookieJar] = useActiveCookieJar();
   return useFastMutation<HttpResponse | null, string, string | null>({
     mutationKey: ['send_any_request'],
     mutationFn: async (id) => {
@@ -21,8 +19,8 @@ export function useSendAnyHttpRequest() {
 
       return invokeCmd('cmd_send_http_request', {
         request,
-        environmentId: environment?.id,
-        cookieJarId: activeCookieJar?.id,
+        environmentId: getActiveEnvironment()?.id,
+        cookieJarId: getActiveCookieJar()?.id,
       });
     },
     onSettled: () => trackEvent('http_request', 'send'),

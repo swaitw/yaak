@@ -27,16 +27,13 @@ export function PlainInput({
   onChange,
   onFocus,
   onPaste,
-  placeholder,
   require,
   rightSlot,
   size = 'md',
   type = 'text',
   validate,
   autoSelect,
-  step,
-  autoFocus,
-  readOnly,
+  ...props
 }: PlainInputProps) {
   const [obscured, setObscured] = useStateWithDeps(type === 'password', [type]);
   const [currentValue, setCurrentValue] = useState(defaultValue ?? '');
@@ -130,7 +127,6 @@ export function PlainInput({
             id={id}
             type={type === 'password' && !obscured ? 'text' : type}
             defaultValue={defaultValue}
-            placeholder={placeholder}
             autoComplete="off"
             autoCapitalize="off"
             autoCorrect="off"
@@ -139,9 +135,7 @@ export function PlainInput({
             className={classNames(commonClassName, 'h-auto')}
             onFocus={handleFocus}
             onBlur={handleBlur}
-            autoFocus={autoFocus}
-            step={step}
-            readOnly={readOnly}
+            {...props}
           />
         </HStack>
         {type === 'password' && (

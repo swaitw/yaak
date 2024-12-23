@@ -7,11 +7,12 @@ import React, { Suspense } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { HelmetProvider } from 'react-helmet-async';
+import { DialogProvider, Dialogs } from '../components/Dialogs';
 import { GlobalHooks } from '../components/GlobalHooks';
+import RouteError from '../components/RouteError';
+import { ToastProvider, Toasts } from '../components/Toasts';
 import { useOsInfo } from '../hooks/useOsInfo';
 import { jotaiStore } from '../lib/jotai';
-import { ToastProvider, Toasts } from '../components/Toasts';
-import { DialogProvider, Dialogs } from '../components/Dialogs';
 
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
@@ -52,6 +53,7 @@ const ReactQueryDevtools =
 
 export const Route = createRootRoute({
   component: RouteComponent,
+  errorComponent: RouteError,
 });
 
 function RouteComponent() {

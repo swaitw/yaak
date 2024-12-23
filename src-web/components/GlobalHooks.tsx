@@ -1,9 +1,10 @@
 import { emit } from '@tauri-apps/api/event';
 import type { PromptTextRequest, PromptTextResponse } from '@yaakapp-internal/plugin';
-import { useEnsureActiveCookieJar } from '../hooks/useActiveCookieJar';
+import { useEnsureActiveCookieJar, useSubscribeActiveCookieJar } from '../hooks/useActiveCookieJar';
+import { useSubscribeActiveEnvironmentId } from '../hooks/useActiveEnvironment';
 import { useActiveRequest } from '../hooks/useActiveRequest';
-import {useSubscribeActiveRequestId} from "../hooks/useActiveRequestId";
-import {useSubscribeActiveWorkspaceId} from "../hooks/useActiveWorkspace";
+import { useSubscribeActiveRequestId } from '../hooks/useActiveRequestId';
+import { useSubscribeActiveWorkspaceId } from '../hooks/useActiveWorkspace';
 import { useActiveWorkspaceChangedToast } from '../hooks/useActiveWorkspaceChangedToast';
 import { useDuplicateGrpcRequest } from '../hooks/useDuplicateGrpcRequest';
 import { useDuplicateHttpRequest } from '../hooks/useDuplicateHttpRequest';
@@ -14,13 +15,14 @@ import { useNotificationToast } from '../hooks/useNotificationToast';
 import { usePrompt } from '../hooks/usePrompt';
 import { useRecentCookieJars } from '../hooks/useRecentCookieJars';
 import { useRecentEnvironments } from '../hooks/useRecentEnvironments';
-import { useRecentRequests } from '../hooks/useRecentRequests';
+import { useSubscribeRecentRequests } from '../hooks/useRecentRequests';
 import { useRecentWorkspaces } from '../hooks/useRecentWorkspaces';
 import { useSyncFontSizeSetting } from '../hooks/useSyncFontSizeSetting';
 import { useSyncModelStores } from '../hooks/useSyncModelStores';
 import { useSyncWorkspaceChildModels } from '../hooks/useSyncWorkspaceChildModels';
-import {useSyncWorkspaceRequestTitle} from "../hooks/useSyncWorkspaceRequestTitle";
+import { useSyncWorkspaceRequestTitle } from '../hooks/useSyncWorkspaceRequestTitle';
 import { useSyncZoomSetting } from '../hooks/useSyncZoomSetting';
+import { useSubscribeTemplateFunctions } from '../hooks/useTemplateFunctions';
 import { useToggleCommandPalette } from '../hooks/useToggleCommandPalette';
 
 export function GlobalHooks() {
@@ -36,8 +38,11 @@ export function GlobalHooks() {
   useRecentWorkspaces();
   useRecentEnvironments();
   useRecentCookieJars();
-  useRecentRequests();
+  useSubscribeRecentRequests();
   useSyncWorkspaceChildModels();
+  useSubscribeTemplateFunctions();
+  useSubscribeActiveEnvironmentId();
+  useSubscribeActiveCookieJar();
 
   // Other useful things
   useNotificationToast();

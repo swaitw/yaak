@@ -21,7 +21,7 @@ export function useOpenWorkspace() {
       const environmentId = (await getRecentEnvironments(workspaceId))[0] ?? undefined;
       const requestId = (await getRecentRequests(workspaceId))[0] ?? undefined;
       const cookieJarId = (await getRecentCookieJars(workspaceId))[0] ?? undefined;
-      const search = { environmentId, cookieJarId };
+      const search = { environment_id: environmentId, cookie_jar_id: cookieJarId };
 
       if (inNewWindow) {
         const location = router.buildLocation({

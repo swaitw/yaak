@@ -6,7 +6,7 @@ export const environmentsAtom = atom<Environment[]>([]);
 
 export function useEnvironments() {
   const allEnvironments = useAtomValue(environmentsAtom);
-  const baseEnvironment = allEnvironments.find((e) => e.environmentId == null);
+  const baseEnvironment = allEnvironments.find((e) => e.environmentId == null) ?? null;
   const subEnvironments =
     allEnvironments.filter((e) => e.environmentId === (baseEnvironment?.id ?? 'n/a')) ?? [];
 

@@ -126,6 +126,18 @@ pub async fn set_key_value_raw<R: Runtime>(
     (emit_upserted_model(w, kv), existing.is_none())
 }
 
+pub async fn list_key_values_raw<R: Runtime>(mgr: &impl Manager<R>) -> Result<Vec<KeyValue>> {
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
+    let (sql, params) = Query::select()
+        .from(KeyValueIden::Table)
+        .column(Asterisk)
+        .build_rusqlite(SqliteQueryBuilder);
+    let mut stmt = db.prepare(sql.as_str())?;
+    let items = stmt.query_map(&*params.as_params(), |row| row.try_into())?;
+    Ok(items.map(|v| v.unwrap()).collect())
+}
+
 pub async fn get_key_value_raw<R: Runtime>(
     mgr: &impl Manager<R>,
     namespace: &str,
@@ -767,7 +779,7 @@ pub async fn list_environments<R: Runtime>(
                 ..Default::default()
             },
         )
-            .await?;
+        .await?;
         environments.push(base_environment);
     }
 
@@ -857,7 +869,7 @@ pub async fn update_settings<R: Runtime>(
                     None => None,
                     Some(p) => Some(serde_json::to_string(&p)?),
                 })
-                    .into(),
+                .into(),
             ),
         ])
         .returning_all()
@@ -1182,7 +1194,7 @@ pub async fn duplicate_folder<R: Runtime>(
             ..src_folder.clone()
         },
     )
-        .await?;
+    .await?;
 
     for m in http_requests {
         upsert_http_request(
@@ -1194,7 +1206,7 @@ pub async fn duplicate_folder<R: Runtime>(
                 ..m
             },
         )
-            .await?;
+        .await?;
     }
     for m in grpc_requests {
         upsert_grpc_request(
@@ -1206,7 +1218,7 @@ pub async fn duplicate_folder<R: Runtime>(
                 ..m
             },
         )
-            .await?;
+        .await?;
     }
     for m in folders {
         // Recurse down
@@ -1217,7 +1229,7 @@ pub async fn duplicate_folder<R: Runtime>(
                 ..m
             },
         ))
-            .await?;
+        .await?;
     }
     Ok(())
 }
@@ -1376,7 +1388,7 @@ pub async fn create_default_http_response<R: Runtime>(
         None,
         None,
     )
-        .await
+    .await
 }
 
 #[allow(clippy::too_many_arguments)]

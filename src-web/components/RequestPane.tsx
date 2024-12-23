@@ -140,8 +140,28 @@ export const RequestPane = memo(function RequestPane({
           value: activeRequest.bodyType,
           items: [
             { type: 'separator', label: 'Form Data' },
-            { label: 'Url Encoded', value: BODY_TYPE_FORM_URLENCODED },
-            { label: 'Multi-Part', value: BODY_TYPE_FORM_MULTIPART },
+            {
+              label: (
+                <>
+                  Url Encoded
+                  <CountBadge
+                    count={'form' in activeRequest.body && activeRequest.body.form.length}
+                  />
+                </>
+              ),
+              value: BODY_TYPE_FORM_URLENCODED,
+            },
+            {
+              label: (
+                <>
+                  Url Encoded
+                  <CountBadge
+                    count={'form' in activeRequest.body && activeRequest.body.form.length}
+                  />
+                </>
+              ),
+              value: BODY_TYPE_FORM_MULTIPART,
+            },
             { type: 'separator', label: 'Text Content' },
             { label: 'GraphQL', value: BODY_TYPE_GRAPHQL },
             { label: 'JSON', value: BODY_TYPE_JSON },
@@ -252,6 +272,7 @@ export const RequestPane = memo(function RequestPane({
     [
       activeRequest.authentication,
       activeRequest.authenticationType,
+      activeRequest.body,
       activeRequest.bodyType,
       activeRequest.description,
       activeRequest.headers,
