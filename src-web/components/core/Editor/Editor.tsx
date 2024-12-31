@@ -1,5 +1,5 @@
-import { defaultKeymap } from '@codemirror/commands';
-import { forceParsing } from '@codemirror/language';
+import { defaultKeymap, historyField } from '@codemirror/commands';
+import { foldState, forceParsing } from '@codemirror/language';
 import { Compartment, EditorState, type Extension } from '@codemirror/state';
 import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/view';
 import type { EnvironmentVariable } from '@yaakapp-internal/models';
@@ -8,12 +8,12 @@ import classNames from 'classnames';
 import { EditorView } from 'codemirror';
 import type { MutableRefObject, ReactNode } from 'react';
 import {
+  useEffect,
   Children,
   cloneElement,
   forwardRef,
   isValidElement,
   useCallback,
-  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -71,6 +71,7 @@ export interface EditorProps {
   extraExtensions?: Extension[];
   actions?: ReactNode;
   hideGutter?: boolean;
+  stateKey: string | null;
 }
 
 const emptyVariables: EnvironmentVariable[] = [];
@@ -102,6 +103,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
     actions,
     wrapLines,
     hideGutter,
+    stateKey,
   }: EditorProps,
   ref,
 ) {
@@ -115,7 +117,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
   }
 
   const cm = useRef<{ view: EditorView; languageCompartment: Compartment } | null>(null);
-  useImperativeHandle(ref, () => cm.current?.view);
+  useImperativeHandle(ref, () => cm.current?.view, []);
 
   // Use ref so we can update the handler without re-initializing the editor
   const handleChange = useRef<EditorProps['onChange']>(onChange);
@@ -289,7 +291,6 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
         return;
       }
 
-      let view: EditorView;
       try {
         const languageCompartment = new Compartment();
         const langExt = getLanguageExtension({
@@ -303,32 +304,38 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
           onClickMissingVariable,
           onClickPathParameter,
         });
+        const extensions = [
+          languageCompartment.of(langExt),
+          placeholderCompartment.current.of(
+            placeholderExt(placeholderElFromText(placeholder ?? '')),
+          ),
+          wrapLinesCompartment.current.of(wrapLines ? [EditorView.lineWrapping] : []),
+          ...getExtensions({
+            container,
+            readOnly,
+            singleLine,
+            hideGutter,
+            stateKey,
+            onChange: handleChange,
+            onPaste: handlePaste,
+            onPasteOverwrite: handlePasteOverwrite,
+            onFocus: handleFocus,
+            onBlur: handleBlur,
+            onKeyDown: handleKeyDown,
+          }),
+          ...(extraExtensions ?? []),
+        ];
 
-        const state = EditorState.create({
-          doc: `${defaultValue ?? ''}`,
-          extensions: [
-            languageCompartment.of(langExt),
-            placeholderCompartment.current.of(
-              placeholderExt(placeholderElFromText(placeholder ?? '')),
-            ),
-            wrapLinesCompartment.current.of(wrapLines ? [EditorView.lineWrapping] : []),
-            ...getExtensions({
-              container,
-              readOnly,
-              singleLine,
-              hideGutter,
-              onChange: handleChange,
-              onPaste: handlePaste,
-              onPasteOverwrite: handlePasteOverwrite,
-              onFocus: handleFocus,
-              onBlur: handleBlur,
-              onKeyDown: handleKeyDown,
-            }),
-            ...(extraExtensions ?? []),
-          ],
-        });
+        const cachedJsonState = getCachedEditorState(stateKey);
+        const state = cachedJsonState
+          ? EditorState.fromJSON(
+              cachedJsonState,
+              { extensions },
+              { fold: foldState, history: historyField },
+            )
+          : EditorState.create({ doc: `${defaultValue ?? ''}`, extensions });
 
-        view = new EditorView({ state, parent: container });
+        const view = new EditorView({ state, parent: container });
 
         // For large documents, the parser may parse the max number of lines and fail to add
         // things like fold markers because of it.
@@ -459,6 +466,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
 });
 
 function getExtensions({
+  stateKey,
   container,
   readOnly,
   singleLine,
@@ -470,6 +478,7 @@ function getExtensions({
   onBlur,
   onKeyDown,
 }: Pick<EditorProps, 'singleLine' | 'readOnly' | 'hideGutter'> & {
+  stateKey: EditorProps['stateKey'];
   container: HTMLDivElement | null;
   onChange: MutableRefObject<EditorProps['onChange']>;
   onPaste: MutableRefObject<EditorProps['onPaste']>;
@@ -519,6 +528,7 @@ function getExtensions({
     EditorView.updateListener.of((update) => {
       if (onChange && update.docChanged) {
         onChange.current?.(update.state.doc.toString());
+        saveCachedEditorState(stateKey, update.state);
       }
     }),
   ];
@@ -529,3 +539,21 @@ const placeholderElFromText = (text: string) => {
   el.innerHTML = text.replaceAll('\n', '<br/>');
   return el;
 };
+
+function saveCachedEditorState(stateKey: string | null, state: EditorState | null) {
+  if (!stateKey || state == null) return;
+  const stateJson = state.toJSON({ history: historyField, folds: foldState });
+  sessionStorage.setItem(stateKey, JSON.stringify(stateJson));
+}
+
+function getCachedEditorState(stateKey: string | null) {
+  if (stateKey == null) return;
+  const serializedState = stateKey ? sessionStorage.getItem(stateKey) : null;
+  if (serializedState == null) return;
+  try {
+    return JSON.parse(serializedState);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (e) {
+    return null;
+  }
+}

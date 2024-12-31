@@ -1,8 +1,9 @@
+import { deepEqual } from '@tanstack/react-router';
 import classNames from 'classnames';
 import type { EditorView } from 'codemirror';
 import {
-  Fragment,
   forwardRef,
+  Fragment,
   useCallback,
   useEffect,
   useImperativeHandle,
@@ -12,8 +13,8 @@ import {
 } from 'react';
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
-import { v4 as uuid } from 'uuid';
 import { usePrompt } from '../../hooks/usePrompt';
+import { generateId } from '../../lib/generateId';
 import { DropMarker } from '../DropMarker';
 import { SelectFile } from '../SelectFile';
 import { Checkbox } from './Checkbox';
@@ -31,21 +32,22 @@ export interface PairEditorRef {
 }
 
 export type PairEditorProps = {
-  pairs: Pair[];
-  onChange: (pairs: Pair[]) => void;
-  forceUpdateKey?: string;
+  allowFileValues?: boolean;
   className?: string;
+  forceUpdateKey?: string;
+  nameAutocomplete?: GenericCompletionConfig;
+  nameAutocompleteVariables?: boolean;
   namePlaceholder?: string;
+  nameValidate?: InputProps['validate'];
+  noScroll?: boolean;
+  onChange: (pairs: Pair[]) => void;
+  pairs: Pair[];
+  stateKey: InputProps['stateKey'];
+  valueAutocomplete?: (name: string) => GenericCompletionConfig | undefined;
+  valueAutocompleteVariables?: boolean;
   valuePlaceholder?: string;
   valueType?: 'text' | 'password';
-  nameAutocomplete?: GenericCompletionConfig;
-  valueAutocomplete?: (name: string) => GenericCompletionConfig | undefined;
-  nameAutocompleteVariables?: boolean;
-  valueAutocompleteVariables?: boolean;
-  allowFileValues?: boolean;
-  nameValidate?: InputProps['validate'];
   valueValidate?: InputProps['validate'];
-  noScroll?: boolean;
 };
 
 export type Pair = {
@@ -65,21 +67,22 @@ type PairContainer = {
 
 export const PairEditor = forwardRef<PairEditorRef, PairEditorProps>(function PairEditor(
   {
+    stateKey,
+    allowFileValues,
     className,
     forceUpdateKey,
     nameAutocomplete,
     nameAutocompleteVariables,
     namePlaceholder,
     nameValidate,
-    valueType,
-    onChange,
     noScroll,
+    onChange,
     pairs: originalPairs,
     valueAutocomplete,
     valueAutocompleteVariables,
     valuePlaceholder,
+    valueType,
     valueValidate,
-    allowFileValues,
   }: PairEditorProps,
   ref,
 ) {
@@ -93,20 +96,28 @@ export const PairEditor = forwardRef<PairEditorRef, PairEditorProps>(function Pa
     return [...pairs, newPairContainer()];
   });
 
-  useImperativeHandle(ref, () => ({
-    focusValue(index: number) {
-      const id = pairs[index]?.id ?? 'n/a';
-      setForceFocusValuePairId(id);
-    },
-  }));
+  useImperativeHandle(
+    ref,
+    () => ({
+      focusValue(index: number) {
+        const id = pairs[index]?.id ?? 'n/a';
+        setForceFocusValuePairId(id);
+      },
+    }),
+    [pairs],
+  );
 
   useEffect(() => {
     // Remove empty headers on initial render
     // TODO: Make this not refresh the entire editor when forceUpdateKey changes, using some
     //  sort of diff method or deterministic IDs based on array index and update key
-    const nonEmpty = originalPairs.filter((h) => !(h.name === '' && h.value === ''));
-    const pairs = nonEmpty.map((pair) => newPairContainer(pair));
-    setPairs([...pairs, newPairContainer()]);
+    const nonEmpty = originalPairs.filter(
+      (h, i) => i !== originalPairs.length - 1 && !(h.name === '' && h.value === ''),
+    );
+    const newPairs = nonEmpty.map((pair) => newPairContainer(pair));
+    if (!deepEqual(pairs, newPairs)) {
+      setPairs(pairs);
+    }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [forceUpdateKey]);
@@ -211,28 +222,29 @@ export const PairEditor = forwardRef<PairEditorRef, PairEditorProps>(function Pa
           <Fragment key={p.id}>
             {hoveredIndex === i && <DropMarker />}
             <PairEditorRow
-              pairContainer={p}
-              className="py-1"
-              isLast={isLast}
               allowFileValues={allowFileValues}
-              nameAutocompleteVariables={nameAutocompleteVariables}
-              valueAutocompleteVariables={valueAutocompleteVariables}
-              valueType={valueType}
+              className="py-1"
               forceFocusNamePairId={forceFocusNamePairId}
               forceFocusValuePairId={forceFocusValuePairId}
               forceUpdateKey={forceUpdateKey}
+              index={i}
+              isLast={isLast}
               nameAutocomplete={nameAutocomplete}
-              valueAutocomplete={valueAutocomplete}
+              nameAutocompleteVariables={nameAutocompleteVariables}
               namePlaceholder={namePlaceholder}
-              valuePlaceholder={valuePlaceholder}
               nameValidate={nameValidate}
-              valueValidate={valueValidate}
               onChange={handleChange}
-              onFocus={handleFocus}
               onDelete={handleDelete}
               onEnd={handleEnd}
+              onFocus={handleFocus}
               onMove={handleMove}
-              index={i}
+              pairContainer={p}
+              stateKey={stateKey}
+              valueAutocomplete={valueAutocomplete}
+              valueAutocompleteVariables={valueAutocompleteVariables}
+              valuePlaceholder={valuePlaceholder}
+              valueType={valueType}
+              valueValidate={valueValidate}
             />
           </Fragment>
         );
@@ -260,17 +272,18 @@ type PairEditorRowProps = {
   index: number;
 } & Pick<
   PairEditorProps,
-  | 'nameAutocomplete'
-  | 'valueAutocomplete'
-  | 'nameAutocompleteVariables'
-  | 'valueAutocompleteVariables'
-  | 'valueType'
-  | 'namePlaceholder'
-  | 'valuePlaceholder'
-  | 'nameValidate'
-  | 'valueValidate'
-  | 'forceUpdateKey'
   | 'allowFileValues'
+  | 'forceUpdateKey'
+  | 'nameAutocomplete'
+  | 'nameAutocompleteVariables'
+  | 'namePlaceholder'
+  | 'nameValidate'
+  | 'stateKey'
+  | 'valueAutocomplete'
+  | 'valueAutocompleteVariables'
+  | 'valuePlaceholder'
+  | 'valueType'
+  | 'valueValidate'
 >;
 
 function PairEditorRow({
@@ -279,8 +292,8 @@ function PairEditorRow({
   forceFocusNamePairId,
   forceFocusValuePairId,
   forceUpdateKey,
-  isLast,
   index,
+  isLast,
   nameAutocomplete,
   nameAutocompleteVariables,
   namePlaceholder,
@@ -291,6 +304,7 @@ function PairEditorRow({
   onFocus,
   onMove,
   pairContainer,
+  stateKey,
   valueAutocomplete,
   valueAutocompleteVariables,
   valuePlaceholder,
@@ -434,6 +448,7 @@ function PairEditorRow({
             ref={nameInputRef}
             hideLabel
             useTemplating
+            stateKey={`name.${pairContainer.id}.${stateKey}`}
             wrapLines={false}
             readOnly={pairContainer.pair.readOnlyName}
             size="sm"
@@ -476,6 +491,7 @@ function PairEditorRow({
               ref={valueInputRef}
               hideLabel
               useTemplating
+              stateKey={`value.${pairContainer.id}.${stateKey}`}
               wrapLines={false}
               size="sm"
               containerClassName={classNames(isLast && 'border-dashed')}
@@ -575,7 +591,7 @@ function PairEditorRow({
 }
 
 const newPairContainer = (initialPair?: Pair): PairContainer => {
-  const id = initialPair?.id ?? uuid();
+  const id = initialPair?.id ?? generateId();
   const pair = initialPair ?? { name: '', value: '', enabled: true, isFile: false };
   return { id, pair };
 };
