@@ -844,6 +844,13 @@ pub async fn update_settings<R: Runtime>(
     window: &WebviewWindow<R>,
     settings: Settings,
 ) -> Result<Settings> {
+    // Correct for the bug where created_at was being updated by mistake
+    let created_at = if settings.created_at > settings.updated_at {
+        settings.updated_at
+    } else {
+        settings.created_at
+    };
+    
     let dbm = &*window.app_handle().state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
 
@@ -852,7 +859,8 @@ pub async fn update_settings<R: Runtime>(
         .cond_where(Expr::col(SettingsIden::Id).eq("default"))
         .values([
             (SettingsIden::Id, "default".into()),
-            (SettingsIden::CreatedAt, CurrentTimestamp.into()),
+            (SettingsIden::CreatedAt, created_at.into()),
+            (SettingsIden::UpdatedAt, CurrentTimestamp.into()),
             (SettingsIden::Appearance, settings.appearance.as_str().into()),
             (SettingsIden::ThemeDark, settings.theme_dark.as_str().into()),
             (SettingsIden::ThemeLight, settings.theme_light.as_str().into()),
