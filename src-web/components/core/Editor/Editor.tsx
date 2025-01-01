@@ -1,6 +1,7 @@
-import { defaultKeymap } from '@codemirror/commands';
-import { forceParsing } from '@codemirror/language';
-import { Compartment, EditorState, type Extension } from '@codemirror/state';
+import { defaultKeymap, historyField } from '@codemirror/commands';
+import { foldState, forceParsing } from '@codemirror/language';
+import type { EditorStateConfig, Extension } from '@codemirror/state';
+import { Compartment, EditorState } from '@codemirror/state';
 import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/view';
 import type { EnvironmentVariable } from '@yaakapp-internal/models';
 import type { TemplateFunction } from '@yaakapp-internal/plugin';
@@ -73,6 +74,8 @@ export interface EditorProps {
   hideGutter?: boolean;
   stateKey: string | null;
 }
+
+const stateFields = { history: historyField, folds: foldState };
 
 const emptyVariables: EnvironmentVariable[] = [];
 
@@ -305,40 +308,42 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
           onClickPathParameter,
         });
 
+        const extensions = [
+          languageCompartment.of(langExt),
+          placeholderCompartment.current.of(
+            placeholderExt(placeholderElFromText(placeholder ?? '')),
+          ),
+          wrapLinesCompartment.current.of(wrapLines ? [EditorView.lineWrapping] : []),
+          ...getExtensions({
+            container,
+            readOnly,
+            singleLine,
+            hideGutter,
+            stateKey,
+            onChange: handleChange,
+            onPaste: handlePaste,
+            onPasteOverwrite: handlePasteOverwrite,
+            onFocus: handleFocus,
+            onBlur: handleBlur,
+            onKeyDown: handleKeyDown,
+          }),
+          ...(extraExtensions ?? []),
+        ];
+
         const cachedJsonState = getCachedEditorState(defaultValue ?? '', stateKey);
 
-        const state =
-          cachedJsonState ??
-          EditorState.create({
-            doc: `${defaultValue ?? ''}`,
-            extensions: [
-              languageCompartment.of(langExt),
-              placeholderCompartment.current.of(
-                placeholderExt(placeholderElFromText(placeholder ?? '')),
-              ),
-              wrapLinesCompartment.current.of(wrapLines ? [EditorView.lineWrapping] : []),
-              ...getExtensions({
-                container,
-                readOnly,
-                singleLine,
-                hideGutter,
-                stateKey,
-                onChange: handleChange,
-                onPaste: handlePaste,
-                onPasteOverwrite: handlePasteOverwrite,
-                onFocus: handleFocus,
-                onBlur: handleBlur,
-                onKeyDown: handleKeyDown,
-              }),
-              ...(extraExtensions ?? []),
-            ],
-          });
+        const doc = `${defaultValue ?? ''}`;
+        const config: EditorStateConfig = { extensions, doc };
+
+        const state = cachedJsonState
+          ? EditorState.fromJSON(cachedJsonState, config, stateFields)
+          : EditorState.create(config);
 
         const view = new EditorView({ state, parent: container });
 
         // For large documents, the parser may parse the max number of lines and fail to add
         // things like fold markers because of it.
-        // This forces it to parse more but keeps the timeout to the default of 100ms.
+        // This forces it to parse more but keeps the timeout to the default of 100 ms.
         forceParsing(view, 9e6, 100);
 
         cm.current = { view, languageCompartment };
@@ -544,24 +549,25 @@ const placeholderElFromText = (text: string) => {
   return el;
 };
 
-declare global {
-  interface Window {
-    editorStates: Record<string, EditorState>;
-  }
-}
-window.editorStates = window.editorStates ?? {};
-
 function saveCachedEditorState(stateKey: string | null, state: EditorState | null) {
   if (!stateKey || state == null) return;
-  window.editorStates[stateKey] = state;
+  sessionStorage.setItem(stateKey, JSON.stringify(state.toJSON(stateFields)));
 }
 
 function getCachedEditorState(doc: string, stateKey: string | null) {
   if (stateKey == null) return;
 
-  const state = window.editorStates[stateKey] ?? null;
-  if (state == null) return null;
-  if (state.doc.toString() !== doc) return null;
+  const stateStr = sessionStorage.getItem(stateKey)
+  if (stateStr == null) return null;
 
-  return state;
+  try {
+    const state = JSON.parse(stateStr);
+    if (state.doc !== doc) return null;
+
+    return state;
+  } catch {
+    // Nothing
+  }
+
+  return null;
 }

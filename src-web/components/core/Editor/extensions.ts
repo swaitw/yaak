@@ -6,8 +6,8 @@ import {
 } from '@codemirror/autocomplete';
 import { history, historyKeymap, indentWithTab } from '@codemirror/commands';
 import { javascript } from '@codemirror/lang-javascript';
-import { markdown } from '@codemirror/lang-markdown';
 import { json } from '@codemirror/lang-json';
+import { markdown } from '@codemirror/lang-markdown';
 import { xml } from '@codemirror/lang-xml';
 import type { LanguageSupport } from '@codemirror/language';
 import {
@@ -37,7 +37,8 @@ import type { EnvironmentVariable } from '@yaakapp-internal/models';
 import type { TemplateFunction } from '@yaakapp-internal/plugin';
 import { graphql } from 'cm6-graphql';
 import { EditorView } from 'codemirror';
-import type {EditorProps} from "./Editor";
+import { pluralizeCount } from '../../../lib/pluralize';
+import type { EditorProps } from './Editor';
 import { pairs } from './pairs/extension';
 import { text } from './text/extension';
 import { twig } from './twig/extension';
@@ -162,11 +163,15 @@ export const multiLineExtensions = ({ hideGutter }: { hideGutter?: boolean }) =>
       const el = document.createElement('span');
       el.onclick = onclick;
       el.className = 'cm-foldPlaceholder';
-      el.innerText = prepared;
+      el.innerText = prepared || '…';
       el.title = 'unfold';
       el.ariaLabel = 'folded code';
       return el;
     },
+    /**
+     * Show the number of items when code folded. NOTE: this doesn't get called when restoring
+     * a previous serialized editor state, which is a bummer
+     */
     preparePlaceholder(state, range) {
       let count: number | undefined;
       let startToken = '{';
@@ -191,13 +196,9 @@ export const multiLineExtensions = ({ hideGutter }: { hideGutter?: boolean }) =>
       }
 
       if (count !== undefined) {
-        const label = isArray ? 'item' : 'prop';
-        const plural = count === 1 ? '' : 's';
-
-        return `${count} ${label}${plural}`;
+        const label = isArray ? 'item' : 'key';
+        return pluralizeCount(label, count);
       }
-
-      return '…';
     },
   }),
   EditorState.allowMultipleSelections.of(true),
