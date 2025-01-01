@@ -1,8 +1,9 @@
-import { useMemo } from 'react';
+import { useCallback } from 'react';
 import type { DropdownItem } from '../components/core/Dropdown';
 import { Icon } from '../components/core/Icon';
 import { generateId } from '../lib/generateId';
 import { BODY_TYPE_GRAPHQL } from '../lib/model_util';
+import { getActiveRequest } from './useActiveRequest';
 import { useCreateFolder } from './useCreateFolder';
 import { useCreateGrpcRequest } from './useCreateGrpcRequest';
 import { useCreateHttpRequest } from './useCreateHttpRequest';
@@ -14,19 +15,26 @@ export function useCreateDropdownItems({
 }: {
   hideFolder?: boolean;
   hideIcons?: boolean;
-  folderId?: string | null;
-} = {}): DropdownItem[] {
+  folderId?: string | null | 'active-folder';
+} = {}): () => DropdownItem[] {
   const { mutate: createHttpRequest } = useCreateHttpRequest();
   const { mutate: createGrpcRequest } = useCreateGrpcRequest();
   const { mutate: createFolder } = useCreateFolder();
 
-  return useMemo<DropdownItem[]>(
-    () => [
+  return useCallback(
+    (): DropdownItem[] => [
       {
         key: 'create-http-request',
         label: 'HTTP Request',
         leftSlot: hideIcons ? undefined : <Icon icon="plus" />,
-        onSelect: () => createHttpRequest({ folderId }),
+        onSelect: () => {
+          const args = { folderId };
+          if (folderId === 'active-folder') {
+            const activeRequest = getActiveRequest();
+            args.folderId = activeRequest?.folderId ?? undefined;
+          }
+          createHttpRequest(args);
+        },
       },
       {
         key: 'create-graphql-request',

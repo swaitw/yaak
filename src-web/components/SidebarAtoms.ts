@@ -1,13 +1,12 @@
-import deepEqual from '@gilbarbara/deep-equal';
 import type { Folder, GrpcRequest, HttpRequest } from '@yaakapp-internal/models';
 
 // This is an atom so we can use it in the child items to avoid re-rendering the entire list
 import { atom } from 'jotai';
-import { selectAtom } from 'jotai/utils';
 import { activeWorkspaceAtom } from '../hooks/useActiveWorkspace';
 import { foldersAtom } from '../hooks/useFolders';
 import { grpcRequestsAtom } from '../hooks/useGrpcRequests';
 import { httpRequestsAtom } from '../hooks/useHttpRequests';
+import { deepEqualAtom } from '../lib/atoms';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import type { SidebarTreeNode } from './Sidebar';
 
@@ -27,11 +26,7 @@ const allPotentialChildrenAtom = atom((get) => {
   }));
 });
 
-const memoAllPotentialChildrenAtom = selectAtom(
-  allPotentialChildrenAtom,
-  (v) => v,
-  (a, b) => deepEqual(a, b),
-);
+const memoAllPotentialChildrenAtom = deepEqualAtom(allPotentialChildrenAtom);
 
 export const sidebarTreeAtom = atom<{
   tree: SidebarTreeNode | null;

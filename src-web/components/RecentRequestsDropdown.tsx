@@ -2,6 +2,7 @@ import { useNavigate } from '@tanstack/react-router';
 import classNames from 'classnames';
 import { useCallback, useMemo, useRef } from 'react';
 import { useKeyPressEvent } from 'react-use';
+import { useActiveRequest } from '../hooks/useActiveRequest';
 import { getActiveWorkspaceId } from '../hooks/useActiveWorkspace';
 import { grpcRequestsAtom } from '../hooks/useGrpcRequests';
 import { useHotKey } from '../hooks/useHotKey';
@@ -15,12 +16,11 @@ import { Dropdown } from './core/Dropdown';
 import { HttpMethodTag } from './core/HttpMethodTag';
 
 interface Props {
-  activeRequestId: string | null;
-  activeRequestName: string;
   className?: string;
 }
 
-export function RecentRequestsDropdown({ className, activeRequestId, activeRequestName }: Props) {
+export function RecentRequestsDropdown({ className }: Props) {
+  const activeRequest = useActiveRequest();
   const dropdownRef = useRef<DropdownRef>(null);
   const [allRecentRequestIds] = useRecentRequests();
   const recentRequestIds = useMemo(() => allRecentRequestIds.slice(1), [allRecentRequestIds]);
@@ -93,10 +93,10 @@ export function RecentRequestsDropdown({ className, activeRequestId, activeReque
         className={classNames(
           className,
           'truncate pointer-events-auto',
-          activeRequestId === null && 'text-text-subtlest italic',
+          activeRequest == null && 'text-text-subtlest italic',
         )}
       >
-        {activeRequestName}
+        {fallbackRequestName(activeRequest)}
       </Button>
     </Dropdown>
   );

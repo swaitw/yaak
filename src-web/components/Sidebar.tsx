@@ -317,7 +317,7 @@ export function Sidebar({ className }: Props) {
     setShowMainContextMenu({ x: e.clientX, y: e.clientY });
   }, []);
 
-  const mainContextMenuItems = useCreateDropdownItems();
+  const mainContextMenuItems = useCreateDropdownItems({ folderId: null });
 
   // Not ready to render yet
   if (tree == null) {

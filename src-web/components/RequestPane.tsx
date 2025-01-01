@@ -1,20 +1,24 @@
 import type { HttpRequest } from '@yaakapp-internal/models';
 import classNames from 'classnames';
+import { atom, useAtomValue } from 'jotai';
 import type { CSSProperties } from 'react';
 import React, { memo, useCallback, useMemo, useState } from 'react';
 import { useLocalStorage } from 'react-use';
+import { activeRequestIdAtom } from '../hooks/useActiveRequestId';
 import { useCancelHttpResponse } from '../hooks/useCancelHttpResponse';
 import { useContentTypeFromHeaders } from '../hooks/useContentTypeFromHeaders';
+import { grpcRequestsAtom } from '../hooks/useGrpcRequests';
+import { httpRequestsAtom } from '../hooks/useHttpRequests';
 import { useImportCurl } from '../hooks/useImportCurl';
 import { useImportQuerystring } from '../hooks/useImportQuerystring';
 import { useIsResponseLoading } from '../hooks/useIsResponseLoading';
 import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
 import { useRequestEditor, useRequestEditorEvent } from '../hooks/useRequestEditor';
-import { useRequests } from '../hooks/useRequests';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useSendAnyHttpRequest } from '../hooks/useSendAnyHttpRequest';
 import { useToast } from '../hooks/useToast';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
+import { deepEqualAtom } from '../lib/atoms';
 import { languageFromContentType } from '../lib/contentType';
 import { tryFormatJson } from '../lib/formatters';
 import { generateId } from '../lib/generateId';
@@ -67,15 +71,24 @@ const TAB_HEADERS = 'headers';
 const TAB_AUTH = 'auth';
 const TAB_DESCRIPTION = 'description';
 
+const nonActiveRequestUrlsAtom = atom((get) => {
+  const activeRequestId = get(activeRequestIdAtom);
+  const requests = [...get(httpRequestsAtom), ...get(grpcRequestsAtom)];
+  return requests
+    .filter((r) => r.id !== activeRequestId)
+    .map((r): GenericCompletionOption => ({ type: 'constant', label: r.url }));
+});
+
+const memoNotActiveRequestUrlsAtom = deepEqualAtom(nonActiveRequestUrlsAtom);
+
 export const RequestPane = memo(function RequestPane({
   style,
   fullHeight,
   className,
   activeRequest,
 }: Props) {
-  const requests = useRequests();
   const activeRequestId = activeRequest.id;
-  const updateRequest = useUpdateAnyHttpRequest();
+  const { mutateAsync: updateRequestAsync, mutate: updateRequest } = useUpdateAnyHttpRequest();
   const [activeTabs, setActiveTabs] = useLocalStorage<Record<string, string>>(
     'requestPaneActiveTabs',
     {},
@@ -102,12 +115,12 @@ export const RequestPane = memo(function RequestPane({
           id: generateId(),
         });
       }
-      await updateRequest.mutateAsync({ id: activeRequest.id, update: { headers } });
+      await updateRequestAsync({ id: activeRequest.id, update: { headers } });
 
       // Force update header editor so any changed headers are reflected
       setTimeout(() => setForceUpdateHeaderEditorKey((u) => u + 1), 100);
     },
-    [activeRequest, updateRequest],
+    [activeRequest, updateRequestAsync],
   );
 
   const toast = useToast();
@@ -206,7 +219,7 @@ export const RequestPane = memo(function RequestPane({
               showMethodToast(patch.method);
             }
 
-            await updateRequest.mutateAsync({ id: activeRequestId, update: patch });
+            await updateRequestAsync({ id: activeRequestId, update: patch });
 
             if (newContentType !== undefined) {
               await handleContentTypeChange(newContentType);
@@ -247,7 +260,7 @@ export const RequestPane = memo(function RequestPane({
                 token: authentication.token ?? '',
               };
             }
-            await updateRequest.mutateAsync({
+            updateRequest({
               id: activeRequestId,
               update: { authenticationType, authentication },
             });
@@ -267,25 +280,26 @@ export const RequestPane = memo(function RequestPane({
       numParams,
       toast,
       updateRequest,
+      updateRequestAsync,
       urlParameterPairs.length,
     ],
   );
 
-  const sendRequest = useSendAnyHttpRequest();
-  const { activeResponse } = usePinnedHttpResponse(activeRequestId);
-  const cancelResponse = useCancelHttpResponse(activeResponse?.id ?? null);
   const isLoading = useIsResponseLoading(activeRequestId);
+  const { mutate: sendRequest } = useSendAnyHttpRequest();
+  const { activeResponse } = usePinnedHttpResponse(activeRequestId);
+  const { mutate: cancelResponse } = useCancelHttpResponse(activeResponse?.id ?? null);
   const { updateKey } = useRequestUpdateKey(activeRequestId);
-  const importCurl = useImportCurl();
-  const importQuerystring = useImportQuerystring(activeRequestId);
+  const { mutate: importCurl } = useImportCurl();
+  const { mutate: importQuerystring } = useImportQuerystring(activeRequestId);
 
   const handleBodyChange = useCallback(
-    (body: HttpRequest['body']) => updateRequest.mutate({ id: activeRequestId, update: { body } }),
+    (body: HttpRequest['body']) => updateRequest({ id: activeRequestId, update: { body } }),
     [activeRequestId, updateRequest],
   );
 
   const handleBodyTextChange = useCallback(
-    (text: string) => updateRequest.mutate({ id: activeRequestId, update: { body: { text } } }),
+    (text: string) => updateRequest({ id: activeRequestId, update: { body: { text } } }),
     [activeRequestId, updateRequest],
   );
 
@@ -301,20 +315,48 @@ export const RequestPane = memo(function RequestPane({
     setActiveTab(TAB_PARAMS);
   });
 
-  const autocomplete: GenericCompletionConfig = {
-    minMatch: 3,
-    options:
-      requests.length > 0
-        ? [
-            ...requests
-              .filter((r) => r.id !== activeRequestId)
-              .map((r): GenericCompletionOption => ({ type: 'constant', label: r.url })),
-          ]
-        : [
-            { label: 'http://', type: 'constant' },
-            { label: 'https://', type: 'constant' },
-          ],
-  };
+  const autocompleteUrls = useAtomValue(memoNotActiveRequestUrlsAtom);
+
+  const autocomplete: GenericCompletionConfig = useMemo(
+    () => ({
+      minMatch: 3,
+      options:
+        autocompleteUrls.length > 0
+          ? autocompleteUrls
+          : [
+              { label: 'http://', type: 'constant' },
+              { label: 'https://', type: 'constant' },
+            ],
+    }),
+    [autocompleteUrls],
+  );
+
+  const handlePaste = useCallback(
+    (text: string) => {
+      if (text.startsWith('curl ')) {
+        importCurl({ overwriteRequestId: activeRequestId, command: text });
+      } else {
+        // Only import query if pasted text contains entire querystring
+        importQuerystring(text);
+      }
+    },
+    [activeRequestId, importCurl, importQuerystring],
+  );
+
+  const handleSend = useCallback(
+    () => sendRequest(activeRequest.id ?? null),
+    [activeRequest.id, sendRequest],
+  );
+
+  const handleMethodChange = useCallback(
+    (method: string) => updateRequest({ id: activeRequestId, update: { method } }),
+    [activeRequestId, updateRequest],
+  );
+
+  const handleUrlChange = useCallback(
+    (url: string) => updateRequest({ id: activeRequestId, update: { url } }),
+    [activeRequestId, updateRequest],
+  );
 
   return (
     <div
@@ -329,23 +371,12 @@ export const RequestPane = memo(function RequestPane({
             url={activeRequest.url}
             method={activeRequest.method}
             placeholder="https://example.com"
-            onPasteOverwrite={(text) => {
-              if (text.startsWith('curl ')) {
-                importCurl.mutate({ overwriteRequestId: activeRequestId, command: text });
-              } else {
-                // Only import query if pasted text contains entire querystring
-                importQuerystring.mutate(text);
-              }
-            }}
+            onPasteOverwrite={handlePaste}
             autocomplete={autocomplete}
-            onSend={() => sendRequest.mutateAsync(activeRequest.id ?? null)}
-            onCancel={cancelResponse.mutate}
-            onMethodChange={(method) =>
-              updateRequest.mutate({ id: activeRequestId, update: { method } })
-            }
-            onUrlChange={(url: string) =>
-              updateRequest.mutate({ id: activeRequestId, update: { url } })
-            }
+            onSend={handleSend}
+            onCancel={cancelResponse}
+            onMethodChange={handleMethodChange}
+            onUrlChange={handleUrlChange}
             forceUpdateKey={updateKey}
             isLoading={isLoading}
           />
@@ -372,9 +403,7 @@ export const RequestPane = memo(function RequestPane({
               <HeadersEditor
                 forceUpdateKey={`${forceUpdateHeaderEditorKey}::${forceUpdateKey}`}
                 request={activeRequest}
-                onChange={(headers) =>
-                  updateRequest.mutate({ id: activeRequestId, update: { headers } })
-                }
+                onChange={(headers) => updateRequest({ id: activeRequestId, update: { headers } })}
               />
             </TabContent>
             <TabContent value={TAB_PARAMS}>
@@ -383,7 +412,7 @@ export const RequestPane = memo(function RequestPane({
                 forceUpdateKey={forceUpdateKey + urlParametersKey}
                 pairs={urlParameterPairs}
                 onChange={(urlParameters) =>
-                  updateRequest.mutate({ id: activeRequestId, update: { urlParameters } })
+                  updateRequest({ id: activeRequestId, update: { urlParameters } })
                 }
               />
             </TabContent>
@@ -437,9 +466,7 @@ export const RequestPane = memo(function RequestPane({
                   requestId={activeRequest.id}
                   contentType={contentType}
                   body={activeRequest.body}
-                  onChange={(body) =>
-                    updateRequest.mutate({ id: activeRequestId, update: { body } })
-                  }
+                  onChange={(body) => updateRequest({ id: activeRequestId, update: { body } })}
                   onChangeContentType={handleContentTypeChange}
                 />
               ) : typeof activeRequest.bodyType === 'string' ? (
@@ -467,9 +494,7 @@ export const RequestPane = memo(function RequestPane({
                   className="font-sans !text-xl !px-0"
                   containerClassName="border-0"
                   placeholder={activeRequest.id}
-                  onChange={(name) =>
-                    updateRequest.mutate({ id: activeRequestId, update: { name } })
-                  }
+                  onChange={(name) => updateRequest({ id: activeRequestId, update: { name } })}
                 />
                 <MarkdownEditor
                   name="request-description"
@@ -477,7 +502,7 @@ export const RequestPane = memo(function RequestPane({
                   defaultValue={activeRequest.description}
                   stateKey={`description.${activeRequest.id}`}
                   onChange={(description) =>
-                    updateRequest.mutate({ id: activeRequestId, update: { description } })
+                    updateRequest({ id: activeRequestId, update: { description } })
                   }
                 />
               </div>

@@ -176,7 +176,7 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
 interface ContextMenuProps {
   triggerPosition: { x: number; y: number } | null;
   className?: string;
-  items: DropdownItem[];
+  items: DropdownProps['items'];
   onClose: () => void;
 }
 
@@ -201,7 +201,7 @@ export const ContextMenu = forwardRef<DropdownRef, ContextMenuProps>(function Co
       isOpen={true} // Always open because we return null if not
       className={className}
       ref={ref}
-      items={items}
+      items={typeof items === 'function' ? items() : items}
       onClose={onClose}
       triggerShape={triggerShape}
     />

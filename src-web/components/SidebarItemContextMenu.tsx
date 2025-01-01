@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useCallback } from 'react';
 import { useCreateDropdownItems } from '../hooks/useCreateDropdownItems';
 import { useDeleteFolder } from '../hooks/useDeleteFolder';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
@@ -42,7 +42,7 @@ export function SidebarItemContextMenu({ child, show, close }: Props) {
     folderId: child.model === 'folder' ? child.id : null,
   });
 
-  const items = useMemo<DropdownItem[]>(() => {
+  const items = useCallback((): DropdownItem[] => {
     if (child.model === 'folder') {
       return [
         {
@@ -77,7 +77,7 @@ export function SidebarItemContextMenu({ child, show, close }: Props) {
           onSelect: () => deleteFolder.mutate(),
         },
         { type: 'separator' },
-        ...createDropdownItems,
+        ...createDropdownItems(),
       ];
     } else {
       const requestItems: DropdownItem[] =
