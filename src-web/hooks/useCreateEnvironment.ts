@@ -3,7 +3,7 @@ import { useSetAtom } from 'jotai';
 import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveEnvironment } from './useActiveEnvironment';
-import { useActiveWorkspace } from './useActiveWorkspace';
+import { getActiveWorkspaceId } from './useActiveWorkspace';
 import { environmentsAtom } from './useEnvironments';
 import { useFastMutation } from './useFastMutation';
 import { usePrompt } from './usePrompt';
@@ -12,7 +12,6 @@ import { updateModelList } from './useSyncModelStores';
 export function useCreateEnvironment() {
   const [, setActiveEnvironmentId] = useActiveEnvironment();
   const prompt = usePrompt();
-  const workspace = useActiveWorkspace();
   const setEnvironments = useSetAtom(environmentsAtom);
 
   return useFastMutation<Environment | null, unknown, Environment | null>({
@@ -23,6 +22,7 @@ export function useCreateEnvironment() {
         throw new Error('No base environment passed');
       }
 
+      const workspaceId = getActiveWorkspaceId();
       const name = await prompt({
         id: 'new-environment',
         title: 'New Environment',
@@ -37,7 +37,7 @@ export function useCreateEnvironment() {
       return invokeCmd('cmd_create_environment', {
         name,
         variables: [],
-        workspaceId: workspace?.id,
+        workspaceId,
         environmentId: baseEnvironment.id,
       });
     },

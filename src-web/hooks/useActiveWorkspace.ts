@@ -21,9 +21,11 @@ export function getActiveWorkspaceId() {
   return jotaiStore.get(activeWorkspaceIdAtom) ?? null;
 }
 
+export function getActiveWorkspace() {
+  return jotaiStore.get(activeWorkspaceAtom) ?? null;
+}
+
 export function useSubscribeActiveWorkspaceId() {
   const { workspaceId } = useParams({ strict: false });
-  useEffect(() => {
-    jotaiStore.set(activeWorkspaceIdAtom, workspaceId);
-  }, [workspaceId]);
+  useEffect(() => jotaiStore.set(activeWorkspaceIdAtom, workspaceId), [workspaceId]);
 }

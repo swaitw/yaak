@@ -101,6 +101,11 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
     setDefaultSelectedIndex(undefined);
   }, [setIsOpen]);
 
+  const openDropdown = useCallback(() => {
+    setIsOpen((o) => !o);
+    setItems(typeof itemsGetter === 'function' ? itemsGetter() : itemsGetter);
+  }, [itemsGetter, setIsOpen]);
+
   useImperativeHandle(
     ref,
     () => ({
@@ -111,18 +116,18 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
         else this.close();
       },
       open() {
-        setIsOpen(true);
+        openDropdown();
       },
       close() {
         handleClose();
       },
     }),
-    [handleClose, isOpen, setIsOpen],
+    [handleClose, isOpen, openDropdown],
   );
 
   useHotKey(hotKeyAction ?? null, () => {
     setDefaultSelectedIndex(0);
-    setIsOpen(true);
+    openDropdown();
   });
 
   const child = useMemo(() => {
@@ -138,12 +143,11 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
           e.preventDefault();
           e.stopPropagation();
           setDefaultSelectedIndex(undefined);
-          setIsOpen((o) => !o);
-          setItems(typeof itemsGetter === 'function' ? itemsGetter() : itemsGetter);
+          openDropdown();
         }),
     };
     return cloneElement(existingChild, props);
-  }, [children, itemsGetter, setIsOpen]);
+  }, [children, openDropdown]);
 
   useEffect(() => {
     buttonRef.current?.setAttribute('aria-expanded', isOpen.toString());

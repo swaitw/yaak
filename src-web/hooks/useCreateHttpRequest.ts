@@ -1,26 +1,27 @@
+import { useNavigate } from '@tanstack/react-router';
 import type { HttpRequest } from '@yaakapp-internal/models';
 import { useSetAtom } from 'jotai/index';
 import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
 import { getActiveRequest } from './useActiveRequest';
-import { useActiveWorkspace } from './useActiveWorkspace';
+import { getActiveWorkspaceId } from './useActiveWorkspace';
 import { useFastMutation } from './useFastMutation';
 import { httpRequestsAtom } from './useHttpRequests';
 import { updateModelList } from './useSyncModelStores';
-import { useNavigate } from '@tanstack/react-router';
 
 export function useCreateHttpRequest() {
-  const activeWorkspace = useActiveWorkspace();
   const setHttpRequests = useSetAtom(httpRequestsAtom);
   const navigate = useNavigate();
 
   return useFastMutation<HttpRequest, unknown, Partial<HttpRequest>>({
     mutationKey: ['create_http_request'],
     mutationFn: async (patch = {}) => {
-      const activeRequest = getActiveRequest();
-      if (activeWorkspace === null) {
+      const workspaceId = getActiveWorkspaceId();
+      if (workspaceId == null) {
         throw new Error("Cannot create request when there's no active workspace");
       }
+
+      const activeRequest = getActiveRequest();
       if (patch.sortPriority === undefined) {
         if (activeRequest != null) {
           // Place above currently active request
@@ -32,7 +33,7 @@ export function useCreateHttpRequest() {
       }
       patch.folderId = patch.folderId || activeRequest?.folderId;
       return invokeCmd<HttpRequest>('cmd_create_http_request', {
-        request: { workspaceId: activeWorkspace.id, ...patch },
+        request: { workspaceId, ...patch },
       });
     },
     onSettled: () => trackEvent('http_request', 'create'),

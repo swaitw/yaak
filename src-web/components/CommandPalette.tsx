@@ -230,7 +230,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   }, [subEnvironments, recentEnvironments]);
 
   const sortedWorkspaces = useMemo(() => {
-    return [...workspaces].sort((a, b) => {
+    const r =  [...workspaces].sort((a, b) => {
       const aRecentIndex = recentWorkspaces.indexOf(a.id);
       const bRecentIndex = recentWorkspaces.indexOf(b.id);
 
@@ -244,6 +244,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
         return a.createdAt.localeCompare(b.createdAt);
       }
     });
+    return r;
   }, [recentWorkspaces, workspaces]);
 
   const groups = useMemo<CommandPaletteGroup[]>(() => {
@@ -308,7 +309,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     for (const w of sortedWorkspaces) {
       workspaceGroup.items.push({
         key: `switch-workspace-${w.id}`,
-        label: w.name,
+        label: w.id + ' - ' + w.name,
         onSelect: () => openWorkspace.mutate({ workspaceId: w.id, inNewWindow: false }),
       });
     }
@@ -377,7 +378,6 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLInputElement>) => {
       const index = filteredAllItems.findIndex((v) => v.key === selectedItem?.key);
-      console.log("ENDER", e.key);
 
       if (e.key === 'ArrowDown' || (e.ctrlKey && e.key === 'n')) {
         const next = filteredAllItems[index + 1] ?? filteredAllItems[0];

@@ -12,7 +12,7 @@ import { VStack } from '../components/core/Stacks';
 import { ImportDataDialog } from '../components/ImportDataDialog';
 import { count } from '../lib/pluralize';
 import { invokeCmd } from '../lib/tauri';
-import { useActiveWorkspace } from './useActiveWorkspace';
+import { getActiveWorkspace } from './useActiveWorkspace';
 import { useAlert } from './useAlert';
 import { useDialog } from './useDialog';
 import { useFastMutation } from './useFastMutation';
@@ -20,10 +20,10 @@ import { useFastMutation } from './useFastMutation';
 export function useImportData() {
   const dialog = useDialog();
   const alert = useAlert();
-  const activeWorkspace = useActiveWorkspace();
   const navigate = useNavigate();
 
   const importData = async (filePath: string): Promise<boolean> => {
+    const activeWorkspace = getActiveWorkspace();
     const imported: {
       workspaces: Workspace[];
       environments: Environment[];

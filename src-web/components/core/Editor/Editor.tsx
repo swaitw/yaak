@@ -563,6 +563,5 @@ function getCachedEditorState(doc: string, stateKey: string | null) {
   if (state == null) return null;
   if (state.doc.toString() !== doc) return null;
 
-  console.log('CACHED STATE', stateKey, state);
   return state;
 }

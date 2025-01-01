@@ -43,12 +43,11 @@ function useActiveCookieJarId() {
   return [id, setId] as const;
 }
 
-export function useSubscribeActiveCookieJar() {
+export function useSubscribeActiveCookieJarId() {
   const { cookie_jar_id } = useSearch({ strict: false });
-  useEffect(
-    () => jotaiStore.set(activeCookieJarIdAtom, cookie_jar_id ?? undefined),
-    [cookie_jar_id],
-  );
+  useEffect(() => {
+    jotaiStore.set(activeCookieJarIdAtom, cookie_jar_id ?? undefined);
+  }, [cookie_jar_id]);
 }
 
 export function getActiveCookieJar() {

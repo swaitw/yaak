@@ -11,7 +11,7 @@ import { useCreateHttpRequest } from './useCreateHttpRequest';
 export function useCreateDropdownItems({
   hideFolder,
   hideIcons,
-  folderId,
+  folderId: folderIdOption,
 }: {
   hideFolder?: boolean;
   hideIcons?: boolean;
@@ -21,19 +21,17 @@ export function useCreateDropdownItems({
   const { mutate: createGrpcRequest } = useCreateGrpcRequest();
   const { mutate: createFolder } = useCreateFolder();
 
-  return useCallback(
-    (): DropdownItem[] => [
+  return useCallback((): DropdownItem[] => {
+    const folderId =
+      folderIdOption === 'active-folder' ? getActiveRequest()?.folderId : folderIdOption;
+
+    return [
       {
         key: 'create-http-request',
         label: 'HTTP Request',
         leftSlot: hideIcons ? undefined : <Icon icon="plus" />,
         onSelect: () => {
-          const args = { folderId };
-          if (folderId === 'active-folder') {
-            const activeRequest = getActiveRequest();
-            args.folderId = activeRequest?.folderId ?? undefined;
-          }
-          createHttpRequest(args);
+          createHttpRequest({ folderId });
         },
       },
       {
@@ -67,7 +65,6 @@ export function useCreateDropdownItems({
               onSelect: () => createFolder({ folderId }),
             },
           ]) as DropdownItem[]),
-    ],
-    [createFolder, createGrpcRequest, createHttpRequest, folderId, hideFolder, hideIcons],
-  );
+    ];
+  }, [createFolder, createGrpcRequest, createHttpRequest, folderIdOption, hideFolder, hideIcons]);
 }

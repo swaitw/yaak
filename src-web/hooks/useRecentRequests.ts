@@ -1,8 +1,8 @@
 import { useEffect, useMemo } from 'react';
 import { jotaiStore } from '../lib/jotai';
-import { getKeyValue } from '../lib/keyValueStore';
+import { getKeyValue, setKeyValue } from '../lib/keyValueStore';
 import { activeRequestIdAtom } from './useActiveRequestId';
-import { useActiveWorkspace } from './useActiveWorkspace';
+import { activeWorkspaceIdAtom, useActiveWorkspace } from './useActiveWorkspace';
 import { useKeyValue } from './useKeyValue';
 import { useRequests } from './useRequests';
 
@@ -29,22 +29,23 @@ export function useRecentRequests() {
 }
 
 export function useSubscribeRecentRequests() {
-  const [recentRequests, setRecentRequests] = useRecentRequests();
-
   useEffect(() => {
-    return jotaiStore.sub(activeRequestIdAtom, () => {
-      const activeRequestId = jotaiStore.get(activeRequestIdAtom) ?? null;
-      if (recentRequests[0] === activeRequestId) {
-        // Nothing to do
-        return;
-      }
-      setRecentRequests((currentHistory) => {
-        if (activeRequestId === null) return currentHistory;
-        const withoutCurrentRequest = currentHistory.filter((id) => id !== activeRequestId);
-        return [activeRequestId, ...withoutCurrentRequest];
-      }).catch(console.error);
+    return jotaiStore.sub(activeRequestIdAtom, async () => {
+      const activeWorkspaceId = jotaiStore.get(activeWorkspaceIdAtom);
+      const activeRequestId = jotaiStore.get(activeRequestIdAtom);
+      if (activeWorkspaceId == null) return;
+      if (activeRequestId == null) return;
+
+      const key = kvKey(activeWorkspaceId);
+
+      const recentIds = await getKeyValue<string[]>({ namespace, key, fallback });
+      if (recentIds[0] === activeRequestId) return; // Short-circuit
+
+      const withoutActiveId = recentIds.filter((id) => id !== activeRequestId);
+      const value = [activeRequestId, ...withoutActiveId];
+      await setKeyValue({ namespace, key, value });
     });
-  }, [recentRequests, setRecentRequests]);
+  }, []);
 }
 
 export async function getRecentRequests(workspaceId: string) {
