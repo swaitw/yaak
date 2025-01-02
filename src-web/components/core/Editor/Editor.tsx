@@ -33,7 +33,12 @@ import { TemplateVariableDialog } from '../../TemplateVariableDialog';
 import { IconButton } from '../IconButton';
 import { HStack } from '../Stacks';
 import './Editor.css';
-import { baseExtensions, getLanguageExtension, multiLineExtensions } from './extensions';
+import {
+  baseExtensions,
+  emptyExtension,
+  getLanguageExtension,
+  multiLineExtensions,
+} from './extensions';
 import type { GenericCompletionConfig } from './genericCompletion';
 import { singleLineExtensions } from './singleLine';
 
@@ -166,9 +171,8 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
   useEffect(
     function configurePlaceholder() {
       if (cm.current === null) return;
-      const effect = placeholderCompartment.current.reconfigure(
-        placeholderExt(placeholderElFromText(placeholder ?? '')),
-      );
+      const ext = placeholderExt(placeholderElFromText(placeholder ?? ''));
+      const effect = placeholderCompartment.current.reconfigure(ext);
       cm.current?.view.dispatch({ effects: effect });
     },
     [placeholder],
@@ -179,7 +183,12 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
   useEffect(
     function configureWrapLines() {
       if (cm.current === null) return;
-      const ext = wrapLines ? [EditorView.lineWrapping] : [];
+      const current = wrapLinesCompartment.current.get(cm.current.view.state) ?? emptyExtension;
+      // PERF: This is expensive with hundreds of editors on screen, so only do it when necessary
+      if (wrapLines && current !== emptyExtension) return; // Nothing to do
+      if (!wrapLines && current === emptyExtension) return; // Nothing to do
+
+      const ext = wrapLines ? EditorView.lineWrapping : emptyExtension;
       const effect = wrapLinesCompartment.current.reconfigure(ext);
       cm.current?.view.dispatch({ effects: effect });
     },
@@ -323,7 +332,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
           placeholderCompartment.current.of(
             placeholderExt(placeholderElFromText(placeholder ?? '')),
           ),
-          wrapLinesCompartment.current.of(wrapLines ? [EditorView.lineWrapping] : []),
+          wrapLinesCompartment.current.of(wrapLines ? EditorView.lineWrapping : emptyExtension),
           ...getExtensions({
             container,
             readOnly,

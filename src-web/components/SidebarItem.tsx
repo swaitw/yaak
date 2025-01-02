@@ -226,11 +226,13 @@ export const SidebarItem = memo(function SidebarItem({
   return (
     <li ref={ref} draggable>
       <div className={classNames(className, 'block relative group/item px-1.5 pb-0.5')}>
-        <SidebarItemContextMenu
-          child={child}
-          show={showContextMenu}
-          close={handleCloseContextMenu}
-        />
+        {showContextMenu && (
+          <SidebarItemContextMenu
+            child={child}
+            show={showContextMenu}
+            close={handleCloseContextMenu}
+          />
+        )}
         <button
           // tabIndex={-1} // Will prevent drag-n-drop
           disabled={editing}
