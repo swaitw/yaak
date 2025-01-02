@@ -24,7 +24,10 @@ import { useDialog } from '../../../hooks/useDialog';
 import { parseTemplate } from '../../../hooks/useParseTemplate';
 import { useRequestEditor } from '../../../hooks/useRequestEditor';
 import { useSettings } from '../../../hooks/useSettings';
-import { useTemplateFunctions } from '../../../hooks/useTemplateFunctions';
+import {
+  useTemplateFunctions,
+  useTwigCompletionOptions,
+} from '../../../hooks/useTemplateFunctions';
 import { TemplateFunctionDialog } from '../../TemplateFunctionDialog';
 import { TemplateVariableDialog } from '../../TemplateVariableDialog';
 import { IconButton } from '../IconButton';
@@ -160,22 +163,28 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
 
   // Update placeholder
   const placeholderCompartment = useRef(new Compartment());
-  useEffect(() => {
-    if (cm.current === null) return;
-    const effect = placeholderCompartment.current.reconfigure(
-      placeholderExt(placeholderElFromText(placeholder ?? '')),
-    );
-    cm.current?.view.dispatch({ effects: effect });
-  }, [placeholder]);
+  useEffect(
+    function configurePlaceholder() {
+      if (cm.current === null) return;
+      const effect = placeholderCompartment.current.reconfigure(
+        placeholderExt(placeholderElFromText(placeholder ?? '')),
+      );
+      cm.current?.view.dispatch({ effects: effect });
+    },
+    [placeholder],
+  );
 
   // Update wrap lines
   const wrapLinesCompartment = useRef(new Compartment());
-  useEffect(() => {
-    if (cm.current === null) return;
-    const ext = wrapLines ? [EditorView.lineWrapping] : [];
-    const effect = wrapLinesCompartment.current.reconfigure(ext);
-    cm.current?.view.dispatch({ effects: effect });
-  }, [wrapLines]);
+  useEffect(
+    function configureWrapLines() {
+      if (cm.current === null) return;
+      const ext = wrapLines ? [EditorView.lineWrapping] : [];
+      const effect = wrapLinesCompartment.current.reconfigure(ext);
+      cm.current?.view.dispatch({ effects: effect });
+    },
+    [wrapLines],
+  );
 
   const dialog = useDialog();
   const onClickFunction = useCallback(
@@ -257,6 +266,8 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
     [focusParamValue],
   );
 
+  const completionOptions = useTwigCompletionOptions(onClickFunction);
+
   // Update the language extension when the language changes
   useEffect(() => {
     if (cm.current === null) return;
@@ -266,8 +277,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
       environmentVariables,
       useTemplating,
       autocomplete,
-      templateFunctions,
-      onClickFunction,
+      completionOptions,
       onClickVariable,
       onClickMissingVariable,
       onClickPathParameter,
@@ -283,11 +293,12 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
     onClickVariable,
     onClickMissingVariable,
     onClickPathParameter,
+    completionOptions,
   ]);
 
   // Initialize the editor when ref mounts
   const initEditorRef = useCallback(
-    (container: HTMLDivElement | null) => {
+    function initEditorRef(container: HTMLDivElement | null) {
       if (container === null) {
         cm.current?.view.destroy();
         cm.current = null;
@@ -299,11 +310,10 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
         const langExt = getLanguageExtension({
           language,
           useTemplating,
+          completionOptions,
           autocomplete,
           environmentVariables,
-          templateFunctions,
           onClickVariable,
-          onClickFunction,
           onClickMissingVariable,
           onClickPathParameter,
         });
@@ -362,31 +372,34 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
   );
 
   // For read-only mode, update content when `defaultValue` changes
-  useEffect(() => {
-    if (!readOnly || cm.current?.view == null || defaultValue == null) return;
+  useEffect(
+    function updateReadOnlyEditor() {
+      if (!readOnly || cm.current?.view == null || defaultValue == null) return;
 
-    // Replace codemirror contents
-    const currentDoc = cm.current.view.state.doc.toString();
-    if (defaultValue.startsWith(currentDoc)) {
-      // If we're just appending, append only the changes. This preserves
-      // things like scroll position.
-      cm.current.view.dispatch({
-        changes: cm.current.view.state.changes({
-          from: currentDoc.length,
-          insert: defaultValue.slice(currentDoc.length),
-        }),
-      });
-    } else {
-      // If we're replacing everything, reset the entire content
-      cm.current.view.dispatch({
-        changes: cm.current.view.state.changes({
-          from: 0,
-          to: currentDoc.length,
-          insert: defaultValue,
-        }),
-      });
-    }
-  }, [defaultValue, readOnly]);
+      // Replace codemirror contents
+      const currentDoc = cm.current.view.state.doc.toString();
+      if (defaultValue.startsWith(currentDoc)) {
+        // If we're just appending, append only the changes. This preserves
+        // things like scroll position.
+        cm.current.view.dispatch({
+          changes: cm.current.view.state.changes({
+            from: currentDoc.length,
+            insert: defaultValue.slice(currentDoc.length),
+          }),
+        });
+      } else {
+        // If we're replacing everything, reset the entire content
+        cm.current.view.dispatch({
+          changes: cm.current.view.state.changes({
+            from: 0,
+            to: currentDoc.length,
+            insert: defaultValue,
+          }),
+        });
+      }
+    },
+    [defaultValue, readOnly],
+  );
 
   // Add bg classes to actions, so they appear over the text
   const decoratedActions = useMemo(() => {
@@ -557,7 +570,7 @@ function saveCachedEditorState(stateKey: string | null, state: EditorState | nul
 function getCachedEditorState(doc: string, stateKey: string | null) {
   if (stateKey == null) return;
 
-  const stateStr = sessionStorage.getItem(stateKey)
+  const stateStr = sessionStorage.getItem(stateKey);
   if (stateStr == null) return null;
 
   try {

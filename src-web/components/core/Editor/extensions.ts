@@ -34,14 +34,15 @@ import {
 } from '@codemirror/view';
 import { tags as t } from '@lezer/highlight';
 import type { EnvironmentVariable } from '@yaakapp-internal/models';
-import type { TemplateFunction } from '@yaakapp-internal/plugin';
 import { graphql } from 'cm6-graphql';
 import { EditorView } from 'codemirror';
 import { pluralizeCount } from '../../../lib/pluralize';
 import type { EditorProps } from './Editor';
 import { pairs } from './pairs/extension';
 import { text } from './text/extension';
+import type { TwigCompletionOption } from './twig/completion';
 import { twig } from './twig/extension';
+import { pathParametersPlugin } from './twig/pathParameters';
 import { url } from './url/extension';
 
 export const syntaxHighlightStyle = HighlightStyle.define([
@@ -89,18 +90,16 @@ export function getLanguageExtension({
   useTemplating = false,
   environmentVariables,
   autocomplete,
-  templateFunctions,
   onClickVariable,
-  onClickFunction,
   onClickMissingVariable,
   onClickPathParameter,
+  completionOptions,
 }: {
   environmentVariables: EnvironmentVariable[];
-  templateFunctions: TemplateFunction[];
-  onClickFunction: (option: TemplateFunction, tagValue: string, startPos: number) => void;
   onClickVariable: (option: EnvironmentVariable, tagValue: string, startPos: number) => void;
   onClickMissingVariable: (name: string, tagValue: string, startPos: number) => void;
   onClickPathParameter: (name: string) => void;
+  completionOptions: TwigCompletionOption[];
 } & Pick<EditorProps, 'language' | 'useTemplating' | 'autocomplete'>) {
   if (language === 'graphql') {
     return graphql();
@@ -111,15 +110,17 @@ export function getLanguageExtension({
     return base;
   }
 
+  const extraExtensions = language === 'url' ? [pathParametersPlugin(onClickPathParameter)] : [];
+
   return twig({
     base,
     environmentVariables,
-    templateFunctions,
+    completionOptions,
     autocomplete,
-    onClickFunction,
     onClickVariable,
     onClickMissingVariable,
     onClickPathParameter,
+    extraExtensions,
   });
 }
 
