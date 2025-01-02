@@ -3,7 +3,7 @@ import { memo, useCallback, useMemo } from 'react';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useCreateWorkspace } from '../hooks/useCreateWorkspace';
 import { useDeleteSendHistory } from '../hooks/useDeleteSendHistory';
-import { useDeleteWorkspace } from '../hooks/useDeleteWorkspace';
+import { useDialog } from '../hooks/useDialog';
 import { useOpenWorkspace } from '../hooks/useOpenWorkspace';
 import { useSettings } from '../hooks/useSettings';
 import { useWorkspaces } from '../hooks/useWorkspaces';
@@ -14,7 +14,6 @@ import type { DropdownItem } from './core/Dropdown';
 import { Icon } from './core/Icon';
 import type { RadioDropdownItem } from './core/RadioDropdown';
 import { RadioDropdown } from './core/RadioDropdown';
-import { useDialog } from '../hooks/useDialog';
 import { OpenWorkspaceDialog } from './OpenWorkspaceDialog';
 import { WorkspaceSettingsDialog } from './WorkpaceSettingsDialog';
 
@@ -27,13 +26,12 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
   const workspaces = useWorkspaces();
   const activeWorkspace = useActiveWorkspace();
   const activeWorkspaceId = activeWorkspace?.id ?? null;
-  const deleteWorkspace = useDeleteWorkspace(activeWorkspace);
-  const createWorkspace = useCreateWorkspace();
+  const { mutate: createWorkspace } = useCreateWorkspace();
+  const { mutate: deleteSendHistory } = useDeleteSendHistory();
   const dialog = useDialog();
   const settings = useSettings();
   const openWorkspace = useOpenWorkspace();
   const openWorkspaceNewWindow = settings?.openWorkspaceNewWindow ?? null;
-  const deleteSendHistory = useDeleteSendHistory();
 
   const orderedWorkspaces = useMemo(
     () => [...workspaces].sort((a, b) => (a.name.localeCompare(b.name) > 0 ? 1 : -1)),
@@ -69,21 +67,14 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
         key: 'delete-responses',
         label: 'Clear Send History',
         leftSlot: <Icon icon="history" />,
-        onSelect: deleteSendHistory.mutate,
-      },
-      {
-        key: 'delete',
-        label: 'Delete Workspace',
-        leftSlot: <Icon icon="trash" />,
-        onSelect: deleteWorkspace.mutate,
-        variant: 'danger',
+        onSelect: deleteSendHistory,
       },
       { type: 'separator' },
       {
         key: 'create-workspace',
         label: 'New Workspace',
         leftSlot: <Icon icon="plus" />,
-        onSelect: createWorkspace.mutate,
+        onSelect: createWorkspace,
       },
     ];
 
@@ -91,9 +82,8 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
   }, [
     activeWorkspace?.id,
     activeWorkspaceId,
-    createWorkspace.mutate,
-    deleteSendHistory.mutate,
-    deleteWorkspace.mutate,
+    createWorkspace,
+    deleteSendHistory,
     dialog,
     orderedWorkspaces,
   ]);
