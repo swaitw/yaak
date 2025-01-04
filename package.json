@@ -9,12 +9,12 @@
   "workspaces": [
     "plugin-runtime",
     "plugin-runtime-types",
-    "src-tauri/yaak_license",
-    "src-tauri/yaak_models",
-    "src-tauri/yaak_plugin_runtime",
-    "src-tauri/yaak_sse",
-    "src-tauri/yaak_sync",
-    "src-tauri/yaak_templates",
+    "src-tauri/yaak-license",
+    "src-tauri/yaak-models",
+    "src-tauri/yaak-plugins",
+    "src-tauri/yaak-sse",
+    "src-tauri/yaak-sync",
+    "src-tauri/yaak-templates",
     "src-web"
   ],
   "scripts": {

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import type { GetTemplateFunctionsResponse, TemplateFunction } from '@yaakapp-internal/plugin';
+import type { GetTemplateFunctionsResponse, TemplateFunction } from '@yaakapp-internal/plugins';
 import { atom, useAtomValue } from 'jotai';
 import { useSetAtom } from 'jotai/index';
 import { useMemo, useState } from 'react';

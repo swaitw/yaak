@@ -19,16 +19,23 @@ export function useSyncWorkspaceChildModels() {
 }
 
 async function sync() {
+  // Doesn't need a workspace ID, so sync it right away
+  jotaiStore.set(keyValuesAtom, await invokeCmd('cmd_list_key_values'));
+
   const workspaceId = getActiveWorkspaceId();
   const args = { workspaceId };
+  if (workspaceId == null) {
+    return;
+  }
+
   console.log('Syncing model stores', args);
+
   // Set the things we need first, first
   jotaiStore.set(httpRequestsAtom, await invokeCmd('cmd_list_http_requests', args));
   jotaiStore.set(grpcRequestsAtom, await invokeCmd('cmd_list_grpc_requests', args));
   jotaiStore.set(foldersAtom, await invokeCmd('cmd_list_folders', args));
 
   // Then, set the rest
-  jotaiStore.set(keyValuesAtom, await invokeCmd('cmd_list_key_values', args));
   jotaiStore.set(cookieJarsAtom, await invokeCmd('cmd_list_cookie_jars', args));
   jotaiStore.set(httpResponsesAtom, await invokeCmd('cmd_list_http_responses', args));
   jotaiStore.set(grpcConnectionsAtom, await invokeCmd('cmd_list_grpc_connections', args));
