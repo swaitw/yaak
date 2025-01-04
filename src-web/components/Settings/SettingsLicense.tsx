@@ -28,8 +28,10 @@ export function SettingsLicense() {
       ) : (
         <Banner color="primary" className="flex flex-col gap-3 max-w-lg">
           {check.data?.type === 'trialing' && (
-            <p>
-              <strong>Your trial ends in {formatDistanceToNow(check.data.end)}.</strong>
+            <p className="select-text">
+              <strong>
+                You have {formatDistanceToNow(check.data.end)} remaining on your trial.
+              </strong>
             </p>
           )}
           <p className="select-text">
@@ -39,8 +41,8 @@ export function SettingsLicense() {
             </Link>
           </p>
           <p className="select-text">
-            This supports future development and ensures continued growth and improvement.
-            Personal use and running the open-source code directly require no license.
+            This supports future development and ensures continued growth and improvement. Personal
+            use and running the open-source code directly require no license.
           </p>
           <p>~ Gregory</p>
         </Banner>
