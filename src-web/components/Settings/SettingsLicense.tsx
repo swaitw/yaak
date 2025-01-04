@@ -32,19 +32,17 @@ export function SettingsLicense() {
               <strong>Your trial ends in {formatDistanceToNow(check.data.end)}.</strong>
             </p>
           )}
-          <p>
-            A commercial license is required if using Yaak within a for-profit organization of two
-            or more people.{' '}
+          <p className="select-text">
+            A commercial license is required if using Yaak within a for-profit organization.{' '}
             <Link href="https://yaak.app/pricing" className="text-notice">
               Learn More
             </Link>
           </p>
-          <p>
-            This helps support the ongoing development of Yaak and ensures continued growth and
-            improvement.{' '}
+          <p className="select-text">
+            This supports future development and ensures continued growth and improvement.
+            Personal use and running the open-source code directly require no license.
           </p>
-          <p>If you&#39;re using Yaak for personal use, no action is needed.</p>
-          <p className="my-3">~ Gregory</p>
+          <p>~ Gregory</p>
         </Banner>
       )}
 
