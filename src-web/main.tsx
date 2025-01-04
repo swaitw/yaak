@@ -20,9 +20,20 @@ if (osType !== 'macos') {
 }
 
 window.addEventListener('keydown', (e) => {
-  // Hack to not go back in history on backspace. Check for document body
-  // or else it will prevent backspace in input fields.
-  if (e.key === 'Backspace' && e.target === document.body) e.preventDefault();
+  const rx = /input|select|textarea/i;
+
+  const target = e.target;
+  if (e.key !== 'Backspace') return;
+  if (!(target instanceof Element)) return;
+  if (target.getAttribute('contenteditable') !== null) return;
+
+  if (
+    !rx.test(target.tagName) ||
+    ('disabled' in target && target.disabled) ||
+    ('readOnly' in target && target.readOnly)
+  ) {
+    e.preventDefault();
+  }
 });
 
 console.log('Creating React root');

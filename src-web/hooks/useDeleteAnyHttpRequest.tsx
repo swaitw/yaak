@@ -1,18 +1,14 @@
-import { useFastMutation } from './useFastMutation';
 import type { HttpRequest } from '@yaakapp-internal/models';
-import { useSetAtom } from 'jotai';
 import { InlineCode } from '../components/core/InlineCode';
 import { trackEvent } from '../lib/analytics';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import { getHttpRequest } from '../lib/store';
 import { invokeCmd } from '../lib/tauri';
 import { useConfirm } from './useConfirm';
-import { httpRequestsAtom } from './useHttpRequests';
-import { removeModelById } from './useSyncModelStores';
+import { useFastMutation } from './useFastMutation';
 
 export function useDeleteAnyHttpRequest() {
   const confirm = useConfirm();
-  const setHttpRequests = useSetAtom(httpRequestsAtom);
 
   return useFastMutation<HttpRequest | null, string, string>({
     mutationKey: ['delete_any_http_request'],
@@ -32,12 +28,6 @@ export function useDeleteAnyHttpRequest() {
       });
       if (!confirmed) return null;
       return invokeCmd<HttpRequest>('cmd_delete_http_request', { requestId: id });
-    },
-    onSuccess: (request) => {
-      if (request == null) return;
-
-      // Optimistic update
-      setHttpRequests(removeModelById(request));
     },
     onSettled: () => trackEvent('http_request', 'delete'),
   });

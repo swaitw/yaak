@@ -1,17 +1,13 @@
 import { useNavigate } from '@tanstack/react-router';
 import type { GrpcRequest } from '@yaakapp-internal/models';
-import { useSetAtom } from 'jotai';
 import { trackEvent } from '../lib/analytics';
 import { jotaiStore } from '../lib/jotai';
 import { invokeCmd } from '../lib/tauri';
 import { getActiveRequest } from './useActiveRequest';
 import { activeWorkspaceAtom } from './useActiveWorkspace';
 import { useFastMutation } from './useFastMutation';
-import { grpcRequestsAtom } from './useGrpcRequests';
-import { updateModelList } from './useSyncModelStores';
 
 export function useCreateGrpcRequest() {
-  const setGrpcRequests = useSetAtom(grpcRequestsAtom);
   const navigate = useNavigate();
 
   return useFastMutation<
@@ -44,9 +40,6 @@ export function useCreateGrpcRequest() {
     },
     onSettled: () => trackEvent('grpc_request', 'create'),
     onSuccess: async (request) => {
-      // Optimistic update
-      setGrpcRequests(updateModelList(request));
-
       await navigate({
         to: '/workspaces/$workspaceId/requests/$requestId',
         params: {

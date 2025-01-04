@@ -1,18 +1,14 @@
 import type { Environment } from '@yaakapp-internal/models';
-import { useSetAtom } from 'jotai';
 import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveEnvironment } from './useActiveEnvironment';
 import { getActiveWorkspaceId } from './useActiveWorkspace';
-import { environmentsAtom } from './useEnvironments';
 import { useFastMutation } from './useFastMutation';
 import { usePrompt } from './usePrompt';
-import { updateModelList } from './useSyncModelStores';
 
 export function useCreateEnvironment() {
   const [, setActiveEnvironmentId] = useActiveEnvironment();
   const prompt = usePrompt();
-  const setEnvironments = useSetAtom(environmentsAtom);
 
   return useFastMutation<Environment | null, unknown, Environment | null>({
     mutationKey: ['create_environment'],
@@ -43,10 +39,6 @@ export function useCreateEnvironment() {
     onSettled: () => trackEvent('environment', 'create'),
     onSuccess: async (environment) => {
       if (environment == null) return;
-
-      // Optimistic update
-      setEnvironments(updateModelList(environment));
-
       await setActiveEnvironmentId(environment.id);
     },
   });

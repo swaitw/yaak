@@ -39,7 +39,7 @@ export type SidebarModel = Folder | GrpcRequest | HttpRequest;
 
 export function Sidebar({ className }: Props) {
   const [hidden, setHidden] = useSidebarHidden();
-  const sidebarRef = useRef<HTMLLIElement>(null);
+  const sidebarRef = useRef<HTMLElement>(null);
   const activeWorkspace = useActiveWorkspace();
   const httpResponses = useHttpResponses();
   const grpcConnections = useGrpcConnections();
@@ -326,7 +326,7 @@ export function Sidebar({ className }: Props) {
 
   return (
     <aside
-      aria-hidden={hidden}
+      aria-hidden={hidden ?? undefined}
       ref={sidebarRef}
       onFocus={handleFocus}
       onBlur={handleBlur}

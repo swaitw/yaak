@@ -2,15 +2,11 @@ import { useNavigate } from '@tanstack/react-router';
 import type { Folder, Workspace } from '@yaakapp-internal/models';
 import { useMemo } from 'react';
 import { trackEvent } from '../lib/analytics';
-import { jotaiStore } from '../lib/jotai';
 import { invokeCmd } from '../lib/tauri';
 import { getActiveWorkspaceId } from './useActiveWorkspace';
 import { createFastMutation } from './useFastMutation';
-import { foldersAtom } from './useFolders';
 import { usePrompt } from './usePrompt';
-import { updateModelList } from './useSyncModelStores';
 import { useToast } from './useToast';
-import { workspacesAtom } from './useWorkspaces';
 
 function makeCommands({
   navigate,
@@ -25,9 +21,6 @@ function makeCommands({
       mutationKey: ['create_workspace'],
       mutationFn: (patch) => invokeCmd<Workspace>('cmd_update_workspace', { workspace: patch }),
       onSuccess: async (workspace) => {
-        // Optimistic update
-        jotaiStore.set(workspacesAtom, updateModelList(workspace));
-
         await navigate({
           to: '/workspaces/$workspaceId',
           params: { workspaceId: workspace.id },
@@ -64,12 +57,6 @@ function makeCommands({
 
         patch.sortPriority = patch.sortPriority || -Date.now();
         return invokeCmd<Folder>('cmd_update_folder', { folder: { workspaceId, ...patch } });
-      },
-      onSuccess: async (folder) => {
-        if (folder == null) return;
-
-        // Optimistic update
-        jotaiStore.set(foldersAtom, updateModelList(folder));
       },
       onSettled: () => trackEvent('folder', 'create'),
     }),

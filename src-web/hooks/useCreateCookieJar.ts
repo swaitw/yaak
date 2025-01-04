@@ -1,16 +1,12 @@
 import type { CookieJar } from '@yaakapp-internal/models';
-import { useSetAtom } from 'jotai';
 import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
 import { getActiveWorkspaceId } from './useActiveWorkspace';
-import { cookieJarsAtom } from './useCookieJars';
 import { useFastMutation } from './useFastMutation';
 import { usePrompt } from './usePrompt';
-import { updateModelList } from './useSyncModelStores';
 
 export function useCreateCookieJar() {
   const prompt = usePrompt();
-  const setCookieJars = useSetAtom(cookieJarsAtom);
 
   return useFastMutation<CookieJar | null>({
     mutationKey: ['create_cookie_jar'],
@@ -30,12 +26,6 @@ export function useCreateCookieJar() {
       if (name == null) return null;
 
       return invokeCmd('cmd_create_cookie_jar', { workspaceId, name });
-    },
-    onSuccess: (cookieJar) => {
-      if (cookieJar == null) return;
-
-      // Optimistic update
-      setCookieJars(updateModelList(cookieJar));
     },
     onSettled: () => trackEvent('cookie_jar', 'create'),
   });
