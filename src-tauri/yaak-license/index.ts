@@ -18,7 +18,7 @@ export function useLicense() {
   useEffect(() => {
     listen('license-activated', () => {
       queryClient.invalidateQueries({ queryKey: CHECK_QUERY_KEY }).catch(console.error);
-    }).then(console.error);
+    }).catch(console.error);
   }, []);
 
   const CHECK_QUERY_KEY = ['license.check'];

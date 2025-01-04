@@ -13,8 +13,9 @@ import { keyValuesAtom } from './useKeyValue';
 
 export function useSyncWorkspaceChildModels() {
   useEffect(() => {
-    jotaiStore.sub(activeWorkspaceIdAtom, sync);
+    const unsub = jotaiStore.sub(activeWorkspaceIdAtom, sync);
     sync().catch(console.error);
+    return unsub;
   }, []);
 }
 
