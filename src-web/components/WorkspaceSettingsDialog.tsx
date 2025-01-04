@@ -1,4 +1,4 @@
-import { useDeleteWorkspace } from '../hooks/useDeleteWorkspace';
+import { useDeleteActiveWorkspace } from '../hooks/useDeleteActiveWorkspace';
 import { useUpdateWorkspace } from '../hooks/useUpdateWorkspace';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import { Button } from './core/Button';
@@ -9,13 +9,14 @@ import { SelectFile } from './SelectFile';
 
 interface Props {
   workspaceId: string | null;
+  hide: () => void;
 }
 
-export function WorkspaceSettingsDialog({ workspaceId }: Props) {
+export function WorkspaceSettingsDialog({ workspaceId, hide }: Props) {
   const workspaces = useWorkspaces();
   const workspace = workspaces.find((w) => w.id === workspaceId);
   const { mutate: updateWorkspace } = useUpdateWorkspace(workspaceId ?? null);
-  const { mutate: deleteWorkspace } = useDeleteWorkspace();
+  const { mutateAsync: deleteActiveWorkspace } = useDeleteActiveWorkspace();
 
   if (workspace == null) return null;
 
@@ -44,7 +45,15 @@ export function WorkspaceSettingsDialog({ workspaceId }: Props) {
           filePath={workspace.settingSyncDir}
           onChange={({ filePath: settingSyncDir }) => updateWorkspace({ settingSyncDir })}
         />
-        <Button onClick={() => deleteWorkspace()} color="danger" variant="border" size="sm">
+        <Button
+          onClick={async () => {
+            await deleteActiveWorkspace();
+            hide();
+          }}
+          color="danger"
+          variant="border"
+          size="sm"
+        >
           Delete Workspace
         </Button>
       </VStack>

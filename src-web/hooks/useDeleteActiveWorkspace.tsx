@@ -10,7 +10,7 @@ import { useFastMutation } from './useFastMutation';
 import { removeModelById } from './useSyncModelStores';
 import { workspacesAtom } from './useWorkspaces';
 
-export function useDeleteWorkspace() {
+export function useDeleteActiveWorkspace() {
   const confirm = useConfirm();
   const setWorkspaces = useSetAtom(workspacesAtom);
   const navigate = useNavigate();
@@ -39,11 +39,7 @@ export function useDeleteWorkspace() {
       // Optimistic update
       setWorkspaces(removeModelById(workspace));
 
-      const { id: workspaceId } = workspace;
-      const activeWorkspace = getActiveWorkspace();
-      if (workspaceId === activeWorkspace?.id) {
-        await navigate({ to: '/workspaces' });
-      }
+      await navigate({ to: '/workspaces' });
     },
   });
 }

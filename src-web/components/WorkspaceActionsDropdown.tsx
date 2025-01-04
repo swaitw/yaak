@@ -68,7 +68,9 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
             id: 'workspace-settings',
             title: 'Workspace Settings',
             size: 'md',
-            render: () => <WorkspaceSettingsDialog workspaceId={activeWorkspace?.id ?? null} />,
+            render: ({ hide }) => (
+              <WorkspaceSettingsDialog workspaceId={activeWorkspace?.id ?? null} hide={hide} />
+            ),
           });
         },
       },
