@@ -27,6 +27,7 @@ import { EventStreamViewer } from './responseViewers/EventStreamViewer';
 import { HTMLOrTextViewer } from './responseViewers/HTMLOrTextViewer';
 import { ImageViewer } from './responseViewers/ImageViewer';
 import { PdfViewer } from './responseViewers/PdfViewer';
+import {SvgViewer} from "./responseViewers/SvgViewer";
 import { VideoViewer } from './responseViewers/VideoViewer';
 
 interface Props {
@@ -167,6 +168,8 @@ export const ResponsePane = memo(function ResponsePane({
                   </div>
                 ) : contentType?.match(/^text\/event-stream$/i) && viewMode === 'pretty' ? (
                   <EventStreamViewer response={activeResponse} />
+                ) : contentType?.match(/^image\/svg/) ? (
+                  <SvgViewer response={activeResponse} />
                 ) : contentType?.match(/^image/i) ? (
                   <EnsureCompleteResponse response={activeResponse} render={ImageViewer} />
                 ) : contentType?.match(/^audio/i) ? (

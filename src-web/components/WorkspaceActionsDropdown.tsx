@@ -86,7 +86,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
           if (ops.length === 0) {
             toast.show({
               id: 'no-sync-changes',
-              message: 'No changes detected for sync',
+              message: 'No changes to sync',
             });
             return;
           }
@@ -97,7 +97,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
             await applySync(activeWorkspace, ops);
             toast.show({
               id: 'applied-sync-changes',
-              message: `Applied ${pluralizeCount('change', ops.length)}`,
+              message: `Wrote ${pluralizeCount('change', ops.length)}`,
             });
             return;
           }
@@ -159,7 +159,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
             await applySync(activeWorkspace, ops);
             toast.show({
               id: 'applied-confirmed-sync-changes',
-              message: `Applied ${pluralizeCount('change', ops.length)}`,
+              message: `Wrote ${pluralizeCount('change', ops.length)}`,
             });
           }
         },
