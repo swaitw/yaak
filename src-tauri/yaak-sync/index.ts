@@ -11,10 +11,11 @@ export const calculateSync = async (workspace: Workspace) => {
   });
 };
 
-export const applySync = async (workspace: Workspace, ops: SyncOp[]) => {
-  console.log('Applying sync', ops);
+export const applySync = async (workspace: Workspace, syncOps: SyncOp[]) => {
+  console.log('Applying sync', syncOps);
   return invoke<void>('plugin:yaak-sync|apply', {
     workspaceId: workspace.id,
     dir: workspace.settingSyncDir,
+    syncOps: syncOps
   });
 };

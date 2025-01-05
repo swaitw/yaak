@@ -3,8 +3,8 @@ use crate::error::Result;
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 use sha1::{Digest, Sha1};
-use std::fs;
 use std::path::Path;
+use tokio::fs;
 use ts_rs::TS;
 use yaak_models::models::{AnyModel, Environment, Folder, GrpcRequest, HttpRequest, Workspace};
 
@@ -20,8 +20,8 @@ pub enum SyncModel {
 }
 
 impl SyncModel {
-    pub fn from_file(file_path: &Path) -> Result<Option<(SyncModel, Vec<u8>, String)>> {
-        let content = match fs::read(file_path) {
+    pub async fn from_file(file_path: &Path) -> Result<Option<(SyncModel, Vec<u8>, String)>> {
+        let content = match fs::read(file_path).await {
             Ok(c) => c,
             Err(_) => return Ok(None),
         };

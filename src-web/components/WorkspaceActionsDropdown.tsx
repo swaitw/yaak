@@ -109,49 +109,51 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
             description: (
               <VStack space={3}>
                 <p>
-                  Some files in the directory have changed. Do you want to apply the updates to your
+                  {pluralizeCount('file', dbChanges.length)} in the directory have changed. Do you want to apply the updates to your
                   workspace?
                 </p>
-                <table className="w-full text-sm mb-auto min-w-full max-w-full divide-y divide-surface-highlight">
-                  <thead>
-                    <tr>
-                      <th className="py-1 text-left">Name</th>
-                      <th className="py-1 text-right pl-4">Operation</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-surface-highlight">
-                    {dbChanges.map((op, i) => {
-                      let name = '';
-                      let label = '';
-                      let color = '';
+                <div className="overflow-y-auto max-h-[10rem]">
+                  <table className="w-full text-sm mb-auto min-w-full max-w-full divide-y divide-surface-highlight">
+                    <thead>
+                      <tr>
+                        <th className="py-1 text-left">Name</th>
+                        <th className="py-1 text-right pl-4">Operation</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-surface-highlight">
+                      {dbChanges.map((op, i) => {
+                        let name = '';
+                        let label = '';
+                        let color = '';
 
-                      if (op.type === 'dbCreate') {
-                        label = 'create';
-                        name = fallbackRequestName(op.fs.model);
-                        color = 'text-success';
-                      } else if (op.type === 'dbUpdate') {
-                        label = 'update';
-                        name = fallbackRequestName(op.fs.model);
-                        color = 'text-info';
-                      } else if (op.type === 'dbDelete') {
-                        label = 'delete';
-                        name = fallbackRequestName(op.model);
-                        color = 'text-danger';
-                      } else {
-                        return null;
-                      }
+                        if (op.type === 'dbCreate') {
+                          label = 'create';
+                          name = fallbackRequestName(op.fs.model);
+                          color = 'text-success';
+                        } else if (op.type === 'dbUpdate') {
+                          label = 'update';
+                          name = fallbackRequestName(op.fs.model);
+                          color = 'text-info';
+                        } else if (op.type === 'dbDelete') {
+                          label = 'delete';
+                          name = fallbackRequestName(op.model);
+                          color = 'text-danger';
+                        } else {
+                          return null;
+                        }
 
-                      return (
-                        <tr key={i} className="text-text">
-                          <td className="py-1">{name}</td>
-                          <td className="py-1 pl-4 text-right">
-                            <InlineCode className={color}>{label}</InlineCode>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                        return (
+                          <tr key={i} className="text-text">
+                            <td className="py-1">{name}</td>
+                            <td className="py-1 pl-4 text-right">
+                              <InlineCode className={color}>{label}</InlineCode>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </VStack>
             ),
           });
