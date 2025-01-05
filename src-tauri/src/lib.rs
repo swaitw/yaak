@@ -14,7 +14,6 @@ use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
 use chrono::Utc;
 use eventsource_client::{EventParser, SSE};
-use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
 use rand::random;
 use regex::Regex;
@@ -26,8 +25,7 @@ use tauri::{AppHandle, Emitter, LogicalSize, RunEvent, State, WebviewUrl, Webvie
 use tauri::{Listener, Runtime};
 use tauri::{Manager, WindowEvent};
 use tauri_plugin_clipboard_manager::ClipboardExt;
-use tauri_plugin_log::{fern, Target, TargetKind};
-use tauri_plugin_shell::ShellExt;
+use tauri_plugin_opener::OpenerExt;
 use tokio::fs::read_to_string;
 use tokio::sync::Mutex;
 use tokio::task::block_in_place;
@@ -1670,37 +1668,55 @@ async fn cmd_check_for_updates(
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    #[cfg(debug_assertions)] // only enable instrumentation in development builds
+    let devtools = tauri_plugin_devtools::init();
+
+    let mut builder = tauri::Builder::default();
+    #[cfg(debug_assertions)]
+    {
+        builder = builder.plugin(devtools);
+    }
+
+    // Only use logger in production, because it conflicts with Tauri devtools
+    #[cfg(not(debug_assertions))]
+    {
+        use tauri_plugin_log::{Builder, Target, TargetKind};
+        use fern::colors::ColoredLevelConfig;
+
+        let log_plugin = Builder::default()
+            .targets([
+                Target::new(TargetKind::Stdout),
+                Target::new(TargetKind::LogDir { file_name: None }),
+                Target::new(TargetKind::Webview),
+            ])
+            .level_for("plugin_runtime", log::LevelFilter::Info)
+            .level_for("cookie_store", log::LevelFilter::Info)
+            .level_for("eventsource_client::event_parser", log::LevelFilter::Info)
+            .level_for("h2", log::LevelFilter::Info)
+            .level_for("hyper", log::LevelFilter::Info)
+            .level_for("hyper_util", log::LevelFilter::Info)
+            .level_for("hyper_rustls", log::LevelFilter::Info)
+            .level_for("reqwest", log::LevelFilter::Info)
+            .level_for("sqlx", log::LevelFilter::Warn)
+            .level_for("tao", log::LevelFilter::Info)
+            .level_for("tokio_util", log::LevelFilter::Info)
+            .level_for("tonic", log::LevelFilter::Info)
+            .level_for("tower", log::LevelFilter::Info)
+            .level_for("tracing", log::LevelFilter::Warn)
+            .level_for("swc_ecma_codegen", log::LevelFilter::Off)
+            .level_for("swc_ecma_transforms_base", log::LevelFilter::Off)
+            .with_colors(ColoredLevelConfig::default())
+            .level(log::LevelFilter::Info)
+            .build();
+
+        builder = builder.plugin(log_plugin);
+    }
+
     #[allow(unused_mut)]
     let mut builder =
-        tauri::Builder::default()
-            .plugin(
-                tauri_plugin_log::Builder::default()
-                    .targets([
-                        Target::new(TargetKind::Stdout),
-                        Target::new(TargetKind::LogDir { file_name: None }),
-                        Target::new(TargetKind::Webview),
-                    ])
-                    .level_for("plugin_runtime", log::LevelFilter::Info)
-                    .level_for("cookie_store", log::LevelFilter::Info)
-                    .level_for("eventsource_client::event_parser", log::LevelFilter::Info)
-                    .level_for("h2", log::LevelFilter::Info)
-                    .level_for("hyper", log::LevelFilter::Info)
-                    .level_for("hyper_util", log::LevelFilter::Info)
-                    .level_for("hyper_rustls", log::LevelFilter::Info)
-                    .level_for("reqwest", log::LevelFilter::Info)
-                    .level_for("sqlx", log::LevelFilter::Warn)
-                    .level_for("tao", log::LevelFilter::Info)
-                    .level_for("tokio_util", log::LevelFilter::Info)
-                    .level_for("tonic", log::LevelFilter::Info)
-                    .level_for("tower", log::LevelFilter::Info)
-                    .level_for("tracing", log::LevelFilter::Warn)
-                    .level_for("swc_ecma_codegen", log::LevelFilter::Off)
-                    .level_for("swc_ecma_transforms_base", log::LevelFilter::Off)
-                    .with_colors(ColoredLevelConfig::default())
-                    .level(if is_dev() { log::LevelFilter::Trace } else { log::LevelFilter::Info })
-                    .build(),
-            )
+        builder
             .plugin(tauri_plugin_clipboard_manager::init())
+            .plugin(tauri_plugin_opener::init())
             .plugin(
                 tauri_plugin_window_state::Builder::default()
                     .with_denylist(&["ignored"])
@@ -1979,9 +1995,7 @@ fn create_window(handle: &AppHandle, config: CreateWindowConfig) -> WebviewWindo
             "zoom_out" => w.emit("zoom_out", true).unwrap(),
             "settings" => w.emit("settings", true).unwrap(),
             "open_feedback" => {
-                if let Err(e) =
-                    webview_window.app_handle().shell().open("https://yaak.app/feedback", None)
-                {
+                if let Err(e) = w.app_handle().opener().open_url("https://yaak.app/feedback", None::<&str>) {
                     warn!("Failed to open feedback {e:?}")
                 }
             }

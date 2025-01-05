@@ -1,4 +1,4 @@
-import { open } from '@tauri-apps/plugin-shell';
+import { openUrl } from '@tauri-apps/plugin-opener';
 import { Button } from '../components/core/Button';
 import { invokeCmd } from '../lib/tauri';
 import { useListenToTauriEvent } from './useListenToTauriEvent';
@@ -37,7 +37,7 @@ export function useNotificationToast() {
             className="mr-auto min-w-[5rem]"
             onClick={() => {
               hide();
-              return open(actionUrl);
+              return openUrl(actionUrl);
             }}
           >
             {actionLabel}

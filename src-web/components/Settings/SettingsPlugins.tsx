@@ -1,10 +1,10 @@
+import { openUrl } from '@tauri-apps/plugin-opener';
 import type { Plugin } from '@yaakapp-internal/models';
-import { open } from '@tauri-apps/plugin-shell';
 import React from 'react';
 import { useInstallPlugin } from '../../hooks/useInstallPlugin';
-import { useUninstallPlugin } from '../../hooks/useUninstallPlugin';
 import { usePluginInfo } from '../../hooks/usePluginInfo';
 import { usePlugins, useRefreshPlugins } from '../../hooks/usePlugins';
+import { useUninstallPlugin } from '../../hooks/useUninstallPlugin';
 import { Button } from '../core/Button';
 import { IconButton } from '../core/IconButton';
 import { InlineCode } from '../core/InlineCode';
@@ -61,7 +61,13 @@ export function SettingsPlugins() {
           />
           <HStack>
             {directory && (
-              <Button size="xs" type="submit" color="primary" className="ml-auto" event="plugin.add">
+              <Button
+                size="xs"
+                type="submit"
+                color="primary"
+                className="ml-auto"
+                event="plugin.add"
+              >
                 Add Plugin
               </Button>
             )}
@@ -78,7 +84,7 @@ export function SettingsPlugins() {
               icon="help"
               title="View documentation"
               event="plugin.docs"
-              onClick={() => open('https://feedback.yaak.app/help/articles/6911763-quick-start')}
+              onClick={() => openUrl('https://feedback.yaak.app/help/articles/6911763-quick-start')}
             />
           </HStack>
         </footer>

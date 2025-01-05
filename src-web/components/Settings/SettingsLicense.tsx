@@ -1,4 +1,3 @@
-import { open } from '@tauri-apps/plugin-shell';
 import { useLicense } from '@yaakapp-internal/license';
 import { formatDistanceToNow } from 'date-fns';
 import React, { useState } from 'react';
@@ -9,6 +8,7 @@ import { Icon } from '../core/Icon';
 import { Link } from '../core/Link';
 import { PlainInput } from '../core/PlainInput';
 import { HStack, VStack } from '../core/Stacks';
+import { openUrl } from '@tauri-apps/plugin-opener';
 
 export function SettingsLicense() {
   const { check, activate } = useLicense();
@@ -65,7 +65,7 @@ export function SettingsLicense() {
           <Button
             color="secondary"
             size="sm"
-            onClick={() => open('https://yaak.app/dashboard')}
+            onClick={() => openUrl('https://yaak.app/dashboard')}
             rightSlot={<Icon icon="external_link" />}
             event="license.support"
           >

@@ -1,7 +1,8 @@
-import { open } from '@tauri-apps/plugin-shell';
+import { openUrl } from '@tauri-apps/plugin-opener';
 import { useRef } from 'react';
 import { useAppInfo } from '../hooks/useAppInfo';
 import { useCheckForUpdates } from '../hooks/useCheckForUpdates';
+import { useDialog } from '../hooks/useDialog';
 import { useExportData } from '../hooks/useExportData';
 import { useImportData } from '../hooks/useImportData';
 import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
@@ -10,7 +11,6 @@ import type { DropdownRef } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
-import { useDialog } from '../hooks/useDialog';
 import { KeyboardShortcutsDialog } from './KeyboardShortcutsDialog';
 
 export function SettingsDropdown() {
@@ -73,14 +73,14 @@ export function SettingsDropdown() {
           label: 'Feedback',
           leftSlot: <Icon icon="chat" />,
           rightSlot: <Icon icon="external_link" />,
-          onSelect: () => open('https://yaak.app/roadmap'),
+          onSelect: () => openUrl('https://yaak.app/roadmap'),
         },
         {
           key: 'changelog',
           label: 'Changelog',
           leftSlot: <Icon icon="cake" />,
           rightSlot: <Icon icon="external_link" />,
-          onSelect: () => open(`https://yaak.app/changelog/${appInfo.version}`),
+          onSelect: () => openUrl(`https://yaak.app/changelog/${appInfo.version}`),
         },
       ]}
     >

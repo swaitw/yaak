@@ -29,7 +29,9 @@
         }
       ]
     },
-    "shell:allow-open",
+    "opener:allow-open-url",
+    "opener:allow-open-path",
+    "opener:allow-default-urls",
     "core:webview:allow-set-webview-zoom",
     "core:window:allow-close",
     "core:window:allow-internal-toggle-maximize",

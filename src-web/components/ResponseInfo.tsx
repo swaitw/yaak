@@ -1,4 +1,4 @@
-import { open } from '@tauri-apps/plugin-shell';
+import { openUrl } from '@tauri-apps/plugin-opener';
 import type { HttpResponse } from '@yaakapp-internal/models';
 import { IconButton } from './core/IconButton';
 import { KeyValueRow, KeyValueRows } from './core/KeyValueRow';
@@ -22,7 +22,7 @@ export function ResponseInfo({ response }: Props) {
                 iconSize="sm"
                 className="inline-block w-auto ml-1 !h-auto opacity-50 hover:opacity-100"
                 icon="external_link"
-                onClick={() => open(response.url)}
+                onClick={() => openUrl(response.url)}
                 title="Open in browser"
               />
             </div>
