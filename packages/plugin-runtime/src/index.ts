@@ -1,7 +1,8 @@
-import { InternalEvent } from '@yaakapp/api';
+import type { InternalEvent } from '@yaakapp/api';
 import { createChannel, createClient, Status } from 'nice-grpc';
 import { EventChannel } from './EventChannel';
-import { PluginRuntimeClient, PluginRuntimeDefinition } from './gen/plugins/runtime';
+import type { PluginRuntimeClient} from './gen/plugins/runtime';
+import { PluginRuntimeDefinition } from './gen/plugins/runtime';
 import { PluginHandle } from './PluginHandle';
 
 const port = process.env.PORT || '50051';

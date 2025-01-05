@@ -1,5 +1,5 @@
-import { Theme } from '../themes';
-import { Context } from './Context';
+import type { Theme } from '../themes';
+import type { Context } from './Context';
 
 export type ThemePlugin = {
   name: string;

@@ -8,7 +8,7 @@ import {useEffect} from 'react';
  */
 export function useListenToTauriEvent<T>(event: EventName, fn: EventCallback<T>) {
   useEffect(() => {
-    const unlisten = listen(
+    const unlisten = listen<T>(
       event,
       fn,
       // Listen to `emit_all()` events or events specific to the current window

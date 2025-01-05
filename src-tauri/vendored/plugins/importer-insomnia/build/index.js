@@ -7233,7 +7233,6 @@ function pluginHookImport(ctx, contents) {
   };
   const workspacesToImport = parsed.resources.filter(isWorkspace);
   for (const workspaceToImport of workspacesToImport) {
-    console.log("IMPORT WORKSPACE", workspaceToImport);
     resources.workspaces.push({
       id: convertId(workspaceToImport._id),
       createdAt: new Date(workspacesToImport.created ?? Date.now()).toISOString().replace("Z", ""),

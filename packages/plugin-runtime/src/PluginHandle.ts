@@ -1,8 +1,8 @@
-import { BootRequest, InternalEvent } from '@yaakapp-internal/plugins';
+import type { BootRequest, InternalEvent } from '@yaakapp-internal/plugins';
 import path from 'node:path';
 import { Worker } from 'node:worker_threads';
-import { EventChannel } from './EventChannel';
-import { PluginWorkerData } from './index.worker';
+import type { EventChannel } from './EventChannel';
+import type { PluginWorkerData } from './index.worker';
 
 export class PluginHandle {
   #worker: Worker;

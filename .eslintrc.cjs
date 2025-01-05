@@ -15,8 +15,8 @@ module.exports = {
   },
   ignorePatterns: [
     'scripts/**/*',
-    'plugin-runtime/**/*',
-    'plugin-runtime-types/**/*',
+    'packages/plugin-runtime/**/*',
+    'packages/plugin-runtime-types/**/*',
     'src-tauri/**/*',
     'src-web/tailwind.config.cjs',
     'src-web/vite.config.ts',

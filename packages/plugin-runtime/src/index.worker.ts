@@ -1,4 +1,4 @@
-import {
+import type {
   BootRequest,
   FindHttpResponsesResponse,
   GetHttpRequestByIdResponse,
@@ -13,12 +13,13 @@ import {
   TemplateRenderResponse,
   WindowContext,
 } from '@yaakapp-internal/plugins';
-import { Context } from '@yaakapp/api';
-import { HttpRequestActionPlugin } from '@yaakapp/api/lib/plugins/HttpRequestActionPlugin';
-import { TemplateFunctionPlugin } from '@yaakapp/api/lib/plugins/TemplateFunctionPlugin';
+import type { Context } from '@yaakapp/api';
+import type { HttpRequestActionPlugin } from '@yaakapp/api/lib/plugins/HttpRequestActionPlugin';
+import type { TemplateFunctionPlugin } from '@yaakapp/api/lib/plugins/TemplateFunctionPlugin';
 import interceptStdout from 'intercept-stdout';
 import * as console from 'node:console';
-import { readFileSync, Stats, statSync, watch } from 'node:fs';
+import type { Stats} from 'node:fs';
+import { readFileSync, statSync, watch } from 'node:fs';
 import path from 'node:path';
 import * as util from 'node:util';
 import { parentPort, workerData } from 'node:worker_threads';
@@ -200,7 +201,7 @@ async function initialize() {
 
   // Message comes into the plugin to be processed
   parentPort!.on('message', async (event: InternalEvent) => {
-    let { windowContext, payload, id: replyId } = event;
+    const { windowContext, payload, id: replyId } = event;
     const ctx = newCtx(event);
     try {
       if (payload.type === 'boot_request') {

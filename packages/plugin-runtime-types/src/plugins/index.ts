@@ -1,8 +1,8 @@
-import { FilterPlugin } from './FilterPlugin';
-import { HttpRequestActionPlugin } from './HttpRequestActionPlugin';
-import { ImporterPlugin } from './ImporterPlugin';
-import { TemplateFunctionPlugin } from './TemplateFunctionPlugin';
-import { ThemePlugin } from './ThemePlugin';
+import type { FilterPlugin } from './FilterPlugin';
+import type { HttpRequestActionPlugin } from './HttpRequestActionPlugin';
+import type { ImporterPlugin } from './ImporterPlugin';
+import type { TemplateFunctionPlugin } from './TemplateFunctionPlugin';
+import type { ThemePlugin } from './ThemePlugin';
 
 export type { Context } from './Context';
 

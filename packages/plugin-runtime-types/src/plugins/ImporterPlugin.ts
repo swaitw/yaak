@@ -1,6 +1,6 @@
-import { Environment, Folder, GrpcRequest, HttpRequest, Workspace } from '..';
-import { AtLeast } from '../helpers';
-import { Context } from './Context';
+import type { Environment, Folder, GrpcRequest, HttpRequest, Workspace } from '..';
+import type { AtLeast } from '../helpers';
+import type { Context } from './Context';
 
 export type ImportPluginResponse = null | {
   workspaces: AtLeast<Workspace, 'name' | 'id' | 'model'>[];

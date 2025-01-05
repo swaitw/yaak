@@ -1,6 +1,6 @@
-import { InternalEvent } from '@yaakapp/api';
+import type { InternalEvent } from '@yaakapp/api';
 import EventEmitter from 'node:events';
-import { EventStreamEvent } from './gen/plugins/runtime';
+import type { EventStreamEvent } from './gen/plugins/runtime';
 
 export class EventChannel {
   emitter: EventEmitter = new EventEmitter();
