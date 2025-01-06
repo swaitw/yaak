@@ -10,7 +10,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { DialogProvider, Dialogs } from '../components/Dialogs';
 import { GlobalHooks } from '../components/GlobalHooks';
 import RouteError from '../components/RouteError';
-import { ToastProvider, Toasts } from '../components/Toasts';
+import { Toasts } from '../components/Toasts';
 import { useOsInfo } from '../hooks/useOsInfo';
 import { jotaiStore } from '../lib/jotai';
 
@@ -66,19 +66,17 @@ function RouteComponent() {
             <DndProvider backend={HTML5Backend}>
               <Suspense>
                 <DialogProvider>
-                  <ToastProvider>
-                    <GlobalHooks />
-                    <Toasts />
-                    <Dialogs />
-                    <div
-                      className={classNames(
-                        'w-full h-full',
-                        osInfo?.osType === 'linux' && 'border border-border-subtle',
-                      )}
-                    >
-                      <Outlet />
-                    </div>
-                  </ToastProvider>
+                  <GlobalHooks />
+                  <Toasts />
+                  <Dialogs />
+                  <div
+                    className={classNames(
+                      'w-full h-full',
+                      osInfo?.osType === 'linux' && 'border border-border-subtle',
+                    )}
+                  >
+                    <Outlet />
+                  </div>
                 </DialogProvider>
               </Suspense>
             </DndProvider>

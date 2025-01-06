@@ -1,6 +1,7 @@
 import { emit } from '@tauri-apps/api/event';
 import type { PromptTextRequest, PromptTextResponse } from '@yaakapp-internal/plugins';
-import {useWatchWorkspace} from "@yaakapp-internal/sync";
+import { useWatchWorkspace } from '@yaakapp-internal/sync';
+import type { ShowToastRequest } from '@yaakapp/api';
 import {
   useEnsureActiveCookieJar,
   useSubscribeActiveCookieJarId,
@@ -28,6 +29,7 @@ import { useSyncWorkspaceChildModels } from '../hooks/useSyncWorkspaceChildModel
 import { useSyncWorkspaceRequestTitle } from '../hooks/useSyncWorkspaceRequestTitle';
 import { useSyncZoomSetting } from '../hooks/useSyncZoomSetting';
 import { useSubscribeTemplateFunctions } from '../hooks/useTemplateFunctions';
+import {useToast} from "../hooks/useToast";
 import { useToggleCommandPalette } from '../hooks/useToggleCommandPalette';
 
 export function GlobalHooks() {
@@ -54,6 +56,12 @@ export function GlobalHooks() {
   useNotificationToast();
   useActiveWorkspaceChangedToast();
   useEnsureActiveCookieJar();
+
+  // Listen for toasts
+  const toast = useToast();
+  useListenToTauriEvent<ShowToastRequest>('show_toast', (event) => {
+    toast.show({ ...event.payload });
+  });
 
   // Trigger workspace sync operation when workspace files change
   const activeWorkspace = useActiveWorkspace();
