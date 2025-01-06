@@ -1668,20 +1668,20 @@ async fn cmd_check_for_updates(
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    #[cfg(debug_assertions)] // only enable instrumentation in development builds
-    let devtools = tauri_plugin_devtools::init();
+    // #[cfg(debug_assertions)] // only enable instrumentation in development builds
+    // let devtools = tauri_plugin_devtools::init();
 
     let mut builder = tauri::Builder::default();
-    #[cfg(debug_assertions)]
-    {
-        builder = builder.plugin(devtools);
-    }
+    // #[cfg(debug_assertions)]
+    // {
+    //     builder = builder.plugin(devtools);
+    // }
 
     // Only use logger in production, because it conflicts with Tauri devtools
-    #[cfg(not(debug_assertions))]
+    // #[cfg(not(debug_assertions))]
     {
+        use tauri_plugin_log::fern::colors::ColoredLevelConfig;
         use tauri_plugin_log::{Builder, Target, TargetKind};
-        use fern::colors::ColoredLevelConfig;
 
         let log_plugin = Builder::default()
             .targets([
@@ -1706,7 +1706,7 @@ pub fn run() {
             .level_for("swc_ecma_codegen", log::LevelFilter::Off)
             .level_for("swc_ecma_transforms_base", log::LevelFilter::Off)
             .with_colors(ColoredLevelConfig::default())
-            .level(log::LevelFilter::Info)
+            .level(if is_dev() { log::LevelFilter::Debug } else { log::LevelFilter::Info })
             .build();
 
         builder = builder.plugin(log_plugin);
@@ -1995,7 +1995,9 @@ fn create_window(handle: &AppHandle, config: CreateWindowConfig) -> WebviewWindo
             "zoom_out" => w.emit("zoom_out", true).unwrap(),
             "settings" => w.emit("settings", true).unwrap(),
             "open_feedback" => {
-                if let Err(e) = w.app_handle().opener().open_url("https://yaak.app/feedback", None::<&str>) {
+                if let Err(e) =
+                    w.app_handle().opener().open_url("https://yaak.app/feedback", None::<&str>)
+                {
                     warn!("Failed to open feedback {e:?}")
                 }
             }

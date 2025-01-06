@@ -5548,6 +5548,11 @@
           "const": "yaak-sync:allow-unstage"
         },
         {
+          "description": "Enables the watch command without any pre-configured scope.",
+          "type": "string",
+          "const": "yaak-sync:allow-watch"
+        },
+        {
           "description": "Denies the activate command without any pre-configured scope.",
           "type": "string",
           "const": "yaak-sync:deny-activate"
@@ -5651,6 +5656,11 @@
           "description": "Denies the unstage command without any pre-configured scope.",
           "type": "string",
           "const": "yaak-sync:deny-unstage"
+        },
+        {
+          "description": "Denies the watch command without any pre-configured scope.",
+          "type": "string",
+          "const": "yaak-sync:deny-watch"
         }
       ]
     },

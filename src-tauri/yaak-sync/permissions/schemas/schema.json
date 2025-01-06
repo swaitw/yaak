@@ -505,6 +505,16 @@
           "const": "deny-unstage"
         },
         {
+          "description": "Enables the watch command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-watch"
+        },
+        {
+          "description": "Denies the watch command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-watch"
+        },
+        {
           "description": "Default permissions for the plugin",
           "type": "string",
           "const": "default"

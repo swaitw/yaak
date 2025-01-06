@@ -117,7 +117,7 @@ export const PairEditor = forwardRef<PairEditorRef, PairEditorProps>(function Pa
 
     // Add empty last pair if there is none
     const lastPair = newPairs[newPairs.length - 1];
-    if (lastPair != null && !isPairEmpty(lastPair)) {
+    if (lastPair == null || !isPairEmpty(lastPair)) {
       newPairs.push(emptyPair());
     }
 

@@ -15,7 +15,7 @@ use ts_rs::TS;
 use yaak_models::models::{SyncState, Workspace};
 use yaak_models::queries::{
     delete_environment, delete_folder, delete_grpc_request, delete_http_request, delete_sync_state,
-    delete_workspace, get_workspace, get_workspace_export_resources,
+    delete_workspace, get_workspace_export_resources,
     list_sync_states_for_workspace, upsert_environment, upsert_folder, upsert_grpc_request,
     upsert_http_request, upsert_sync_state, upsert_workspace, UpdateSource,
 };
@@ -65,7 +65,7 @@ impl Display for SyncOp {
 }
 
 #[derive(Debug, Clone)]
-enum DbCandidate {
+pub(crate) enum DbCandidate {
     Added(SyncModel),
     Modified(SyncModel, SyncState),
     Deleted(SyncState),
@@ -92,31 +92,7 @@ pub(crate) struct FsCandidate {
     checksum: String,
 }
 
-pub(crate) async fn calculate_sync<R: Runtime>(
-    window: &WebviewWindow<R>,
-    workspace_id: &str,
-) -> Result<Vec<SyncOp>> {
-    let workspace = get_workspace(window, workspace_id).await?;
-    let db_candidates = get_db_candidates(window, &workspace).await?;
-    let fs_candidates = get_fs_candidates(&workspace).await?;
-    let sync_ops = compute_sync_ops(db_candidates, fs_candidates);
-
-    Ok(sync_ops)
-}
-
-pub(crate) async fn apply_sync<R: Runtime>(
-    window: &WebviewWindow<R>,
-    workspace_id: &str,
-    sync_ops: Vec<SyncOp>,
-) -> Result<()> {
-    let workspace = get_workspace(window, workspace_id).await?;
-    let sync_state_ops = apply_sync_ops(window, &workspace, sync_ops).await?;
-    let result = apply_sync_state_ops(window, &workspace, sync_state_ops).await;
-
-    result
-}
-
-async fn get_db_candidates<R: Runtime>(
+pub(crate) async fn get_db_candidates<R: Runtime>(
     mgr: &impl Manager<R>,
     workspace: &Workspace,
 ) -> Result<Vec<DbCandidate>> {
@@ -163,7 +139,7 @@ async fn get_db_candidates<R: Runtime>(
     Ok(candidates)
 }
 
-async fn get_fs_candidates(workspace: &Workspace) -> Result<Vec<FsCandidate>> {
+pub(crate) async fn get_fs_candidates(workspace: &Workspace) -> Result<Vec<FsCandidate>> {
     let dir = match workspace.setting_sync_dir.clone() {
         None => return Ok(Vec::new()),
         Some(d) => d,
@@ -207,7 +183,7 @@ async fn get_fs_candidates(workspace: &Workspace) -> Result<Vec<FsCandidate>> {
     Ok(candidates)
 }
 
-fn compute_sync_ops(
+pub(crate) fn compute_sync_ops(
     db_candidates: Vec<DbCandidate>,
     fs_candidates: Vec<FsCandidate>,
 ) -> Vec<SyncOp> {
@@ -317,7 +293,7 @@ async fn workspace_models<R: Runtime>(
     sync_models
 }
 
-async fn apply_sync_ops<R: Runtime>(
+pub(crate) async fn apply_sync_ops<R: Runtime>(
     window: &WebviewWindow<R>,
     workspace: &Workspace,
     sync_ops: Vec<SyncOp>,
@@ -339,7 +315,7 @@ async fn apply_sync_ops<R: Runtime>(
 }
 
 #[derive(Debug)]
-enum SyncStateOp {
+pub(crate) enum SyncStateOp {
     Create {
         model_id: String,
         checksum: String,
@@ -427,7 +403,8 @@ async fn apply_sync_op<R: Runtime>(
 
     Ok(sync_state_op)
 }
-async fn apply_sync_state_ops<R: Runtime>(
+
+pub(crate) async fn apply_sync_state_ops<R: Runtime>(
     window: &WebviewWindow<R>,
     workspace: &Workspace,
     ops: Vec<SyncStateOp>,
@@ -483,7 +460,7 @@ async fn apply_sync_state_op<R: Runtime>(
     Ok(())
 }
 
-fn get_workspace_sync_dir(workspace: &Workspace) -> Result<PathBuf> {
+pub(crate) fn get_workspace_sync_dir(workspace: &Workspace) -> Result<PathBuf> {
     let workspace_id = workspace.to_owned().id;
     match workspace.setting_sync_dir.to_owned() {
         Some(d) => Ok(Path::new(&d).to_path_buf()),

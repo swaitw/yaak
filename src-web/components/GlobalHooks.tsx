@@ -1,5 +1,6 @@
 import { emit } from '@tauri-apps/api/event';
 import type { PromptTextRequest, PromptTextResponse } from '@yaakapp-internal/plugins';
+import {useWatchWorkspace} from "@yaakapp-internal/sync";
 import {
   useEnsureActiveCookieJar,
   useSubscribeActiveCookieJarId,
@@ -7,7 +8,7 @@ import {
 import { useSubscribeActiveEnvironmentId } from '../hooks/useActiveEnvironment';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useSubscribeActiveRequestId } from '../hooks/useActiveRequestId';
-import { useSubscribeActiveWorkspaceId } from '../hooks/useActiveWorkspace';
+import { useActiveWorkspace, useSubscribeActiveWorkspaceId } from '../hooks/useActiveWorkspace';
 import { useActiveWorkspaceChangedToast } from '../hooks/useActiveWorkspaceChangedToast';
 import { useDuplicateGrpcRequest } from '../hooks/useDuplicateGrpcRequest';
 import { useDuplicateHttpRequest } from '../hooks/useDuplicateHttpRequest';
@@ -22,6 +23,7 @@ import { useSubscribeRecentRequests } from '../hooks/useRecentRequests';
 import { useSubscribeRecentWorkspaces } from '../hooks/useRecentWorkspaces';
 import { useSyncFontSizeSetting } from '../hooks/useSyncFontSizeSetting';
 import { useSyncModelStores } from '../hooks/useSyncModelStores';
+import { useSyncWorkspace } from '../hooks/useSyncWorkspace';
 import { useSyncWorkspaceChildModels } from '../hooks/useSyncWorkspaceChildModels';
 import { useSyncWorkspaceRequestTitle } from '../hooks/useSyncWorkspaceRequestTitle';
 import { useSyncZoomSetting } from '../hooks/useSyncZoomSetting';
@@ -52,6 +54,12 @@ export function GlobalHooks() {
   useNotificationToast();
   useActiveWorkspaceChangedToast();
   useEnsureActiveCookieJar();
+
+  // Trigger workspace sync operation when workspace files change
+  const activeWorkspace = useActiveWorkspace();
+  const { debouncedSync } = useSyncWorkspace(activeWorkspace, { debounceMillis: 1000 });
+  useListenToTauriEvent('upserted_model', debouncedSync);
+  useWatchWorkspace(activeWorkspace, debouncedSync);
 
   const activeRequest = useActiveRequest();
   const duplicateHttpRequest = useDuplicateHttpRequest({

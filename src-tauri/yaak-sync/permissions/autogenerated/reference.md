@@ -4,6 +4,7 @@ Default permissions for the plugin
 
 - `allow-calculate`
 - `allow-apply`
+- `allow-watch`
 
 ## Permission Table
 
@@ -556,6 +557,32 @@ Enables the unstage command without any pre-configured scope.
 <td>
 
 Denies the unstage command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`yaak-sync:allow-watch`
+
+</td>
+<td>
+
+Enables the watch command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`yaak-sync:deny-watch`
+
+</td>
+<td>
+
+Denies the watch command without any pre-configured scope.
 
 </td>
 </tr>

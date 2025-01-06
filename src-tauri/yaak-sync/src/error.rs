@@ -24,6 +24,9 @@ pub enum Error {
 
     #[error("Invalid sync file: {0}")]
     InvalidSyncFile(String),
+    
+    #[error("Watch error: {0}")]
+    NotifyError(#[from] notify::Error),
 }
 
 impl Serialize for Error {

@@ -1,8 +1,8 @@
 import type { OsType } from '@tauri-apps/plugin-os';
 import { useEffect, useRef } from 'react';
 import { capitalize } from '../lib/capitalize';
-import { debounce } from '../lib/debounce';
 import { useOsInfo } from './useOsInfo';
+import { debounce } from '@yaakapp-internal/lib';
 
 const HOLD_KEYS = ['Shift', 'Control', 'Command', 'Alt', 'Meta'];
 

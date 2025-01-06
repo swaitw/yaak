@@ -488,6 +488,7 @@ export const RequestPane = memo(function RequestPane({
                 <PlainInput
                   label="Request Name"
                   hideLabel
+                  forceUpdateKey={forceUpdateKey}
                   defaultValue={activeRequest.name}
                   className="font-sans !text-xl !px-0"
                   containerClassName="border-0"
@@ -499,6 +500,7 @@ export const RequestPane = memo(function RequestPane({
                   placeholder="Request description"
                   defaultValue={activeRequest.description}
                   stateKey={`description.${activeRequest.id}`}
+                  forceUpdateKey={forceUpdateKey}
                   onChange={(description) =>
                     updateRequest({ id: activeRequestId, update: { description } })
                   }

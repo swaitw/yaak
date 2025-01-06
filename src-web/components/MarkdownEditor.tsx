@@ -11,7 +11,7 @@ import { SplitLayout } from './core/SplitLayout';
 import { VStack } from './core/Stacks';
 import { Prose } from './Prose';
 
-interface Props extends Pick<EditorProps, 'heightMode' | 'stateKey'> {
+interface Props extends Pick<EditorProps, 'heightMode' | 'stateKey' | 'forceUpdateKey'> {
   placeholder: string;
   className?: string;
   defaultValue: string;
@@ -19,15 +19,7 @@ interface Props extends Pick<EditorProps, 'heightMode' | 'stateKey'> {
   name: string;
 }
 
-export function MarkdownEditor({
-  className,
-  defaultValue,
-  onChange,
-  name,
-  placeholder,
-  heightMode,
-  stateKey,
-}: Props) {
+export function MarkdownEditor({ className, defaultValue, onChange, name, ...editorProps }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [width] = useSize(containerRef.current);
@@ -54,9 +46,7 @@ export function MarkdownEditor({
       language="markdown"
       defaultValue={defaultValue}
       onChange={onChange}
-      placeholder={placeholder}
-      heightMode={heightMode}
-      stateKey={stateKey}
+      {...editorProps}
     />
   );
 
