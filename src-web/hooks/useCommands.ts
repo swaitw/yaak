@@ -6,7 +6,6 @@ import { invokeCmd } from '../lib/tauri';
 import { getActiveWorkspaceId } from './useActiveWorkspace';
 import { createFastMutation } from './useFastMutation';
 import { usePrompt } from './usePrompt';
-import { useToast } from './useToast';
 
 function makeCommands({
   navigate,
@@ -14,7 +13,6 @@ function makeCommands({
 }: {
   navigate: ReturnType<typeof useNavigate>;
   prompt: ReturnType<typeof usePrompt>;
-  toast: ReturnType<typeof useToast>;
 }) {
   return {
     createWorkspace: createFastMutation<Workspace, void, Partial<Workspace>>({
@@ -65,7 +63,6 @@ function makeCommands({
 
 export function useCommands() {
   const navigate = useNavigate();
-  const toast = useToast();
   const prompt = usePrompt();
-  return useMemo(() => makeCommands({ navigate, toast, prompt }), [navigate, prompt, toast]);
+  return useMemo(() => makeCommands({ navigate, prompt }), [navigate, prompt]);
 }

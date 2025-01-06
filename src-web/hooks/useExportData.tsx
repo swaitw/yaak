@@ -4,13 +4,12 @@ import { getActiveWorkspace } from './useActiveWorkspace';
 import { useAlert } from './useAlert';
 import { useDialog } from './useDialog';
 import { useFastMutation } from './useFastMutation';
-import { useToast } from './useToast';
+import { showToast } from '../lib/toast';
 import { workspacesAtom } from './useWorkspaces';
 
 export function useExportData() {
   const alert = useAlert();
   const dialog = useDialog();
-  const toast = useToast();
 
   return useFastMutation({
     mutationKey: ['export_data'],
@@ -32,7 +31,7 @@ export function useExportData() {
           <ExportDataDialog
             onHide={hide}
             onSuccess={() => {
-              toast.show({
+              showToast({
                 color: 'success',
                 message: 'Data export successful',
               });

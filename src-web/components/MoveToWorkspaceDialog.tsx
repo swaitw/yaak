@@ -1,11 +1,11 @@
 import { useNavigate } from '@tanstack/react-router';
 import type { GrpcRequest, HttpRequest } from '@yaakapp-internal/models';
 import React, { useState } from 'react';
-import { useToast } from '../hooks/useToast';
 import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
+import {showToast} from "../lib/toast";
 import { Button } from './core/Button';
 import { InlineCode } from './core/InlineCode';
 import { Select } from './core/Select';
@@ -21,7 +21,6 @@ export function MoveToWorkspaceDialog({ onDone, request, activeWorkspaceId }: Pr
   const workspaces = useWorkspaces();
   const updateHttpRequest = useUpdateAnyHttpRequest();
   const updateGrpcRequest = useUpdateAnyGrpcRequest();
-  const toast = useToast();
   const navigate = useNavigate();
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string>(activeWorkspaceId);
 
@@ -54,7 +53,7 @@ export function MoveToWorkspaceDialog({ onDone, request, activeWorkspaceId }: Pr
 
           // Hide after a moment, to give time for request to disappear
           setTimeout(onDone, 100);
-          toast.show({
+          showToast({
             id: 'workspace-moved',
             message: (
               <>

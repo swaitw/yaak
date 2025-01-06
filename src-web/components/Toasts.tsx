@@ -1,7 +1,7 @@
 import { AnimatePresence } from 'framer-motion';
 import { useAtomValue } from 'jotai';
 import React, { type ReactNode } from 'react';
-import { toastsAtom, useToast } from '../hooks/useToast';
+import { hideToast, toastsAtom } from '../lib/toast';
 import { Toast, type ToastProps } from './core/Toast';
 import { Portal } from './Portal';
 
@@ -18,7 +18,6 @@ export type PrivateToastEntry = ToastEntry & {
 };
 
 function ToastInstance({ id, message, timeout, ...props }: PrivateToastEntry) {
-  const toast = useToast();
   return (
     <Toast
       open
@@ -26,7 +25,7 @@ function ToastInstance({ id, message, timeout, ...props }: PrivateToastEntry) {
       {...props}
       // We call onClose inside actions.hide instead of passing to toast so that
       // it gets called from external close calls as well
-      onClose={() => toast.hide(id)}
+      onClose={() => hideToast(id)}
     >
       {message}
     </Toast>

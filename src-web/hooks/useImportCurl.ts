@@ -4,14 +4,13 @@ import { getActiveWorkspaceId } from './useActiveWorkspace';
 import { useCreateHttpRequest } from './useCreateHttpRequest';
 import { useFastMutation } from './useFastMutation';
 import { useRequestUpdateKey } from './useRequestUpdateKey';
-import { useToast } from './useToast';
+import { showToast } from '../lib/toast';
 import { useUpdateAnyHttpRequest } from './useUpdateAnyHttpRequest';
 
 export function useImportCurl() {
   const updateRequest = useUpdateAnyHttpRequest();
   const createRequest = useCreateHttpRequest();
   const { wasUpdatedExternally } = useRequestUpdateKey(null);
-  const toast = useToast();
 
   return useFastMutation({
     mutationKey: ['import_curl'],
@@ -50,7 +49,7 @@ export function useImportCurl() {
         setTimeout(() => wasUpdatedExternally(overwriteRequestId), 100);
       }
 
-      toast.show({
+      showToast({
         color: 'success',
         message: `${verb} request from Curl`,
       });

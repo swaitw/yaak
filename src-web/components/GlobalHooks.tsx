@@ -29,8 +29,8 @@ import { useSyncWorkspaceChildModels } from '../hooks/useSyncWorkspaceChildModel
 import { useSyncWorkspaceRequestTitle } from '../hooks/useSyncWorkspaceRequestTitle';
 import { useSyncZoomSetting } from '../hooks/useSyncZoomSetting';
 import { useSubscribeTemplateFunctions } from '../hooks/useTemplateFunctions';
-import {useToast} from "../hooks/useToast";
 import { useToggleCommandPalette } from '../hooks/useToggleCommandPalette';
+import { showToast } from '../lib/toast';
 
 export function GlobalHooks() {
   useSyncModelStores();
@@ -58,9 +58,8 @@ export function GlobalHooks() {
   useEnsureActiveCookieJar();
 
   // Listen for toasts
-  const toast = useToast();
   useListenToTauriEvent<ShowToastRequest>('show_toast', (event) => {
-    toast.show({ ...event.payload });
+    showToast({ ...event.payload });
   });
 
   // Trigger workspace sync operation when workspace files change

@@ -16,7 +16,6 @@ import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
 import { useRequestEditor, useRequestEditorEvent } from '../hooks/useRequestEditor';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useSendAnyHttpRequest } from '../hooks/useSendAnyHttpRequest';
-import { useToast } from '../hooks/useToast';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
 import { deepEqualAtom } from '../lib/atoms';
 import { languageFromContentType } from '../lib/contentType';
@@ -35,6 +34,7 @@ import {
   BODY_TYPE_OTHER,
   BODY_TYPE_XML,
 } from '../lib/model_util';
+import { showToast } from '../lib/toast';
 import { BasicAuth } from './BasicAuth';
 import { BearerAuth } from './BearerAuth';
 import { BinaryFileEditor } from './BinaryFileEditor';
@@ -123,8 +123,6 @@ export const RequestPane = memo(function RequestPane({
     [activeRequest, updateRequestAsync],
   );
 
-  const toast = useToast();
-
   const { urlParameterPairs, urlParametersKey } = useMemo(() => {
     const placeholderNames = Array.from(activeRequest.url.matchAll(/\/(:[^/]+)/g)).map(
       (m) => m[1] ?? '',
@@ -182,7 +180,7 @@ export const RequestPane = memo(function RequestPane({
 
             const showMethodToast = (newMethod: string) => {
               if (activeRequest.method.toLowerCase() === newMethod.toLowerCase()) return;
-              toast.show({
+              showToast({
                 id: 'switched-method',
                 message: (
                   <>
@@ -276,7 +274,6 @@ export const RequestPane = memo(function RequestPane({
       activeRequestId,
       handleContentTypeChange,
       numParams,
-      toast,
       updateRequest,
       updateRequestAsync,
       urlParameterPairs.length,
