@@ -1,9 +1,9 @@
-import useSize from '@react-hook/size';
 import classNames from 'classnames';
 import type { CSSProperties, MouseEvent as ReactMouseEvent, ReactNode } from 'react';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useLocalStorage } from 'react-use';
 import { useActiveWorkspace } from '../../hooks/useActiveWorkspace';
+import { useContainerSize } from '../../hooks/useContainerQuery';
 import { clamp } from '../../lib/clamp';
 import { ResizeHandle } from '../ResizeHandle';
 
@@ -61,7 +61,8 @@ export function SplitLayout({
     minHeightPx = 0;
   }
 
-  const verticalBasedOnSize = useSize(containerRef.current)[0] < STACK_VERTICAL_WIDTH;
+  const size = useContainerSize(containerRef);
+  const verticalBasedOnSize = size.width < STACK_VERTICAL_WIDTH;
   const vertical = layout !== 'horizontal' && (layout === 'vertical' || verticalBasedOnSize);
 
   const styles = useMemo<CSSProperties>(() => {
