@@ -1,10 +1,10 @@
-import { useCallback } from 'react';
+import { useMemo } from 'react';
 import type { DropdownItem } from '../components/core/Dropdown';
 import { Icon } from '../components/core/Icon';
 import { generateId } from '../lib/generateId';
 import { BODY_TYPE_GRAPHQL } from '../lib/model_util';
 import { getActiveRequest } from './useActiveRequest';
-import {useCommands} from "./useCommands";
+import { useCommands } from './useCommands';
 import { useCreateGrpcRequest } from './useCreateGrpcRequest';
 import { useCreateHttpRequest } from './useCreateHttpRequest';
 
@@ -16,12 +16,12 @@ export function useCreateDropdownItems({
   hideFolder?: boolean;
   hideIcons?: boolean;
   folderId?: string | null | 'active-folder';
-} = {}): () => DropdownItem[] {
+} = {}): DropdownItem[] {
   const { mutate: createHttpRequest } = useCreateHttpRequest();
   const { mutate: createGrpcRequest } = useCreateGrpcRequest();
   const { createFolder } = useCommands();
 
-  return useCallback((): DropdownItem[] => {
+  return useMemo((): DropdownItem[] => {
     const folderId =
       folderIdOption === 'active-folder' ? getActiveRequest()?.folderId : folderIdOption;
 

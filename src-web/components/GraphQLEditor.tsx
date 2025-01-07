@@ -5,8 +5,8 @@ import type { EditorView } from 'codemirror';
 import { formatSdl } from 'format-graphql';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocalStorage } from 'react-use';
-import { useDialog } from '../hooks/useDialog';
 import { useIntrospectGraphQL } from '../hooks/useIntrospectGraphQL';
+import { showDialog } from '../lib/dialog';
 import { tryFormatJson } from '../lib/formatters';
 import { Button } from './core/Button';
 import { Dropdown } from './core/Dropdown';
@@ -61,8 +61,6 @@ export function GraphQLEditor({ request, onChange, baseRequest, ...extraEditorPr
     if (editorViewRef.current === null) return;
     updateSchema(editorViewRef.current, schema ?? undefined);
   }, [schema]);
-
-  const dialog = useDialog();
 
   const actions = useMemo<EditorProps['actions']>(
     () => [
@@ -122,7 +120,7 @@ export function GraphQLEditor({ request, onChange, baseRequest, ...extraEditorPr
             color="danger"
             isLoading={isLoading}
             onClick={() => {
-              dialog.show({
+              showDialog({
                 title: 'Introspection Failed',
                 size: 'dynamic',
                 id: 'introspection-failed',
@@ -161,7 +159,6 @@ export function GraphQLEditor({ request, onChange, baseRequest, ...extraEditorPr
       clear,
       schema,
       setAutoIntrospectDisabled,
-      dialog,
     ],
   );
 

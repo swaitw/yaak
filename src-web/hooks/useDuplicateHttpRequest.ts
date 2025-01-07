@@ -1,6 +1,6 @@
-import { useNavigate } from '@tanstack/react-router';
 import type { HttpRequest } from '@yaakapp-internal/models';
 import { trackEvent } from '../lib/analytics';
+import { router } from '../lib/router';
 import { invokeCmd } from '../lib/tauri';
 import { useFastMutation } from './useFastMutation';
 
@@ -11,7 +11,6 @@ export function useDuplicateHttpRequest({
   id: string | null;
   navigateAfter: boolean;
 }) {
-  const navigate = useNavigate();
   return useFastMutation<HttpRequest, string>({
     mutationKey: ['duplicate_http_request', id],
     mutationFn: async () => {
@@ -21,13 +20,10 @@ export function useDuplicateHttpRequest({
     onSettled: () => trackEvent('http_request', 'duplicate'),
     onSuccess: async (request) => {
       if (navigateAfter) {
-        await navigate({
-          to: '/workspaces/$workspaceId/requests/$requestId',
-          params: {
-            workspaceId: request.workspaceId,
-            requestId: request.id,
-          },
-          search: (prev) => ({ ...prev }),
+        await router.navigate({
+          to: '/workspaces/$workspaceId',
+          params: { workspaceId: request.workspaceId },
+          search: (prev) => ({ ...prev, request_id: request.id }),
         });
       }
     },

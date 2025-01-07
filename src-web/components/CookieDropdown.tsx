@@ -1,11 +1,11 @@
-import { memo, useCallback } from 'react';
-import { useActiveCookieJar } from '../hooks/useActiveCookieJar';
+import { memo, useMemo } from 'react';
+import { setActiveCookieJar, useActiveCookieJar } from '../hooks/useActiveCookieJar';
 import { cookieJarsAtom } from '../hooks/useCookieJars';
 import { useCreateCookieJar } from '../hooks/useCreateCookieJar';
 import { useDeleteCookieJar } from '../hooks/useDeleteCookieJar';
-import { useDialog } from '../hooks/useDialog';
 import { usePrompt } from '../hooks/usePrompt';
 import { useUpdateCookieJar } from '../hooks/useUpdateCookieJar';
+import { showDialog } from '../lib/dialog';
 import { jotaiStore } from '../lib/jotai';
 import { CookieDialog } from './CookieDialog';
 import { Dropdown, type DropdownItem } from './core/Dropdown';
@@ -14,21 +14,20 @@ import { IconButton } from './core/IconButton';
 import { InlineCode } from './core/InlineCode';
 
 export const CookieDropdown = memo(function CookieDropdown() {
-  const [activeCookieJar, setActiveCookieJarId] = useActiveCookieJar();
+  const activeCookieJar = useActiveCookieJar();
   const updateCookieJar = useUpdateCookieJar(activeCookieJar?.id ?? null);
   const deleteCookieJar = useDeleteCookieJar(activeCookieJar ?? null);
   const createCookieJar = useCreateCookieJar();
-  const dialog = useDialog();
   const prompt = usePrompt();
 
-  const getItems = useCallback((): DropdownItem[] => {
+  const items = useMemo((): DropdownItem[] => {
     const cookieJars = jotaiStore.get(cookieJarsAtom) ?? [];
     return [
       ...cookieJars.map((j) => ({
         key: j.id,
         label: j.name,
         leftSlot: <Icon icon={j.id === activeCookieJar?.id ? 'check' : 'empty'} />,
-        onSelect: () => setActiveCookieJarId(j.id),
+        onSelect: () => setActiveCookieJar(j),
       })),
       ...((cookieJars.length > 0 && activeCookieJar != null
         ? [
@@ -39,7 +38,7 @@ export const CookieDropdown = memo(function CookieDropdown() {
               leftSlot: <Icon icon="cookie" />,
               onSelect: () => {
                 if (activeCookieJar == null) return;
-                dialog.show({
+                showDialog({
                   id: 'cookies',
                   title: 'Manage Cookies',
                   size: 'full',
@@ -90,18 +89,10 @@ export const CookieDropdown = memo(function CookieDropdown() {
         onSelect: () => createCookieJar.mutate(),
       },
     ];
-  }, [
-    activeCookieJar,
-    createCookieJar,
-    deleteCookieJar,
-    dialog,
-    prompt,
-    setActiveCookieJarId,
-    updateCookieJar,
-  ]);
+  }, [activeCookieJar, createCookieJar, deleteCookieJar, prompt, updateCookieJar]);
 
   return (
-    <Dropdown items={getItems}>
+    <Dropdown items={items}>
       <IconButton size="sm" icon="cookie" title="Cookie Jar" />
     </Dropdown>
   );

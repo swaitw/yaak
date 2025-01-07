@@ -1,4 +1,3 @@
-import { useNavigate } from '@tanstack/react-router';
 import type {
   Environment,
   Folder,
@@ -10,18 +9,15 @@ import { Button } from '../components/core/Button';
 import { FormattedError } from '../components/core/FormattedError';
 import { VStack } from '../components/core/Stacks';
 import { ImportDataDialog } from '../components/ImportDataDialog';
+import { showAlert } from '../lib/alert';
+import { showDialog } from '../lib/dialog';
 import { pluralizeCount } from '../lib/pluralize';
+import { router } from '../lib/router';
 import { invokeCmd } from '../lib/tauri';
 import { getActiveWorkspace } from './useActiveWorkspace';
-import { useAlert } from './useAlert';
-import { useDialog } from './useDialog';
 import { useFastMutation } from './useFastMutation';
 
 export function useImportData() {
-  const dialog = useDialog();
-  const alert = useAlert();
-  const navigate = useNavigate();
-
   const importData = async (filePath: string): Promise<boolean> => {
     const activeWorkspace = getActiveWorkspace();
     const imported: {
@@ -37,7 +33,7 @@ export function useImportData() {
 
     const importedWorkspace = imported.workspaces[0];
 
-    dialog.show({
+    showDialog({
       id: 'import-complete',
       title: 'Import Complete',
       size: 'sm',
@@ -65,7 +61,7 @@ export function useImportData() {
 
     if (importedWorkspace != null) {
       const environmentId = imported.environments[0]?.id ?? null;
-      await navigate({
+      await router.navigate({
         to: '/workspaces/$workspaceId',
         params: { workspaceId: importedWorkspace.id },
         search: { environment_id: environmentId },
@@ -78,7 +74,7 @@ export function useImportData() {
   return useFastMutation({
     mutationKey: ['import_data'],
     onError: (err: string) => {
-      alert({
+      showAlert({
         id: 'import-failed',
         title: 'Import Failed',
         size: 'md',
@@ -87,7 +83,7 @@ export function useImportData() {
     },
     mutationFn: async () => {
       return new Promise<void>((resolve, reject) => {
-        dialog.show({
+        showDialog({
           id: 'import',
           title: 'Import Data',
           size: 'sm',

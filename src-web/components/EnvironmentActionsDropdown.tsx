@@ -2,12 +2,12 @@ import classNames from 'classnames';
 import { memo, useCallback, useMemo } from 'react';
 import { useActiveEnvironment } from '../hooks/useActiveEnvironment';
 import { useEnvironments } from '../hooks/useEnvironments';
+import { toggleDialog } from '../lib/dialog';
 import type { ButtonProps } from './core/Button';
 import { Button } from './core/Button';
 import type { DropdownItem } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
-import { useDialog } from '../hooks/useDialog';
 import { EnvironmentEditDialog } from './EnvironmentEditDialog';
 
 type Props = {
@@ -20,17 +20,16 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
 }: Props) {
   const { subEnvironments, baseEnvironment } = useEnvironments();
   const [activeEnvironment, setActiveEnvironmentId] = useActiveEnvironment();
-  const dialog = useDialog();
 
   const showEnvironmentDialog = useCallback(() => {
-    dialog.toggle({
+    toggleDialog({
       id: 'environment-editor',
       noPadding: true,
       size: 'lg',
       className: 'h-[80vh]',
       render: () => <EnvironmentEditDialog initialEnvironment={activeEnvironment} />,
     });
-  }, [dialog, activeEnvironment]);
+  }, [activeEnvironment]);
 
   const items: DropdownItem[] = useMemo(
     () => [

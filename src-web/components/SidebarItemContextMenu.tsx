@@ -1,8 +1,7 @@
-import React, { useCallback } from 'react';
+import React, { useMemo } from 'react';
 import { useCreateDropdownItems } from '../hooks/useCreateDropdownItems';
 import { useDeleteFolder } from '../hooks/useDeleteFolder';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
-import { useDialog } from '../hooks/useDialog';
 import { useDuplicateFolder } from '../hooks/useDuplicateFolder';
 import { useDuplicateGrpcRequest } from '../hooks/useDuplicateGrpcRequest';
 import { useDuplicateHttpRequest } from '../hooks/useDuplicateHttpRequest';
@@ -12,6 +11,8 @@ import { useRenameRequest } from '../hooks/useRenameRequest';
 import { useSendAnyHttpRequest } from '../hooks/useSendAnyHttpRequest';
 import { useSendManyRequests } from '../hooks/useSendManyRequests';
 import { useWorkspaces } from '../hooks/useWorkspaces';
+
+import { showDialog } from '../lib/dialog';
 import { getHttpRequest } from '../lib/store';
 import type { DropdownItem } from './core/Dropdown';
 import { ContextMenu } from './core/Dropdown';
@@ -32,7 +33,6 @@ export function SidebarItemContextMenu({ child, show, close }: Props) {
   const httpRequestActions = useHttpRequestActions();
   const sendRequest = useSendAnyHttpRequest();
   const workspaces = useWorkspaces();
-  const dialog = useDialog();
   const deleteRequest = useDeleteRequest(child.id);
   const renameRequest = useRenameRequest(child.id);
   const duplicateHttpRequest = useDuplicateHttpRequest({ id: child.id, navigateAfter: true });
@@ -42,7 +42,7 @@ export function SidebarItemContextMenu({ child, show, close }: Props) {
     folderId: child.model === 'folder' ? child.id : null,
   });
 
-  const items = useCallback((): DropdownItem[] => {
+  const items = useMemo((): DropdownItem[] => {
     if (child.model === 'folder') {
       return [
         {
@@ -56,7 +56,7 @@ export function SidebarItemContextMenu({ child, show, close }: Props) {
           label: 'Settings',
           leftSlot: <Icon icon="settings" />,
           onSelect: () =>
-            dialog.show({
+            showDialog({
               id: 'folder-settings',
               title: 'Folder Settings',
               size: 'md',
@@ -77,7 +77,7 @@ export function SidebarItemContextMenu({ child, show, close }: Props) {
           onSelect: () => deleteFolder.mutate(),
         },
         { type: 'separator' },
-        ...createDropdownItems(),
+        ...createDropdownItems,
       ];
     } else {
       const requestItems: DropdownItem[] =
@@ -146,7 +146,6 @@ export function SidebarItemContextMenu({ child, show, close }: Props) {
     createDropdownItems,
     deleteFolder,
     deleteRequest,
-    dialog,
     duplicateFolder,
     duplicateGrpcRequest,
     duplicateHttpRequest,

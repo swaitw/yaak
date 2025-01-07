@@ -1,11 +1,18 @@
 import { atom } from 'jotai/index';
-import type { PrivateToastEntry, ToastEntry } from '../components/Toasts';
+import type { ToastInstance } from '../components/Toasts';
 import { generateId } from './generateId';
 import { jotaiStore } from './jotai';
 
-export const toastsAtom = atom<PrivateToastEntry[]>([]);
+export const toastsAtom = atom<ToastInstance[]>([]);
 
-export function showToast({ id, timeout = 5000, ...props }: ToastEntry) {
+export function showToast({
+  id,
+  timeout = 5000,
+  ...props
+}: Omit<ToastInstance, 'id' | 'timeout'> & {
+  id?: ToastInstance['id'];
+  timeout?: ToastInstance['timeout'];
+}) {
   id = id ?? generateId();
   if (timeout != null) {
     setTimeout(() => hideToast(id), timeout);

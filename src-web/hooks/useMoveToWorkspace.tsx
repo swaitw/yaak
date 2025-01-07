@@ -1,22 +1,21 @@
 import React from 'react';
 import { MoveToWorkspaceDialog } from '../components/MoveToWorkspaceDialog';
+import { showDialog } from '../lib/dialog';
 import { getActiveWorkspaceId } from './useActiveWorkspace';
-import { useDialog } from './useDialog';
 import { useFastMutation } from './useFastMutation';
-import { useRequests } from './useRequests';
+import { getRequests } from './useRequests';
 
 export function useMoveToWorkspace(id: string) {
-  const dialog = useDialog();
-  const requests = useRequests();
-  const request = requests.find((r) => r.id === id);
-
   return useFastMutation<void, unknown>({
     mutationKey: ['move_workspace', id],
     mutationFn: async () => {
       const activeWorkspaceId = getActiveWorkspaceId();
-      if (request == null || activeWorkspaceId == null) return;
+      if (activeWorkspaceId == null) return;
 
-      dialog.show({
+      const request = getRequests().find((r) => r.id === id);
+      if (request == null) return;
+
+      showDialog({
         id: 'change-workspace',
         title: 'Move Workspace',
         size: 'sm',

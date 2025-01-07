@@ -3,11 +3,11 @@ import { memo, useCallback, useMemo } from 'react';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useCreateWorkspace } from '../hooks/useCreateWorkspace';
 import { useDeleteSendHistory } from '../hooks/useDeleteSendHistory';
-import { useDialog } from '../hooks/useDialog';
 import { useOpenWorkspace } from '../hooks/useOpenWorkspace';
 import { useSettings } from '../hooks/useSettings';
 import { useSyncWorkspace } from '../hooks/useSyncWorkspace';
 import { useWorkspaces } from '../hooks/useWorkspaces';
+import { showDialog } from '../lib/dialog';
 import { getWorkspace } from '../lib/store';
 import type { ButtonProps } from './core/Button';
 import { Button } from './core/Button';
@@ -28,7 +28,6 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
   const activeWorkspace = useActiveWorkspace();
   const createWorkspace = useCreateWorkspace();
   const { mutate: deleteSendHistory } = useDeleteSendHistory();
-  const dialog = useDialog();
   const settings = useSettings();
   const openWorkspace = useOpenWorkspace();
   const openWorkspaceNewWindow = settings?.openWorkspaceNewWindow ?? null;
@@ -57,7 +56,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
         leftSlot: <Icon icon="settings" />,
         hotKeyAction: 'workspace_settings.show',
         onSelect: async () => {
-          dialog.show({
+          showDialog({
             id: 'workspace-settings',
             title: 'Workspace Settings',
             size: 'md',
@@ -97,7 +96,6 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
     sync,
     deleteSendHistory,
     createWorkspace,
-    dialog,
   ]);
 
   const handleChange = useCallback(
@@ -112,14 +110,14 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
       const workspace = await getWorkspace(workspaceId);
       if (workspace == null) return;
 
-      dialog.show({
+      showDialog({
         id: 'open-workspace',
         size: 'sm',
         title: 'Open Workspace',
         render: ({ hide }) => <OpenWorkspaceDialog workspace={workspace} hide={hide} />,
       });
     },
-    [dialog, openWorkspace, openWorkspaceNewWindow],
+    [openWorkspace, openWorkspaceNewWindow],
   );
 
   return (

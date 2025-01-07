@@ -1,5 +1,6 @@
 import { jsonLanguage } from '@codemirror/lang-json';
 import { linter } from '@codemirror/lint';
+import type { GrpcRequest } from '@yaakapp-internal/models';
 import classNames from 'classnames';
 import type { EditorView } from 'codemirror';
 import {
@@ -10,19 +11,18 @@ import {
   updateSchema,
 } from 'codemirror-json-schema';
 import { useEffect, useMemo, useRef } from 'react';
-import { useAlert } from '../hooks/useAlert';
 import type { ReflectResponseService } from '../hooks/useGrpc';
+import { showAlert } from '../lib/alert';
+import { showDialog } from '../lib/dialog';
 import { tryFormatJson } from '../lib/formatters';
-import type { GrpcRequest } from '@yaakapp-internal/models';
 import { pluralizeCount } from '../lib/pluralize';
 import { Button } from './core/Button';
+import type { EditorProps } from './core/Editor/Editor';
+import { Editor } from './core/Editor/Editor';
 import { FormattedError } from './core/FormattedError';
 import { InlineCode } from './core/InlineCode';
 import { VStack } from './core/Stacks';
-import { useDialog } from '../hooks/useDialog';
 import { GrpcProtoSelection } from './GrpcProtoSelection';
-import type { EditorProps} from './core/Editor/Editor';
-import {Editor} from './core/Editor/Editor';
 
 type Props = Pick<EditorProps, 'heightMode' | 'onChange' | 'className'> & {
   services: ReflectResponseService[] | null;
@@ -42,9 +42,6 @@ export function GrpcEditor({
 }: Props) {
   const editorViewRef = useRef<EditorView>(null);
 
-  const alert = useAlert();
-  const dialog = useDialog();
-
   // Find the schema for the selected service and method and update the editor
   useEffect(() => {
     if (
@@ -59,7 +56,7 @@ export function GrpcEditor({
     const s = services.find((s) => s.name === request.service);
     if (s == null) {
       console.log('Failed to find service', { service: request.service, services });
-      alert({
+      showAlert({
         id: 'grpc-find-service-error',
         title: "Couldn't Find Service",
         body: (
@@ -74,7 +71,7 @@ export function GrpcEditor({
     const schema = s.methods.find((m) => m.name === request.method)?.schema;
     if (request.method != null && schema == null) {
       console.log('Failed to find method', { method: request.method, methods: s?.methods });
-      alert({
+      showAlert({
         id: 'grpc-find-schema-error',
         title: "Couldn't Find Method",
         body: (
@@ -94,7 +91,7 @@ export function GrpcEditor({
     try {
       updateSchema(editorViewRef.current, JSON.parse(schema));
     } catch (err) {
-      alert({
+      showAlert({
         id: 'grpc-parse-schema-error',
         title: 'Failed to Parse Schema',
         body: (
@@ -108,7 +105,7 @@ export function GrpcEditor({
         ),
       });
     }
-  }, [alert, services, request.method, request.service]);
+  }, [services, request.method, request.service]);
 
   const extraExtensions = useMemo(
     () => [
@@ -143,7 +140,7 @@ export function GrpcEditor({
           }
           isLoading={reflectionLoading}
           onClick={() => {
-            dialog.show({
+            showDialog({
               title: 'Configure Schema',
               size: 'md',
               id: 'reflection-failed',
@@ -172,7 +169,6 @@ export function GrpcEditor({
       </div>,
     ],
     [
-      dialog,
       protoFiles.length,
       reflectionError,
       reflectionLoading,

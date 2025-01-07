@@ -338,7 +338,7 @@ function PairEditorRow({
   const handleFocus = useCallback(() => onFocus?.(pair), [onFocus, pair]);
   const handleDelete = useCallback(() => onDelete?.(pair, false), [onDelete, pair]);
 
-  const getDeleteItems = useCallback(
+  const deleteItems = useMemo(
     (): DropdownItem[] => [
       {
         key: 'delete',
@@ -525,7 +525,7 @@ function PairEditorRow({
           onDelete={handleDelete}
         />
       ) : (
-        <Dropdown items={getDeleteItems}>
+        <Dropdown items={deleteItems}>
           <IconButton
             iconSize="sm"
             size="xs"

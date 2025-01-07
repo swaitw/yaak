@@ -1,16 +1,15 @@
 import type { DialogProps } from '../components/core/Dialog';
+import { showDialog } from '../lib/dialog';
 import type { PromptProps } from './Prompt';
 import { Prompt } from './Prompt';
-import {useDialog} from "./useDialog";
 
 type Props = Pick<DialogProps, 'title' | 'description'> &
   Omit<PromptProps, 'onClose' | 'onCancel' | 'onResult'> & { id: string };
 
 export function usePrompt() {
-  const dialog = useDialog();
   return ({ id, title, description, ...props }: Props) =>
     new Promise((resolve: PromptProps['onResult']) => {
-      dialog.show({
+      showDialog({
         id,
         title,
         description,

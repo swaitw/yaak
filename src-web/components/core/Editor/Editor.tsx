@@ -20,7 +20,6 @@ import {
   useRef,
 } from 'react';
 import { useActiveEnvironmentVariables } from '../../../hooks/useActiveEnvironmentVariables';
-import { useDialog } from '../../../hooks/useDialog';
 import { parseTemplate } from '../../../hooks/useParseTemplate';
 import { useRequestEditor } from '../../../hooks/useRequestEditor';
 import { useSettings } from '../../../hooks/useSettings';
@@ -28,6 +27,7 @@ import {
   useTemplateFunctions,
   useTwigCompletionOptions,
 } from '../../../hooks/useTemplateFunctions';
+import { showDialog } from '../../../lib/dialog';
 import { TemplateFunctionDialog } from '../../TemplateFunctionDialog';
 import { TemplateVariableDialog } from '../../TemplateVariableDialog';
 import { IconButton } from '../IconButton';
@@ -195,11 +195,10 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
     [wrapLines],
   );
 
-  const dialog = useDialog();
   const onClickFunction = useCallback(
     async (fn: TemplateFunction, tagValue: string, startPos: number) => {
       const initialTokens = await parseTemplate(tagValue);
-      dialog.show({
+      showDialog({
         id: 'template-function',
         size: 'sm',
         title: 'Configure Function',
@@ -218,13 +217,13 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
         ),
       });
     },
-    [dialog],
+    [],
   );
 
   const onClickVariable = useCallback(
     async (_v: EnvironmentVariable, tagValue: string, startPos: number) => {
       const initialTokens = await parseTemplate(tagValue);
-      dialog.show({
+      showDialog({
         size: 'dynamic',
         id: 'template-variable',
         title: 'Change Variable',
@@ -241,13 +240,13 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
         ),
       });
     },
-    [dialog],
+    [],
   );
 
   const onClickMissingVariable = useCallback(
     async (_name: string, tagValue: string, startPos: number) => {
       const initialTokens = await parseTemplate(tagValue);
-      dialog.show({
+      showDialog({
         size: 'dynamic',
         id: 'template-variable',
         title: 'Configure Variable',
@@ -264,7 +263,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
         ),
       });
     },
-    [dialog],
+    [],
   );
 
   const [, { focusParamValue }] = useRequestEditor();

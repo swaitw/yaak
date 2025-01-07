@@ -1,6 +1,5 @@
-import { useNavigate } from '@tanstack/react-router';
 import classNames from 'classnames';
-import { useCallback, useMemo, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { useKeyPressEvent } from 'react-use';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { getActiveWorkspaceId } from '../hooks/useActiveWorkspace';
@@ -10,6 +9,7 @@ import { httpRequestsAtom } from '../hooks/useHttpRequests';
 import { useRecentRequests } from '../hooks/useRecentRequests';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import { jotaiStore } from '../lib/jotai';
+import { router } from '../lib/router';
 import { Button } from './core/Button';
 import type { DropdownItem, DropdownRef } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
@@ -24,7 +24,6 @@ export function RecentRequestsDropdown({ className }: Props) {
   const dropdownRef = useRef<DropdownRef>(null);
   const [allRecentRequestIds] = useRecentRequests();
   const recentRequestIds = useMemo(() => allRecentRequestIds.slice(1), [allRecentRequestIds]);
-  const navigate = useNavigate();
 
   // Handle key-up
   useKeyPressEvent('Control', undefined, () => {
@@ -42,7 +41,7 @@ export function RecentRequestsDropdown({ className }: Props) {
     dropdownRef.current?.prev?.();
   });
 
-  const getItems = useCallback(() => {
+  const items = useMemo(() => {
     const activeWorkspaceId = getActiveWorkspaceId();
     if (activeWorkspaceId === null) return [];
 
@@ -58,13 +57,10 @@ export function RecentRequestsDropdown({ className }: Props) {
         // leftSlot: <CountBadge className="!ml-0 px-0 w-5" count={recentRequestItems.length} />,
         leftSlot: <HttpMethodTag className="text-right" shortNames request={request} />,
         onSelect: async () => {
-          await navigate({
-            to: '/workspaces/$workspaceId/requests/$requestId',
-            params: {
-              requestId: request.id,
-              workspaceId: activeWorkspaceId,
-            },
-            search: (prev) => ({ ...prev }),
+          await router.navigate({
+            to: '/workspaces/$workspaceId',
+            params: { workspaceId: activeWorkspaceId },
+            search: (prev) => ({ ...prev, request_id: request.id }),
           });
         },
       });
@@ -82,10 +78,10 @@ export function RecentRequestsDropdown({ className }: Props) {
     }
 
     return recentRequestItems.slice(0, 20);
-  }, [navigate, recentRequestIds]);
+  }, [recentRequestIds]);
 
   return (
-    <Dropdown ref={dropdownRef} items={getItems}>
+    <Dropdown ref={dropdownRef} items={items}>
       <Button
         data-tauri-drag-region
         size="sm"

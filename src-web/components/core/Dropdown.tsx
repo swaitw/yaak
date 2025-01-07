@@ -57,7 +57,7 @@ export type DropdownItem = DropdownItemDefault | DropdownItemSeparator;
 
 export interface DropdownProps {
   children: ReactElement<HTMLAttributes<HTMLButtonElement>>;
-  items: DropdownItem[] | (() => DropdownItem[]);
+  items: DropdownItem[];
   onOpen?: () => void;
   onClose?: () => void;
   fullWidth?: boolean;
@@ -75,15 +75,13 @@ export interface DropdownRef {
 }
 
 export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown(
-  { children, items: itemsGetter, onOpen, onClose, hotKeyAction, fullWidth }: DropdownProps,
+  { children, items, onOpen, onClose, hotKeyAction, fullWidth }: DropdownProps,
   ref,
 ) {
   const [isOpen, _setIsOpen] = useState<boolean>(false);
   const [defaultSelectedIndex, setDefaultSelectedIndex] = useState<number>();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<Omit<DropdownRef, 'open'>>(null);
-
-  const [items, setItems] = useState<DropdownItem[]>([]);
 
   const setIsOpen = useCallback(
     (o: SetStateAction<boolean>) => {
@@ -103,8 +101,7 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
 
   const openDropdown = useCallback(() => {
     setIsOpen((o) => !o);
-    setItems(typeof itemsGetter === 'function' ? itemsGetter() : itemsGetter);
-  }, [itemsGetter, setIsOpen]);
+  }, [setIsOpen]);
 
   useImperativeHandle(
     ref,
@@ -205,7 +202,7 @@ export const ContextMenu = forwardRef<DropdownRef, ContextMenuProps>(function Co
       isOpen={true} // Always open because we return null if not
       className={className}
       ref={ref}
-      items={typeof items === 'function' ? items() : items}
+      items={items}
       onClose={onClose}
       triggerShape={triggerShape}
     />
@@ -417,11 +414,9 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle' | 'items'
       [filteredItems, setSelectedIndex],
     );
 
-    if (items.length === 0) return null;
-
     return (
       <>
-        {filteredItems.map(
+        {items.map(
           (item) =>
             item.type !== 'separator' &&
             !item.hotKeyLabelOnly && (

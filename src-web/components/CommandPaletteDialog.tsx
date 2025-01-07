@@ -1,4 +1,3 @@
-import { useNavigate } from '@tanstack/react-router';
 import classNames from 'classnames';
 import { fuzzyFilter } from 'fuzzbunny';
 import type { KeyboardEvent, ReactNode } from 'react';
@@ -13,7 +12,6 @@ import { useCreateHttpRequest } from '../hooks/useCreateHttpRequest';
 import { useCreateWorkspace } from '../hooks/useCreateWorkspace';
 import { useDebouncedState } from '../hooks/useDebouncedState';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
-import { useDialog } from '../hooks/useDialog';
 import { useEnvironments } from '../hooks/useEnvironments';
 import type { HotkeyAction } from '../hooks/useHotKey';
 import { useHotKey } from '../hooks/useHotKey';
@@ -29,7 +27,9 @@ import { useScrollIntoView } from '../hooks/useScrollIntoView';
 import { useSendAnyHttpRequest } from '../hooks/useSendAnyHttpRequest';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useWorkspaces } from '../hooks/useWorkspaces';
+import { showDialog, toggleDialog } from '../lib/dialog';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
+import { router } from '../lib/router';
 import { CookieDialog } from './CookieDialog';
 import { Button } from './core/Button';
 import { Heading } from './core/Heading';
@@ -70,16 +70,14 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
   const openWorkspace = useOpenWorkspace();
   const createHttpRequest = useCreateHttpRequest();
   const { createFolder } = useCommands();
-  const [activeCookieJar] = useActiveCookieJar();
+  const activeCookieJar = useActiveCookieJar();
   const createGrpcRequest = useCreateGrpcRequest();
   const createEnvironment = useCreateEnvironment();
-  const dialog = useDialog();
   const sendRequest = useSendAnyHttpRequest();
   const renameRequest = useRenameRequest(activeRequest?.id ?? null);
   const deleteRequest = useDeleteRequest(activeRequest?.id ?? null);
   const [, setSidebarHidden] = useSidebarHidden();
   const openSettings = useOpenSettings();
-  const navigate = useNavigate();
   const { baseEnvironment } = useEnvironments();
 
   const workspaceCommands = useMemo<CommandPaletteItem[]>(() => {
@@ -109,7 +107,7 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
         key: 'cookies.show',
         label: 'Show Cookies',
         onSelect: async () => {
-          dialog.show({
+          showDialog({
             id: 'cookies',
             title: 'Manage Cookies',
             size: 'full',
@@ -127,7 +125,7 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
         label: 'Edit Environment',
         action: 'environmentEditor.toggle',
         onSelect: () => {
-          dialog.toggle({
+          toggleDialog({
             id: 'environment-editor',
             noPadding: true,
             size: 'lg',
@@ -195,7 +193,6 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
     createHttpRequest,
     createWorkspace,
     deleteRequest.mutate,
-    dialog,
     httpRequestActions,
     openSettings.mutate,
     renameRequest.mutate,
@@ -284,13 +281,10 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
           </HStack>
         ),
         onSelect: async () => {
-          await navigate({
-            to: '/workspaces/$workspaceId/requests/$requestId',
-            params: {
-              workspaceId: r.workspaceId,
-              requestId: r.id,
-            },
-            search: (prev) => ({ ...prev }),
+          await router.navigate({
+            to: '/workspaces/$workspaceId',
+            params: { workspaceId: r.workspaceId },
+            search: (prev) => ({ ...prev, request_id: r.id }),
           });
         },
       });
@@ -331,7 +325,6 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
   }, [
     workspaceCommands,
     sortedRequests,
-    navigate,
     sortedEnvironments,
     activeEnvironment?.id,
     setActiveEnvironmentId,

@@ -1,11 +1,10 @@
 import { useCallback } from 'react';
 import type { DialogProps } from '../components/core/Dialog';
+import { showDialog } from '../lib/dialog';
 import type { ConfirmProps } from './Confirm';
 import { Confirm } from './Confirm';
-import { useDialog } from './useDialog';
 
 export function useConfirm() {
-  const dialog = useDialog();
   return useCallback(
     ({
       id,
@@ -21,7 +20,7 @@ export function useConfirm() {
       confirmText?: ConfirmProps['confirmText'];
     }) =>
       new Promise((onResult: ConfirmProps['onResult']) => {
-        dialog.show({
+        showDialog({
           id,
           title,
           description,
@@ -30,6 +29,6 @@ export function useConfirm() {
           render: ({ hide }) => Confirm({ onHide: hide, variant, onResult, confirmText }),
         });
       }),
-    [dialog],
+    [],
   );
 }

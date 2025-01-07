@@ -7,7 +7,7 @@ import React, { Suspense } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { HelmetProvider } from 'react-helmet-async';
-import { DialogProvider, Dialogs } from '../components/Dialogs';
+import { Dialogs } from '../components/Dialogs';
 import { GlobalHooks } from '../components/GlobalHooks';
 import RouteError from '../components/RouteError';
 import { Toasts } from '../components/Toasts';
@@ -65,19 +65,17 @@ function RouteComponent() {
           <HelmetProvider>
             <DndProvider backend={HTML5Backend}>
               <Suspense>
-                <DialogProvider>
-                  <GlobalHooks />
-                  <Toasts />
-                  <Dialogs />
-                  <div
-                    className={classNames(
-                      'w-full h-full',
-                      osInfo?.osType === 'linux' && 'border border-border-subtle',
-                    )}
-                  >
-                    <Outlet />
-                  </div>
-                </DialogProvider>
+                <GlobalHooks />
+                <Toasts />
+                <Dialogs />
+                <div
+                  className={classNames(
+                    'w-full h-full',
+                    osInfo?.osType === 'linux' && 'border border-border-subtle',
+                  )}
+                >
+                  <Outlet />
+                </div>
               </Suspense>
             </DndProvider>
           </HelmetProvider>

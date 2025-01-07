@@ -1,8 +1,8 @@
 import { useSetAtom } from 'jotai/index';
+import { showAlert } from '../lib/alert';
 import { pluralizeCount } from '../lib/pluralize';
 import { invokeCmd } from '../lib/tauri';
 import { getActiveWorkspaceId } from './useActiveWorkspace';
-import { useAlert } from './useAlert';
 import { useConfirm } from './useConfirm';
 import { useFastMutation } from './useFastMutation';
 import { useGrpcConnections } from './useGrpcConnections';
@@ -10,7 +10,6 @@ import { httpResponsesAtom, useHttpResponses } from './useHttpResponses';
 
 export function useDeleteSendHistory() {
   const confirm = useConfirm();
-  const alert = useAlert();
   const setHttpResponses = useSetAtom(httpResponsesAtom);
   const httpResponses = useHttpResponses();
   const grpcConnections = useGrpcConnections();
@@ -23,7 +22,7 @@ export function useDeleteSendHistory() {
     mutationKey: ['delete_send_history'],
     mutationFn: async () => {
       if (labels.length === 0) {
-        alert({
+        showAlert({
           id: 'no-responses',
           title: 'Nothing to Delete',
           body: 'There are no Http Response or Grpc Connections to delete',

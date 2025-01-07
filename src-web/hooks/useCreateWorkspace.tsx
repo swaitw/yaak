@@ -1,16 +1,14 @@
 import { useCallback } from 'react';
 import { CreateWorkspaceDialog } from '../components/CreateWorkspaceDialog';
-import { useDialog } from './useDialog';
+import { showDialog } from '../lib/dialog';
 
 export function useCreateWorkspace() {
-  const dialog = useDialog();
-
   return useCallback(() => {
-    dialog.show({
+    showDialog({
       id: 'create-workspace',
       title: 'Create Workspace',
       size: 'md',
       render: ({ hide }) => <CreateWorkspaceDialog hide={hide} />,
     });
-  }, [dialog]);
+  }, []);
 }

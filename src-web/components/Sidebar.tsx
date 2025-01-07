@@ -1,5 +1,4 @@
-import { useNavigate } from '@tanstack/react-router';
-import type { AnyModel, Folder, GrpcRequest, HttpRequest } from '@yaakapp-internal/models';
+import type { Folder, GrpcRequest, HttpRequest, Workspace } from '@yaakapp-internal/models';
 import classNames from 'classnames';
 import { useAtom, useAtomValue } from 'jotai';
 import React, { useCallback, useRef, useState } from 'react';
@@ -15,6 +14,7 @@ import { getSidebarCollapsedMap } from '../hooks/useSidebarItemCollapsed';
 import { useUpdateAnyFolder } from '../hooks/useUpdateAnyFolder';
 import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
+import { router } from '../lib/router';
 import { ContextMenu } from './core/Dropdown';
 import { sidebarSelectedIdAtom, sidebarTreeAtom } from './SidebarAtoms';
 import type { SidebarItemProps } from './SidebarItem';
@@ -24,18 +24,18 @@ interface Props {
   className?: string;
 }
 
+export type SidebarModel = Folder | GrpcRequest | HttpRequest | Workspace;
+
 export interface SidebarTreeNode {
   id: string;
   name: string;
-  model: AnyModel['model'];
+  model: SidebarModel['model'];
   sortPriority?: number;
   workspaceId?: string;
   folderId?: string | null;
   children: SidebarTreeNode[];
   depth: number;
 }
-
-export type SidebarModel = Folder | GrpcRequest | HttpRequest;
 
 export function Sidebar({ className }: Props) {
   const [hidden, setHidden] = useSidebarHidden();
@@ -52,7 +52,6 @@ export function Sidebar({ className }: Props) {
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [hoveredTree, setHoveredTree] = useState<SidebarTreeNode | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const navigate = useNavigate();
 
   const { tree, treeParentMap, selectableRequests } = useAtomValue(sidebarTreeAtom);
 
@@ -95,14 +94,13 @@ export function Sidebar({ className }: Props) {
         return;
       }
 
-      if (node.model === 'http_request' || node.model === 'grpc_request') {
-        await navigate({
-          to: '/workspaces/$workspaceId/requests/$requestId',
-          params: {
-            requestId: id,
-            workspaceId: node.workspaceId ?? 'n/a',
-          },
-          search: (prev) => ({ ...prev }),
+      // NOTE: I'm not sure why, but TS thinks workspaceId is (string | undefined) here
+      if ((node.model === 'http_request' || node.model === 'grpc_request') && node.workspaceId) {
+        const workspaceId = node.workspaceId;
+        await router.navigate({
+          to: '/workspaces/$workspaceId',
+          params: { workspaceId },
+          search: (prev) => ({ ...prev, request_id: node.id }),
         });
 
         setHasFocus(true);
@@ -110,7 +108,7 @@ export function Sidebar({ className }: Props) {
         setSelectedTree(tree);
       }
     },
-    [treeParentMap, navigate, setSelectedId],
+    [treeParentMap, setSelectedId],
   );
 
   const handleClearSelected = useCallback(() => {
@@ -153,13 +151,10 @@ export function Sidebar({ className }: Props) {
     }
 
     e.preventDefault();
-    await navigate({
-      to: '/workspaces/$workspaceId/requests/$requestId',
-      params: {
-        requestId: selected.id,
-        workspaceId: activeWorkspace?.id ?? null,
-      },
-      search: (prev) => ({ ...prev }),
+    await router.navigate({
+      to: '/workspaces/$workspaceId',
+      params: { workspaceId: activeWorkspace?.id ?? null },
+      search: (prev) => ({ ...prev, request_id: selected.id }),
     });
   });
 

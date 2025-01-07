@@ -15,7 +15,6 @@ export async function calculateSync(workspace: Workspace) {
 }
 
 export async function applySync(workspace: Workspace, syncOps: SyncOp[]) {
-  console.log('Applying sync', syncOps);
   return invoke<void>('plugin:yaak-sync|apply', {
     workspaceId: workspace.id,
     dir: workspace.settingSyncDir,
@@ -23,17 +22,14 @@ export async function applySync(workspace: Workspace, syncOps: SyncOp[]) {
   });
 }
 
-export function useWatchWorkspace(workspace: Workspace | null, cb: (e: WatchEvent) => void) {
+export function useWatchWorkspace(workspace: Workspace | null, callback: (e: WatchEvent) => void) {
   const workspaceId = workspace?.id ?? null;
 
   useEffect(() => {
     if (workspaceId == null) return;
 
-    console.log('Watching workspace', workspaceId);
     const channel = new Channel<WatchEvent>();
-    channel.onmessage = (event) => {
-      cb(event);
-    };
+    channel.onmessage = callback;
     const promise = invoke<WatchResult>('plugin:yaak-sync|watch', { workspaceId, channel });
 
     return () => {

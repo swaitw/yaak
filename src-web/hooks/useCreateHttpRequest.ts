@@ -1,14 +1,12 @@
-import { useNavigate } from '@tanstack/react-router';
 import type { HttpRequest } from '@yaakapp-internal/models';
 import { trackEvent } from '../lib/analytics';
+import { router } from '../lib/router';
 import { invokeCmd } from '../lib/tauri';
 import { getActiveRequest } from './useActiveRequest';
 import { getActiveWorkspaceId } from './useActiveWorkspace';
 import { useFastMutation } from './useFastMutation';
 
 export function useCreateHttpRequest() {
-  const navigate = useNavigate();
-
   return useFastMutation<HttpRequest, unknown, Partial<HttpRequest>>({
     mutationKey: ['create_http_request'],
     mutationFn: async (patch = {}) => {
@@ -34,10 +32,10 @@ export function useCreateHttpRequest() {
     },
     onSettled: () => trackEvent('http_request', 'create'),
     onSuccess: async (request) => {
-      await navigate({
-        to: '/workspaces/$workspaceId/requests/$requestId',
-        params: { workspaceId: request.workspaceId, requestId: request.id },
-        search: (prev) => ({ ...prev }),
+      await router.navigate({
+        to: '/workspaces/$workspaceId',
+        params: { workspaceId: request.workspaceId },
+        search: (prev) => ({ ...prev, request_id: request.id }),
       });
     },
   });

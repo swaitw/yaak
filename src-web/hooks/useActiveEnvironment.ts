@@ -1,9 +1,10 @@
-import { useNavigate, useSearch } from '@tanstack/react-router';
+import { useSearch } from '@tanstack/react-router';
 import type { Environment } from '@yaakapp-internal/models';
 import { useAtomValue } from 'jotai';
 import { atom } from 'jotai/index';
 import { useCallback, useEffect } from 'react';
 import { jotaiStore } from '../lib/jotai';
+import { router } from '../lib/router';
 import { environmentsAtom } from './useEnvironments';
 
 export const QUERY_ENVIRONMENT_ID = 'environment_id';
@@ -16,13 +17,13 @@ export const activeEnvironmentAtom = atom<Environment | null>((get) => {
 });
 
 export function useActiveEnvironment() {
-  const navigate = useNavigate({ from: '/workspaces/$workspaceId' });
   const setId = useCallback(
     (id: string | null) =>
-      navigate({
+      router.navigate({
+        from: '/workspaces/$workspaceId',
         search: (prev) => ({ ...prev, environment_id: id }),
       }),
-    [navigate],
+    [],
   );
   const environment = useAtomValue(activeEnvironmentAtom);
   return [environment, setId] as const;

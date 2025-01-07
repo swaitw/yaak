@@ -2,11 +2,11 @@ import { openUrl } from '@tauri-apps/plugin-opener';
 import { useRef } from 'react';
 import { useAppInfo } from '../hooks/useAppInfo';
 import { useCheckForUpdates } from '../hooks/useCheckForUpdates';
-import { useDialog } from '../hooks/useDialog';
 import { useExportData } from '../hooks/useExportData';
 import { useImportData } from '../hooks/useImportData';
 import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { useOpenSettings } from '../hooks/useOpenSettings';
+import { showDialog } from '../lib/dialog';
 import type { DropdownRef } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
@@ -18,7 +18,6 @@ export function SettingsDropdown() {
   const exportData = useExportData();
   const appInfo = useAppInfo();
   const dropdownRef = useRef<DropdownRef>(null);
-  const dialog = useDialog();
   const checkForUpdates = useCheckForUpdates();
   const openSettings = useOpenSettings();
 
@@ -41,7 +40,7 @@ export function SettingsDropdown() {
           hotKeyAction: 'hotkeys.showHelp',
           leftSlot: <Icon icon="keyboard" />,
           onSelect: () => {
-            dialog.show({
+            showDialog({
               id: 'hotkey',
               title: 'Keyboard Shortcuts',
               size: 'dynamic',

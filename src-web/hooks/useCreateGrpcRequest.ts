@@ -1,4 +1,3 @@
-import { useNavigate } from '@tanstack/react-router';
 import type { GrpcRequest } from '@yaakapp-internal/models';
 import { trackEvent } from '../lib/analytics';
 import { jotaiStore } from '../lib/jotai';
@@ -6,10 +5,9 @@ import { invokeCmd } from '../lib/tauri';
 import { getActiveRequest } from './useActiveRequest';
 import { activeWorkspaceAtom } from './useActiveWorkspace';
 import { useFastMutation } from './useFastMutation';
+import { router } from '../lib/router';
 
 export function useCreateGrpcRequest() {
-  const navigate = useNavigate();
-
   return useFastMutation<
     GrpcRequest,
     unknown,
@@ -40,13 +38,10 @@ export function useCreateGrpcRequest() {
     },
     onSettled: () => trackEvent('grpc_request', 'create'),
     onSuccess: async (request) => {
-      await navigate({
-        to: '/workspaces/$workspaceId/requests/$requestId',
-        params: {
-          workspaceId: request.workspaceId,
-          requestId: request.id,
-        },
-        search: (prev) => ({ ...prev }),
+      await router.navigate({
+        to: '/workspaces/$workspaceId',
+        params: { workspaceId: request.workspaceId },
+        search: (prev) => ({ ...prev, request_id: request.id }),
       });
     },
   });

@@ -1,25 +1,19 @@
-import { useNavigate } from '@tanstack/react-router';
 import type { Folder, Workspace } from '@yaakapp-internal/models';
 import { useMemo } from 'react';
 import { trackEvent } from '../lib/analytics';
+import { router } from '../lib/router';
 import { invokeCmd } from '../lib/tauri';
 import { getActiveWorkspaceId } from './useActiveWorkspace';
 import { createFastMutation } from './useFastMutation';
 import { usePrompt } from './usePrompt';
 
-function makeCommands({
-  navigate,
-  prompt,
-}: {
-  navigate: ReturnType<typeof useNavigate>;
-  prompt: ReturnType<typeof usePrompt>;
-}) {
+function makeCommands({ prompt }: { prompt: ReturnType<typeof usePrompt> }) {
   return {
     createWorkspace: createFastMutation<Workspace, void, Partial<Workspace>>({
       mutationKey: ['create_workspace'],
       mutationFn: (patch) => invokeCmd<Workspace>('cmd_update_workspace', { workspace: patch }),
       onSuccess: async (workspace) => {
-        await navigate({
+        await router.navigate({
           to: '/workspaces/$workspaceId',
           params: { workspaceId: workspace.id },
         });
@@ -62,7 +56,6 @@ function makeCommands({
 }
 
 export function useCommands() {
-  const navigate = useNavigate();
   const prompt = usePrompt();
-  return useMemo(() => makeCommands({ navigate, prompt }), [navigate, prompt]);
+  return useMemo(() => makeCommands({ prompt }), [prompt]);
 }

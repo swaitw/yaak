@@ -424,8 +424,6 @@ mod placeholder_tests {
             ],
             ..Default::default()
         });
-        println!("HELLO?: {result:?}");
-
         assert_eq!(result.url, "example.com/aaa/bar");
         assert_eq!(result.url_parameters.len(), 1);
         assert_eq!(result.url_parameters[0].name, "b");

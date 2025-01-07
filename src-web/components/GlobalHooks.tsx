@@ -7,7 +7,7 @@ import {
   useSubscribeActiveCookieJarId,
 } from '../hooks/useActiveCookieJar';
 import { useSubscribeActiveEnvironmentId } from '../hooks/useActiveEnvironment';
-import { useActiveRequest } from '../hooks/useActiveRequest';
+import { getActiveRequest, useActiveRequest } from '../hooks/useActiveRequest';
 import { useSubscribeActiveRequestId } from '../hooks/useActiveRequestId';
 import { useActiveWorkspace, useSubscribeActiveWorkspaceId } from '../hooks/useActiveWorkspace';
 import { useActiveWorkspaceChangedToast } from '../hooks/useActiveWorkspaceChangedToast';
@@ -78,6 +78,7 @@ export function GlobalHooks() {
     navigateAfter: true,
   });
   useHotKey('http_request.duplicate', async () => {
+    const activeRequest = getActiveRequest();
     if (activeRequest?.model === 'http_request') {
       await duplicateHttpRequest.mutateAsync();
     } else {

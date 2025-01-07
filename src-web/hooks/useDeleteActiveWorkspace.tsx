@@ -1,7 +1,7 @@
-import { useNavigate } from '@tanstack/react-router';
 import type { Workspace } from '@yaakapp-internal/models';
 import { InlineCode } from '../components/core/InlineCode';
 import { trackEvent } from '../lib/analytics';
+import { router } from '../lib/router';
 import { invokeCmd } from '../lib/tauri';
 import { getActiveWorkspace } from './useActiveWorkspace';
 import { useConfirm } from './useConfirm';
@@ -9,7 +9,6 @@ import { useFastMutation } from './useFastMutation';
 
 export function useDeleteActiveWorkspace() {
   const confirm = useConfirm();
-  const navigate = useNavigate();
 
   return useFastMutation<Workspace | null, string>({
     mutationKey: ['delete_workspace'],
@@ -31,7 +30,7 @@ export function useDeleteActiveWorkspace() {
     onSettled: () => trackEvent('workspace', 'delete'),
     onSuccess: async (workspace) => {
       if (workspace === null) return;
-      await navigate({ to: '/workspaces' });
+      await router.navigate({ to: '/workspaces' });
     },
   });
 }
