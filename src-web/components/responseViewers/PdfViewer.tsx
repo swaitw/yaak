@@ -5,7 +5,7 @@ import './PdfViewer.css';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import React, { useRef, useState } from 'react';
 import { Document, Page } from 'react-pdf';
-import useSize from '@react-hook/size';
+import { useContainerSize } from '../../hooks/useContainerQuery';
 
 interface Props {
   bodyPath: string;
@@ -20,7 +20,7 @@ export function PdfViewer({ bodyPath }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [numPages, setNumPages] = useState<number>();
 
-  const [containerWidth] = useSize(containerRef.current);
+  const { width: containerWidth } = useContainerSize(containerRef);
 
   const onDocumentLoadSuccess = ({ numPages: nextNumPages }: PDFDocumentProxy): void => {
     setNumPages(nextNumPages);

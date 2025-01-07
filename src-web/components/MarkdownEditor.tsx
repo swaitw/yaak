@@ -1,8 +1,8 @@
-import useSize from '@react-hook/size';
 import classNames from 'classnames';
 import { useRef } from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { useContainerSize } from '../hooks/useContainerQuery';
 import { useKeyValue } from '../hooks/useKeyValue';
 import type { EditorProps } from './core/Editor/Editor';
 import { Editor } from './core/Editor/Editor';
@@ -22,7 +22,7 @@ interface Props extends Pick<EditorProps, 'heightMode' | 'stateKey' | 'forceUpda
 export function MarkdownEditor({ className, defaultValue, onChange, name, ...editorProps }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const [width] = useSize(containerRef.current);
+  const { width } = useContainerSize(containerRef);
   const wideEnoughForSplit = width > 600;
 
   const { set: setViewMode, value: rawViewMode } = useKeyValue<'edit' | 'preview' | 'both'>({

@@ -1,10 +1,10 @@
-import useSize from '@react-hook/size';
 import type { GrpcMetadataEntry, GrpcRequest } from '@yaakapp-internal/models';
 import classNames from 'classnames';
 import { useAtom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
 import type { CSSProperties } from 'react';
 import React, { useCallback, useMemo, useRef } from 'react';
+import { useContainerSize } from '../hooks/useContainerQuery';
 import type { ReflectResponseService } from '../hooks/useGrpc';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
@@ -73,7 +73,7 @@ export function GrpcConnectionSetupPane({
   const { updateKey: forceUpdateKey } = useRequestUpdateKey(activeRequest.id ?? null);
 
   const urlContainerEl = useRef<HTMLDivElement>(null);
-  const [paneWidth] = useSize(urlContainerEl.current);
+  const { width: paneWidth } = useContainerSize(urlContainerEl);
 
   const handleChangeUrl = useCallback(
     (url: string) => updateRequest.mutateAsync({ id: activeRequest.id, update: { url } }),
