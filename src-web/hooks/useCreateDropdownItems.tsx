@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 import type { DropdownItem } from '../components/core/Dropdown';
 import { Icon } from '../components/core/Icon';
+import { createFolder } from '../lib/commands';
 import { generateId } from '../lib/generateId';
 import { BODY_TYPE_GRAPHQL } from '../lib/model_util';
 import { getActiveRequest } from './useActiveRequest';
-import { useCommands } from './useCommands';
 import { useCreateGrpcRequest } from './useCreateGrpcRequest';
 import { useCreateHttpRequest } from './useCreateHttpRequest';
 
@@ -19,7 +19,6 @@ export function useCreateDropdownItems({
 } = {}): DropdownItem[] {
   const { mutate: createHttpRequest } = useCreateHttpRequest();
   const { mutate: createGrpcRequest } = useCreateGrpcRequest();
-  const { createFolder } = useCommands();
 
   return useMemo((): DropdownItem[] => {
     const folderId =
@@ -66,5 +65,5 @@ export function useCreateDropdownItems({
             },
           ]) as DropdownItem[]),
     ];
-  }, [createFolder, createGrpcRequest, createHttpRequest, folderIdOption, hideFolder, hideIcons]);
+  }, [createGrpcRequest, createHttpRequest, folderIdOption, hideFolder, hideIcons]);
 }

@@ -1,6 +1,6 @@
+import type { AlertProps } from '../components/core/Alert';
+import { Alert } from '../components/core/Alert';
 import type { DialogProps } from '../components/core/Dialog';
-import type { AlertProps } from '../hooks/Alert';
-import { Alert } from '../hooks/Alert';
 import { showDialog } from './dialog';
 
 interface AlertArgs {

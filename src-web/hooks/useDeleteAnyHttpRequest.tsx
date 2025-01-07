@@ -1,22 +1,20 @@
 import type { HttpRequest } from '@yaakapp-internal/models';
 import { InlineCode } from '../components/core/InlineCode';
 import { trackEvent } from '../lib/analytics';
+import { showConfirm } from '../lib/confirm';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import { getHttpRequest } from '../lib/store';
 import { invokeCmd } from '../lib/tauri';
-import { useConfirm } from './useConfirm';
 import { useFastMutation } from './useFastMutation';
 
 export function useDeleteAnyHttpRequest() {
-  const confirm = useConfirm();
-
   return useFastMutation<HttpRequest | null, string, string>({
     mutationKey: ['delete_any_http_request'],
     mutationFn: async (id) => {
       const request = await getHttpRequest(id);
       if (request == null) return null;
 
-      const confirmed = await confirm({
+      const confirmed = await showConfirm({
         id: 'delete-request',
         title: 'Delete Request',
         variant: 'delete',

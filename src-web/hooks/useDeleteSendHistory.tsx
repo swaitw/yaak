@@ -1,15 +1,14 @@
 import { useSetAtom } from 'jotai/index';
 import { showAlert } from '../lib/alert';
+import { showConfirm } from '../lib/confirm';
 import { pluralizeCount } from '../lib/pluralize';
 import { invokeCmd } from '../lib/tauri';
 import { getActiveWorkspaceId } from './useActiveWorkspace';
-import { useConfirm } from './useConfirm';
 import { useFastMutation } from './useFastMutation';
 import { useGrpcConnections } from './useGrpcConnections';
 import { httpResponsesAtom, useHttpResponses } from './useHttpResponses';
 
 export function useDeleteSendHistory() {
-  const confirm = useConfirm();
   const setHttpResponses = useSetAtom(httpResponsesAtom);
   const httpResponses = useHttpResponses();
   const grpcConnections = useGrpcConnections();
@@ -30,7 +29,7 @@ export function useDeleteSendHistory() {
         return;
       }
 
-      const confirmed = await confirm({
+      const confirmed = await showConfirm({
         id: 'delete-send-history',
         title: 'Clear Send History',
         variant: 'delete',

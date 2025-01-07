@@ -42,7 +42,7 @@ export function MarkdownEditor({ className, defaultValue, onChange, name, ...edi
     <Editor
       hideGutter
       wrapLines
-      className="max-w-2xl max-h-full"
+      className="max-w-2xl max-h-full" 
       language="markdown"
       defaultValue={defaultValue}
       onChange={onChange}

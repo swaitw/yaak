@@ -1,14 +1,13 @@
 import type { Environment } from '@yaakapp-internal/models';
 import { trackEvent } from '../lib/analytics';
+import { showPrompt } from '../lib/prompt';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveEnvironment } from './useActiveEnvironment';
 import { getActiveWorkspaceId } from './useActiveWorkspace';
 import { useFastMutation } from './useFastMutation';
-import { usePrompt } from './usePrompt';
 
 export function useCreateEnvironment() {
   const [, setActiveEnvironmentId] = useActiveEnvironment();
-  const prompt = usePrompt();
 
   return useFastMutation<Environment | null, unknown, Environment | null>({
     mutationKey: ['create_environment'],
@@ -18,7 +17,7 @@ export function useCreateEnvironment() {
       }
 
       const workspaceId = getActiveWorkspaceId();
-      const name = await prompt({
+      const name = await showPrompt({
         id: 'new-environment',
         title: 'New Environment',
         description: 'Create multiple environments with different sets of variables',

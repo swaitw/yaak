@@ -4,7 +4,7 @@ import { useAtomValue } from 'jotai';
 import { atom } from 'jotai/index';
 import { useCallback, useEffect } from 'react';
 import { jotaiStore } from '../lib/jotai';
-import { router } from '../lib/router';
+import { setWorkspaceSearchParams } from '../lib/setWorkspaceSearchParams';
 import { environmentsAtom } from './useEnvironments';
 
 export const QUERY_ENVIRONMENT_ID = 'environment_id';
@@ -18,11 +18,7 @@ export const activeEnvironmentAtom = atom<Environment | null>((get) => {
 
 export function useActiveEnvironment() {
   const setId = useCallback(
-    (id: string | null) =>
-      router.navigate({
-        from: '/workspaces/$workspaceId',
-        search: (prev) => ({ ...prev, environment_id: id }),
-      }),
+    (id: string | null) => setWorkspaceSearchParams({ environment_id: id }),
     [],
   );
   const environment = useAtomValue(activeEnvironmentAtom);

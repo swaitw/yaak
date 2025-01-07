@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { jotaiStore } from '../lib/jotai';
 import { getKeyValue, setKeyValue } from '../lib/keyValueStore';
-import { activeCookieJarIdAtom } from './useActiveCookieJar';
+import {activeCookieJarAtom} from "./useActiveCookieJar";
 import { activeWorkspaceIdAtom, useActiveWorkspace } from './useActiveWorkspace';
 import { useCookieJars } from './useCookieJars';
 import { useKeyValue } from './useKeyValue';
@@ -29,9 +29,9 @@ export function useRecentCookieJars() {
 
 export function useSubscribeRecentCookieJars() {
   useEffect(() => {
-    return jotaiStore.sub(activeCookieJarIdAtom, async () => {
+    return jotaiStore.sub(activeCookieJarAtom, async () => {
       const activeWorkspaceId = jotaiStore.get(activeWorkspaceIdAtom);
-      const activeCookieJarId = jotaiStore.get(activeCookieJarIdAtom);
+      const activeCookieJarId = jotaiStore.get(activeCookieJarAtom)?.id ?? null;
       if (activeWorkspaceId == null) return;
       if (activeCookieJarId == null) return;
 

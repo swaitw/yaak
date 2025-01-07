@@ -1,6 +1,6 @@
-import type { ButtonProps } from '../components/core/Button';
-import { Button } from '../components/core/Button';
-import { HStack } from '../components/core/Stacks';
+import type { ButtonProps } from './Button';
+import { Button } from './Button';
+import { HStack } from './Stacks';
 
 export interface ConfirmProps {
   onHide: () => void;

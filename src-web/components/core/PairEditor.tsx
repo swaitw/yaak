@@ -12,9 +12,9 @@ import {
 } from 'react';
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
-import { usePrompt } from '../../hooks/usePrompt';
 import { useToggle } from '../../hooks/useToggle';
 import { generateId } from '../../lib/generateId';
+import { showPrompt } from '../../lib/prompt';
 import { DropMarker } from '../DropMarker';
 import { SelectFile } from '../SelectFile';
 import { Button } from './Button';
@@ -556,7 +556,6 @@ function FileActionsDropdown({
   onChangeContentType: (contentType: string) => void;
   onDelete: () => void;
 }) {
-  const prompt = usePrompt();
   const onChange = useCallback(
     (v: string) => {
       if (v === 'file') onChangeFile({ filePath: '' });
@@ -573,7 +572,7 @@ function FileActionsDropdown({
         leftSlot: <Icon icon="pencil" />,
         hidden: !pair.isFile,
         onSelect: async () => {
-          const contentType = await prompt({
+          const contentType = await showPrompt({
             id: 'content-type',
             require: false,
             title: 'Override Content-Type',
@@ -604,7 +603,7 @@ function FileActionsDropdown({
         leftSlot: <Icon icon="trash" />,
       },
     ],
-    [onChangeContentType, onChangeFile, onDelete, pair.contentType, pair.isFile, prompt],
+    [onChangeContentType, onChangeFile, onDelete, pair.contentType, pair.isFile],
   );
 
   return (

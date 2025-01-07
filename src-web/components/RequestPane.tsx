@@ -298,7 +298,6 @@ export const RequestPane = memo(function RequestPane({
   );
 
   const activeTab = activeTabs?.[activeRequestId];
-  console.log('ACTIVE TAB', activeTab);
   const setActiveTab = useCallback(
     (tab: string) => {
       setActiveTabs((r) => ({ ...r, [activeRequest.id]: tab }));

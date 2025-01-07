@@ -1,20 +1,18 @@
 import type { Workspace } from '@yaakapp-internal/models';
 import { InlineCode } from '../components/core/InlineCode';
 import { trackEvent } from '../lib/analytics';
+import { showConfirm } from '../lib/confirm';
 import { router } from '../lib/router';
 import { invokeCmd } from '../lib/tauri';
 import { getActiveWorkspace } from './useActiveWorkspace';
-import { useConfirm } from './useConfirm';
 import { useFastMutation } from './useFastMutation';
 
 export function useDeleteActiveWorkspace() {
-  const confirm = useConfirm();
-
   return useFastMutation<Workspace | null, string>({
     mutationKey: ['delete_workspace'],
     mutationFn: async () => {
       const workspace = getActiveWorkspace();
-      const confirmed = await confirm({
+      const confirmed = await showConfirm({
         id: 'delete-workspace',
         title: 'Delete Workspace',
         variant: 'delete',

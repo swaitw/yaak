@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useCommands } from '../hooks/useCommands';
+import {createWorkspace} from "../lib/commands";
 import { Button } from './core/Button';
 import { PlainInput } from './core/PlainInput';
 import { VStack } from './core/Stacks';
@@ -14,7 +14,6 @@ export function CreateWorkspaceDialog({ hide }: Props) {
   const [name, setName] = useState<string>('');
   const [description, setDescription] = useState<string>('');
   const [settingSyncDir, setSettingSyncDir] = useState<string | null>(null);
-  const { createWorkspace } = useCommands();
 
   return (
     <VStack

@@ -1,13 +1,12 @@
-import { useFastMutation } from './useFastMutation';
 import type { GrpcRequest, HttpRequest } from '@yaakapp-internal/models';
 import { InlineCode } from '../components/core/InlineCode';
-import { usePrompt } from './usePrompt';
+import {showPrompt} from "../lib/prompt";
+import { useFastMutation } from './useFastMutation';
 import { useRequests } from './useRequests';
 import { useUpdateAnyGrpcRequest } from './useUpdateAnyGrpcRequest';
 import { useUpdateAnyHttpRequest } from './useUpdateAnyHttpRequest';
 
 export function useRenameRequest(requestId: string | null) {
-  const prompt = usePrompt();
   const updateHttpRequest = useUpdateAnyHttpRequest();
   const updateGrpcRequest = useUpdateAnyGrpcRequest();
   const requests = useRequests();
@@ -18,7 +17,7 @@ export function useRenameRequest(requestId: string | null) {
       const request = requests.find((r) => r.id === requestId);
       if (request == null) return;
 
-      const name = await prompt({
+      const name = await showPrompt({
         id: 'rename-request',
         title: 'Rename Request',
         description:

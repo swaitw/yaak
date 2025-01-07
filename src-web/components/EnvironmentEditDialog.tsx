@@ -6,8 +6,8 @@ import { useCreateEnvironment } from '../hooks/useCreateEnvironment';
 import { useDeleteEnvironment } from '../hooks/useDeleteEnvironment';
 import { useEnvironments } from '../hooks/useEnvironments';
 import { useKeyValue } from '../hooks/useKeyValue';
-import { usePrompt } from '../hooks/usePrompt';
 import { useUpdateEnvironment } from '../hooks/useUpdateEnvironment';
+import { showPrompt } from '../lib/prompt';
 import { Banner } from './core/Banner';
 import { Button } from './core/Button';
 import { ContextMenu } from './core/Dropdown';
@@ -212,7 +212,6 @@ function SidebarButton({
   rightSlot?: ReactNode;
   environment: Environment | null;
 }) {
-  const prompt = usePrompt();
   const updateEnvironment = useUpdateEnvironment(environment?.id ?? null);
   const deleteEnvironment = useDeleteEnvironment(environment);
   const [showContextMenu, setShowContextMenu] = useState<{
@@ -260,7 +259,7 @@ function SidebarButton({
               label: 'Rename',
               leftSlot: <Icon icon="pencil" size="sm" />,
               onSelect: async () => {
-                const name = await prompt({
+                const name = await showPrompt({
                   id: 'rename-environment',
                   title: 'Rename Environment',
                   description: (

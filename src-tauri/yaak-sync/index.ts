@@ -6,7 +6,7 @@ import { SyncOp } from './bindings/sync';
 import { WatchEvent, WatchResult } from './bindings/watch';
 
 export async function calculateSync(workspace: Workspace) {
-  if (!workspace.settingSyncDir) throw new Error('Workspace sync dir not configured');
+  if (!workspace.settingSyncDir) return;
 
   return invoke<SyncOp[]>('plugin:yaak-sync|calculate', {
     workspaceId: workspace.id,
@@ -15,6 +15,8 @@ export async function calculateSync(workspace: Workspace) {
 }
 
 export async function applySync(workspace: Workspace, syncOps: SyncOp[]) {
+  if (!workspace.settingSyncDir) return;
+
   return invoke<void>('plugin:yaak-sync|apply', {
     workspaceId: workspace.id,
     dir: workspace.settingSyncDir,
@@ -23,22 +25,24 @@ export async function applySync(workspace: Workspace, syncOps: SyncOp[]) {
 }
 
 export function useWatchWorkspace(workspace: Workspace | null, callback: (e: WatchEvent) => void) {
-  const workspaceId = workspace?.id ?? null;
-
   useEffect(() => {
-    if (workspaceId == null) return;
+    if (workspace == null) return;
+    if (!workspace.settingSyncDir) return;
 
     const channel = new Channel<WatchEvent>();
     channel.onmessage = callback;
-    const promise = invoke<WatchResult>('plugin:yaak-sync|watch', { workspaceId, channel });
+    const promise = invoke<WatchResult>('plugin:yaak-sync|watch', {
+      workspaceId: workspace.id,
+      channel,
+    });
 
     return () => {
       promise
         .then(({ unlistenEvent }) => {
-          console.log('Cancelling workspace watch', workspaceId, unlistenEvent);
+          console.log('Cancelling workspace watch', workspace.id, unlistenEvent);
           return emit(unlistenEvent);
         })
         .catch(console.error);
     };
-  }, [workspaceId]);
+  }, [workspace]);
 }

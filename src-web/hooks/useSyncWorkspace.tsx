@@ -4,9 +4,9 @@ import { applySync, calculateSync } from '@yaakapp-internal/sync';
 import { useCallback, useMemo } from 'react';
 import { InlineCode } from '../components/core/InlineCode';
 import { VStack } from '../components/core/Stacks';
+import {showConfirm} from "../lib/confirm";
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import { pluralizeCount } from '../lib/pluralize';
-import { useConfirm } from './useConfirm';
 
 export function useSyncWorkspace(
   workspace: Workspace | null,
@@ -16,12 +16,10 @@ export function useSyncWorkspace(
     debounceMillis?: number;
   } = {},
 ) {
-  const confirm = useConfirm();
-
   const sync = useCallback(async () => {
-    if (workspace == null) return;
+    if (workspace == null || workspace.settingSyncDir) return;
 
-    const ops = await calculateSync(workspace);
+    const ops = await calculateSync(workspace) ?? [];
     if (ops.length === 0) {
       return;
     }
@@ -33,7 +31,7 @@ export function useSyncWorkspace(
       return;
     }
 
-    const confirmed = await confirm({
+    const confirmed = await showConfirm({
       id: 'commit-sync',
       title: 'Filesystem Changes Detected',
       confirmText: 'Apply Changes',
@@ -92,7 +90,7 @@ export function useSyncWorkspace(
     if (confirmed) {
       await applySync(workspace, ops);
     }
-  }, [confirm, workspace]);
+  }, [workspace]);
 
   const debouncedSync = useMemo(() => {
     return debounce(sync, debounceMillis);

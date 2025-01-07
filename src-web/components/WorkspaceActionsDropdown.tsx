@@ -5,7 +5,6 @@ import { useCreateWorkspace } from '../hooks/useCreateWorkspace';
 import { useDeleteSendHistory } from '../hooks/useDeleteSendHistory';
 import { useOpenWorkspace } from '../hooks/useOpenWorkspace';
 import { useSettings } from '../hooks/useSettings';
-import { useSyncWorkspace } from '../hooks/useSyncWorkspace';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import { showDialog } from '../lib/dialog';
 import { getWorkspace } from '../lib/store';
@@ -31,7 +30,6 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
   const settings = useSettings();
   const openWorkspace = useOpenWorkspace();
   const openWorkspaceNewWindow = settings?.openWorkspaceNewWindow ?? null;
-  const { sync } = useSyncWorkspace(activeWorkspace);
 
   const orderedWorkspaces = useMemo(
     () => [...workspaces].sort((a, b) => (a.name.localeCompare(b.name) > 0 ? 1 : -1)),
@@ -67,13 +65,6 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
         },
       },
       {
-        key: 'sync',
-        label: 'Sync Workspace',
-        leftSlot: <Icon icon="folder_sync" />,
-        hidden: !activeWorkspace?.settingSyncDir,
-        onSelect: sync,
-      },
-      {
         key: 'delete-responses',
         label: 'Clear Send History',
         leftSlot: <Icon icon="history" />,
@@ -89,14 +80,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
     ];
 
     return { workspaceItems, extraItems };
-  }, [
-    orderedWorkspaces,
-    activeWorkspace?.settingSyncDir,
-    activeWorkspace?.id,
-    sync,
-    deleteSendHistory,
-    createWorkspace,
-  ]);
+  }, [orderedWorkspaces, activeWorkspace?.id, deleteSendHistory, createWorkspace]);
 
   const handleChange = useCallback(
     async (workspaceId: string | null) => {

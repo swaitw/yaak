@@ -5,7 +5,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useActiveCookieJar } from '../hooks/useActiveCookieJar';
 import { useActiveEnvironment } from '../hooks/useActiveEnvironment';
 import { useActiveRequest } from '../hooks/useActiveRequest';
-import { useCommands } from '../hooks/useCommands';
 import { useCreateEnvironment } from '../hooks/useCreateEnvironment';
 import { useCreateGrpcRequest } from '../hooks/useCreateGrpcRequest';
 import { useCreateHttpRequest } from '../hooks/useCreateHttpRequest';
@@ -27,6 +26,7 @@ import { useScrollIntoView } from '../hooks/useScrollIntoView';
 import { useSendAnyHttpRequest } from '../hooks/useSendAnyHttpRequest';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useWorkspaces } from '../hooks/useWorkspaces';
+import { createFolder } from '../lib/commands';
 import { showDialog, toggleDialog } from '../lib/dialog';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import { router } from '../lib/router';
@@ -69,7 +69,6 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
   const [recentRequests] = useRecentRequests();
   const openWorkspace = useOpenWorkspace();
   const createHttpRequest = useCreateHttpRequest();
-  const { createFolder } = useCommands();
   const activeCookieJar = useActiveCookieJar();
   const createGrpcRequest = useCreateGrpcRequest();
   const createEnvironment = useCreateEnvironment();
@@ -188,7 +187,6 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
     activeRequest,
     baseEnvironment,
     createEnvironment,
-    createFolder,
     createGrpcRequest,
     createHttpRequest,
     createWorkspace,

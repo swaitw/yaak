@@ -12,19 +12,26 @@ export function Dialogs() {
   const dialogs = useAtomValue(dialogsAtom);
   return (
     <>
-      {dialogs.map(({ render, onClose, id, ...props }: DialogInstance) => (
-        <Dialog
-          open
-          key={id}
-          onClose={() => {
-            onClose?.();
-            hideDialog(id);
-          }}
-          {...props}
-        >
-          {render({ hide: () => hideDialog(id) })}
-        </Dialog>
+      {dialogs.map(({ id, ...props }) => (
+        <DialogInstance key={id} id={id} {...props} />
       ))}
     </>
+  );
+}
+
+function DialogInstance({ render, onClose, id, ...props }: DialogInstance) {
+  const children = render({ hide: () => hideDialog(id) });
+  return (
+    <Dialog
+      open
+      key={id}
+      onClose={() => {
+        onClose?.();
+        hideDialog(id);
+      }}
+      {...props}
+    >
+      {children}
+    </Dialog>
   );
 }

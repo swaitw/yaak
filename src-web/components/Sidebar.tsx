@@ -15,6 +15,7 @@ import { useUpdateAnyFolder } from '../hooks/useUpdateAnyFolder';
 import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
 import { router } from '../lib/router';
+import { setWorkspaceSearchParams } from '../lib/setWorkspaceSearchParams';
 import { ContextMenu } from './core/Dropdown';
 import { sidebarSelectedIdAtom, sidebarTreeAtom } from './SidebarAtoms';
 import type { SidebarItemProps } from './SidebarItem';
@@ -151,11 +152,7 @@ export function Sidebar({ className }: Props) {
     }
 
     e.preventDefault();
-    await router.navigate({
-      to: '/workspaces/$workspaceId',
-      params: { workspaceId: activeWorkspace?.id ?? null },
-      search: (prev) => ({ ...prev, request_id: selected.id }),
-    });
+    setWorkspaceSearchParams({ request_id: selected.id });
   });
 
   useKey(

@@ -3,34 +3,26 @@ import type { CookieJar } from '@yaakapp-internal/models';
 import { atom, useAtomValue } from 'jotai/index';
 import { useEffect } from 'react';
 import { jotaiStore } from '../lib/jotai';
-import { router } from '../lib/router';
+import { setWorkspaceSearchParams } from '../lib/setWorkspaceSearchParams';
 import { cookieJarsAtom, useCookieJars } from './useCookieJars';
 
 export const QUERY_COOKIE_JAR_ID = 'cookie_jar_id';
 
-export const activeCookieJarIdAtom = atom<string>();
-
-export const activeCookieJarAtom = atom<CookieJar | null>((get) => {
-  const activeId = get(activeCookieJarIdAtom);
-  return get(cookieJarsAtom)?.find((e) => e.id === activeId) ?? null;
-});
-
-export function setActiveCookieJar(cookieJar: CookieJar) {
-  router.navigate({
-    from: '/workspaces/$workspaceId',
-    search: (prev) => ({ ...prev, cookie_jar_id: cookieJar.id }),
-  });
-}
+export const activeCookieJarAtom = atom<CookieJar | null>(null);
 
 export function useActiveCookieJar() {
   return useAtomValue(activeCookieJarAtom);
 }
 
 export function useSubscribeActiveCookieJarId() {
-  const { cookie_jar_id } = useSearch({ strict: false });
+  const search = useSearch({ strict: false });
+  const cookieJarId = search.cookie_jar_id;
+  const cookieJars = useAtomValue(cookieJarsAtom);
   useEffect(() => {
-    jotaiStore.set(activeCookieJarIdAtom, cookie_jar_id ?? undefined);
-  }, [cookie_jar_id]);
+    if (search == null) return; // Happens during Vite hot reload
+    const activeCookieJar = cookieJars?.find((j) => j.id == cookieJarId) ?? null;
+    jotaiStore.set(activeCookieJarAtom, activeCookieJar);
+  }, [cookieJarId, cookieJars, search]);
 }
 
 export function getActiveCookieJar() {
@@ -39,12 +31,12 @@ export function getActiveCookieJar() {
 
 export function useEnsureActiveCookieJar() {
   const cookieJars = useCookieJars();
-  const activeCookieJar = useActiveCookieJar();
+  const { cookie_jar_id: activeCookieJarId } = useSearch({ from: '/workspaces/$workspaceId/' });
 
   // Set the active cookie jar to the first one, if none set
   useEffect(() => {
     if (cookieJars == null) return; // Hasn't loaded yet
-    if (cookieJars.find((j) => j.id === activeCookieJar?.id)) {
+    if (cookieJars.find((j) => j.id === activeCookieJarId)) {
       return; // There's an active jar
     }
 
@@ -55,7 +47,7 @@ export function useEnsureActiveCookieJar() {
     }
 
     // There's no active jar, so set it to the first one
-    console.log('Setting active cookie jar to', firstJar.id);
-    setActiveCookieJar(firstJar);
-  }, [activeCookieJar?.id, cookieJars]);
+    console.log('Setting active cookie jar to', cookieJars, activeCookieJarId, firstJar.id);
+    setWorkspaceSearchParams({ cookie_jar_id: firstJar.id });
+  }, [activeCookieJarId, cookieJars]);
 }

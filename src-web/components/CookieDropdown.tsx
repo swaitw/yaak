@@ -1,12 +1,13 @@
+import { useAtomValue } from 'jotai';
 import { memo, useMemo } from 'react';
-import { setActiveCookieJar, useActiveCookieJar } from '../hooks/useActiveCookieJar';
+import { useActiveCookieJar } from '../hooks/useActiveCookieJar';
 import { cookieJarsAtom } from '../hooks/useCookieJars';
 import { useCreateCookieJar } from '../hooks/useCreateCookieJar';
 import { useDeleteCookieJar } from '../hooks/useDeleteCookieJar';
-import { usePrompt } from '../hooks/usePrompt';
 import { useUpdateCookieJar } from '../hooks/useUpdateCookieJar';
 import { showDialog } from '../lib/dialog';
-import { jotaiStore } from '../lib/jotai';
+import { showPrompt } from '../lib/prompt';
+import {setWorkspaceSearchParams} from "../lib/setWorkspaceSearchParams";
 import { CookieDialog } from './CookieDialog';
 import { Dropdown, type DropdownItem } from './core/Dropdown';
 import { Icon } from './core/Icon';
@@ -18,18 +19,19 @@ export const CookieDropdown = memo(function CookieDropdown() {
   const updateCookieJar = useUpdateCookieJar(activeCookieJar?.id ?? null);
   const deleteCookieJar = useDeleteCookieJar(activeCookieJar ?? null);
   const createCookieJar = useCreateCookieJar();
-  const prompt = usePrompt();
+  const cookieJars = useAtomValue(cookieJarsAtom);
 
   const items = useMemo((): DropdownItem[] => {
-    const cookieJars = jotaiStore.get(cookieJarsAtom) ?? [];
     return [
-      ...cookieJars.map((j) => ({
+      ...(cookieJars ?? []).map((j) => ({
         key: j.id,
         label: j.name,
         leftSlot: <Icon icon={j.id === activeCookieJar?.id ? 'check' : 'empty'} />,
-        onSelect: () => setActiveCookieJar(j),
+        onSelect: () => {
+          setWorkspaceSearchParams({ cookie_jar_id: j.id });
+        },
       })),
-      ...((cookieJars.length > 0 && activeCookieJar != null
+      ...(((cookieJars ?? []).length > 0 && activeCookieJar != null
         ? [
             { type: 'separator', label: activeCookieJar.name },
             {
@@ -51,7 +53,7 @@ export const CookieDropdown = memo(function CookieDropdown() {
               label: 'Rename',
               leftSlot: <Icon icon="pencil" />,
               onSelect: async () => {
-                const name = await prompt({
+                const name = await showPrompt({
                   id: 'rename-cookie-jar',
                   title: 'Rename Cookie Jar',
                   description: (
@@ -68,7 +70,7 @@ export const CookieDropdown = memo(function CookieDropdown() {
                 updateCookieJar.mutate({ name });
               },
             },
-            ...((cookieJars.length > 1 // Never delete the last one
+            ...(((cookieJars ?? []).length > 1 // Never delete the last one
               ? [
                   {
                     key: 'delete',
@@ -89,7 +91,7 @@ export const CookieDropdown = memo(function CookieDropdown() {
         onSelect: () => createCookieJar.mutate(),
       },
     ];
-  }, [activeCookieJar, createCookieJar, deleteCookieJar, prompt, updateCookieJar]);
+  }, [activeCookieJar, cookieJars, createCookieJar, deleteCookieJar, updateCookieJar]);
 
   return (
     <Dropdown items={items}>

@@ -1,9 +1,9 @@
 import type { PromptTextRequest } from '@yaakapp-internal/plugins';
 import type { FormEvent, ReactNode } from 'react';
 import { useCallback, useState } from 'react';
-import { Button } from '../components/core/Button';
-import { PlainInput } from '../components/core/PlainInput';
-import { HStack } from '../components/core/Stacks';
+import {PlainInput} from "./PlainInput";
+import { HStack } from './Stacks';
+import { Button } from './Button';
 
 export type PromptProps = Omit<PromptTextRequest, 'id' | 'title' | 'description'> & {
   description?: ReactNode;
