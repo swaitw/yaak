@@ -1,9 +1,10 @@
 import useSize from '@react-hook/size';
 import type { GrpcMetadataEntry, GrpcRequest } from '@yaakapp-internal/models';
 import classNames from 'classnames';
+import { useAtom } from 'jotai';
+import { atomWithStorage } from 'jotai/utils';
 import type { CSSProperties } from 'react';
 import React, { useCallback, useMemo, useRef } from 'react';
-import { useLocalStorage } from 'react-use';
 import type { ReflectResponseService } from '../hooks/useGrpc';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
@@ -51,6 +52,8 @@ const TAB_METADATA = 'metadata';
 const TAB_AUTH = 'auth';
 const TAB_DESCRIPTION = 'description';
 
+const tabsAtom = atomWithStorage<Record<string, string>>('grpcRequestPaneActiveTabs', {});
+
 export function GrpcConnectionSetupPane({
   style,
   services,
@@ -66,10 +69,7 @@ export function GrpcConnectionSetupPane({
   onSend,
 }: Props) {
   const updateRequest = useUpdateAnyGrpcRequest();
-  const [activeTabs, setActiveTabs] = useLocalStorage<Record<string, string>>(
-    'grpcRequestPaneActiveTabs',
-    {},
-  );
+  const [activeTabs, setActiveTabs] = useAtom(tabsAtom);
   const { updateKey: forceUpdateKey } = useRequestUpdateKey(activeRequest.id ?? null);
 
   const urlContainerEl = useRef<HTMLDivElement>(null);

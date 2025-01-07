@@ -1,9 +1,9 @@
 import type { HttpRequest } from '@yaakapp-internal/models';
 import classNames from 'classnames';
-import { atom, useAtomValue } from 'jotai';
+import { atom, useAtom, useAtomValue } from 'jotai';
+import { atomWithStorage } from 'jotai/utils';
 import type { CSSProperties } from 'react';
 import React, { memo, useCallback, useMemo, useState } from 'react';
-import { useLocalStorage } from 'react-use';
 import { activeRequestIdAtom } from '../hooks/useActiveRequestId';
 import { useCancelHttpResponse } from '../hooks/useCancelHttpResponse';
 import { useContentTypeFromHeaders } from '../hooks/useContentTypeFromHeaders';
@@ -71,6 +71,8 @@ const TAB_HEADERS = 'headers';
 const TAB_AUTH = 'auth';
 const TAB_DESCRIPTION = 'description';
 
+const tabsAtom = atomWithStorage<Record<string, string>>('requestPaneActiveTabs', {});
+
 const nonActiveRequestUrlsAtom = atom((get) => {
   const activeRequestId = get(activeRequestIdAtom);
   const requests = [...get(httpRequestsAtom), ...get(grpcRequestsAtom)];
@@ -89,10 +91,7 @@ export const RequestPane = memo(function RequestPane({
 }: Props) {
   const activeRequestId = activeRequest.id;
   const { mutateAsync: updateRequestAsync, mutate: updateRequest } = useUpdateAnyHttpRequest();
-  const [activeTabs, setActiveTabs] = useLocalStorage<Record<string, string>>(
-    'requestPaneActiveTabs',
-    {},
-  );
+  const [activeTabs, setActiveTabs] = useAtom(tabsAtom);
   const [forceUpdateHeaderEditorKey, setForceUpdateHeaderEditorKey] = useState<number>(0);
   const { updateKey: forceUpdateKey } = useRequestUpdateKey(activeRequest.id ?? null);
   const [{ urlKey }] = useRequestEditor();
@@ -299,6 +298,7 @@ export const RequestPane = memo(function RequestPane({
   );
 
   const activeTab = activeTabs?.[activeRequestId];
+  console.log('ACTIVE TAB', activeTab);
   const setActiveTab = useCallback(
     (tab: string) => {
       setActiveTabs((r) => ({ ...r, [activeRequest.id]: tab }));
@@ -489,7 +489,7 @@ export const RequestPane = memo(function RequestPane({
                   defaultValue={activeRequest.name}
                   className="font-sans !text-xl !px-0"
                   containerClassName="border-0"
-                  placeholder={activeRequest.id}
+                  placeholder="Request Name"
                   onChange={(name) => updateRequest({ id: activeRequestId, update: { name } })}
                 />
                 <MarkdownEditor
