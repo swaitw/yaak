@@ -27,7 +27,7 @@ export function CreateWorkspaceDialog({ hide }: Props) {
         hide();
       }}
     >
-      <PlainInput label="Workspace Name" defaultValue={name} onChange={setName} />
+      <PlainInput require label="Workspace Name" defaultValue={name} onChange={setName} />
 
       <MarkdownEditor
         name="workspace-description"
@@ -47,7 +47,7 @@ export function CreateWorkspaceDialog({ hide }: Props) {
           onChange={({ filePath }) => setSettingSyncDir(filePath)}
         />
       </div>
-      <Button type="submit">Create Workspace</Button>
+      <Button type="submit" color="primary" className="ml-auto">Create Workspace</Button>
     </VStack>
   );
 }

@@ -140,6 +140,7 @@ export function PlainInput({
             className={classNames(commonClassName, 'h-auto')}
             onFocus={handleFocus}
             onBlur={handleBlur}
+            required={require}
             autoFocus={autoFocus}
             placeholder={placeholder}
             onKeyDownCapture={onKeyDownCapture}
