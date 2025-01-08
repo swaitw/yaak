@@ -15,9 +15,9 @@ use ts_rs::TS;
 use yaak_models::models::{SyncState, Workspace};
 use yaak_models::queries::{
     delete_environment, delete_folder, delete_grpc_request, delete_http_request, delete_sync_state,
-    delete_workspace, get_workspace_export_resources,
-    list_sync_states_for_workspace, upsert_environment, upsert_folder, upsert_grpc_request,
-    upsert_http_request, upsert_sync_state, upsert_workspace, UpdateSource,
+    delete_workspace, get_workspace_export_resources, list_sync_states_for_workspace,
+    upsert_environment, upsert_folder, upsert_grpc_request, upsert_http_request, upsert_sync_state,
+    upsert_workspace, UpdateSource,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -129,11 +129,11 @@ pub(crate) async fn get_db_candidates<R: Runtime>(
 
     // 2. Add SyncState-only candidates (deleted)
     candidates.extend(sync_states.values().filter_map(|sync_state| {
-        let already_added = models.contains_key(&sync_state.model_id);
-        if already_added {
-            return None;
+        if models.contains_key(&sync_state.model_id) {
+            None
+        } else {
+            Some(DbCandidate::Deleted(sync_state.to_owned()))
         }
-        Some(DbCandidate::Deleted(sync_state.to_owned()))
     }));
 
     Ok(candidates)
@@ -351,15 +351,16 @@ async fn apply_sync_op<R: Runtime>(
             }
         }
         SyncOp::FsUpdate { model, state } => {
-            let rel_path = derive_model_filename(&model);
-            let abs_path = derive_full_model_path(workspace, &model)?;
+            // Always write the existing path
+            let rel_path = Path::new(&state.rel_path);
+            let abs_path = Path::new(&state.sync_dir).join(&rel_path);
             let (content, checksum) = model.to_file_contents(&rel_path)?;
             let mut f = File::create(&abs_path).await?;
             f.write_all(&content).await?;
             SyncStateOp::Update {
                 state: state.to_owned(),
                 checksum,
-                rel_path,
+                rel_path: rel_path.to_owned(),
             }
         }
         SyncOp::FsDelete {
@@ -369,8 +370,10 @@ async fn apply_sync_op<R: Runtime>(
             None => SyncStateOp::Delete {
                 state: state.to_owned(),
             },
-            Some(fs_candidate) => {
-                let abs_path = derive_full_model_path(workspace, &fs_candidate.model)?;
+            Some(_) => {
+                // Always delete the existing path
+                let rel_path = Path::new(&state.rel_path);
+                let abs_path = Path::new(&state.sync_dir).join(&rel_path);
                 fs::remove_file(&abs_path).await?;
                 SyncStateOp::Delete {
                     state: state.to_owned(),
@@ -474,7 +477,7 @@ fn derive_full_model_path(workspace: &Workspace, m: &SyncModel) -> Result<PathBu
 }
 
 fn derive_model_filename(m: &SyncModel) -> PathBuf {
-    let rel = format!("{}.yaml", m.id());
+    let rel = format!("yaak.2.{}.yaml", m.id());
     let rel = Path::new(&rel).to_path_buf();
 
     // Ensure parent dir exists

@@ -17,7 +17,7 @@ export function useSyncWorkspace(
   } = {},
 ) {
   const sync = useCallback(async () => {
-    if (workspace == null || workspace.settingSyncDir) return;
+    if (workspace == null || !workspace.settingSyncDir) return;
 
     const ops = await calculateSync(workspace) ?? [];
     if (ops.length === 0) {
@@ -30,6 +30,8 @@ export function useSyncWorkspace(
       await applySync(workspace, ops);
       return;
     }
+
+    console.log("Filesystem changes detected", dbChanges);
 
     const confirmed = await showConfirm({
       id: 'commit-sync',
