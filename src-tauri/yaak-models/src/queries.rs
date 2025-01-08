@@ -914,6 +914,7 @@ pub async fn update_settings<R: Runtime>(
             (SettingsIden::InterfaceFontSize, settings.interface_font_size.into()),
             (SettingsIden::InterfaceScale, settings.interface_scale.into()),
             (SettingsIden::EditorFontSize, settings.editor_font_size.into()),
+            (SettingsIden::EditorKeymap, settings.editor_keymap.to_string().into()),
             (SettingsIden::EditorSoftWrap, settings.editor_soft_wrap.into()),
             (SettingsIden::Telemetry, settings.telemetry.into()),
             (SettingsIden::OpenWorkspaceNewWindow, settings.open_workspace_new_window.into()),

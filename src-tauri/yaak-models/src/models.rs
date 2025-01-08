@@ -4,6 +4,8 @@ use sea_query::Iden;
 use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::Value;
 use std::collections::BTreeMap;
+use std::fmt::Display;
+use std::str::FromStr;
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -26,6 +28,48 @@ pub struct ProxySettingAuth {
     pub password: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "snake_case")]
+#[ts(export, export_to = "models.ts")]
+pub enum EditorKeymap {
+    Default,
+    Vim,
+    Vscode,
+    Emacs,
+}
+
+impl FromStr for EditorKeymap {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "default" => Ok(Self::Default),
+            "vscode" => Ok(Self::Vscode),
+            "vim" => Ok(Self::Vim),
+            "emacs" => Ok(Self::Emacs),
+            _ => Ok(Self::default()),
+        }
+    }
+}
+
+impl Display for EditorKeymap {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let str = match self {
+            EditorKeymap::Default => "default".to_string(),
+            EditorKeymap::Vscode => "vscode".to_string(),
+            EditorKeymap::Vim => "vim".to_string(),
+            EditorKeymap::Emacs => "emacs".to_string(),
+        };
+        write!(f, "{}", str)
+    }
+}
+
+impl Default for EditorKeymap {
+    fn default() -> Self {
+        Self::Default
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export, export_to = "models.ts")]
@@ -42,12 +86,13 @@ pub struct Settings {
     pub interface_font_size: i32,
     pub interface_scale: f32,
     pub open_workspace_new_window: Option<bool>,
+    pub proxy: Option<ProxySetting>,
     pub telemetry: bool,
     pub theme: String,
     pub theme_dark: String,
     pub theme_light: String,
     pub update_channel: String,
-    pub proxy: Option<ProxySetting>,
+    pub editor_keymap: EditorKeymap,
 }
 
 #[derive(Iden)]
@@ -61,6 +106,7 @@ pub enum SettingsIden {
 
     Appearance,
     EditorFontSize,
+    EditorKeymap,
     EditorSoftWrap,
     InterfaceFontSize,
     InterfaceScale,
@@ -78,6 +124,7 @@ impl<'s> TryFrom<&Row<'s>> for Settings {
 
     fn try_from(r: &Row<'s>) -> Result<Self, Self::Error> {
         let proxy: Option<String> = r.get("proxy")?;
+        let editor_keymap: String = r.get("editor_keymap")?;
         Ok(Settings {
             id: r.get("id")?,
             model: r.get("model")?,
@@ -85,6 +132,7 @@ impl<'s> TryFrom<&Row<'s>> for Settings {
             updated_at: r.get("updated_at")?,
             appearance: r.get("appearance")?,
             editor_font_size: r.get("editor_font_size")?,
+            editor_keymap: EditorKeymap::from_str(editor_keymap.as_str()).unwrap(),
             editor_soft_wrap: r.get("editor_soft_wrap")?,
             interface_font_size: r.get("interface_font_size")?,
             interface_scale: r.get("interface_scale")?,
@@ -1043,9 +1091,7 @@ impl<'de> Deserialize<'de> for AnyModel {
             Some(m) if m == "environment" => {
                 AnyModel::Environment(serde_json::from_value(value).unwrap())
             }
-            Some(m) if m == "folder" => {
-                AnyModel::Folder(serde_json::from_value(value).unwrap())
-            }
+            Some(m) if m == "folder" => AnyModel::Folder(serde_json::from_value(value).unwrap()),
             Some(m) if m == "key_value" => {
                 AnyModel::KeyValue(serde_json::from_value(value).unwrap())
             }
@@ -1058,9 +1104,7 @@ impl<'de> Deserialize<'de> for AnyModel {
             Some(m) if m == "cookie_jar" => {
                 AnyModel::CookieJar(serde_json::from_value(value).unwrap())
             }
-            Some(m) if m == "plugin" => {
-                AnyModel::Plugin(serde_json::from_value(value).unwrap())
-            }
+            Some(m) if m == "plugin" => AnyModel::Plugin(serde_json::from_value(value).unwrap()),
             Some(m) => {
                 return Err(serde::de::Error::custom(format!("Unknown model {}", m)));
             }

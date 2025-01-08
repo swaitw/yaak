@@ -1,6 +1,6 @@
 import { useFolders } from '../hooks/useFolders';
 import { useUpdateAnyFolder } from '../hooks/useUpdateAnyFolder';
-import { PlainInput } from './core/PlainInput';
+import { Input } from './core/Input';
 import { VStack } from './core/Stacks';
 import { MarkdownEditor } from './MarkdownEditor';
 
@@ -17,13 +17,14 @@ export function FolderSettingsDialog({ folderId }: Props) {
 
   return (
     <VStack space={3} className="pb-3">
-      <PlainInput
+      <Input
         label="Folder Name"
         defaultValue={folder.name}
         onChange={(name) => {
           if (folderId == null) return;
           updateFolder({ id: folderId, update: (folder) => ({ ...folder, name }) });
         }}
+        stateKey={`name.${folder.id}`}
       />
 
       <MarkdownEditor

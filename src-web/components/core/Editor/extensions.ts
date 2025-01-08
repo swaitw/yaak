@@ -21,7 +21,6 @@ import {
 import { lintKeymap } from '@codemirror/lint';
 
 import { searchKeymap } from '@codemirror/search';
-import type { Extension } from '@codemirror/state';
 import { EditorState } from '@codemirror/state';
 import {
   crosshairCursor,
@@ -85,8 +84,6 @@ const syntaxExtensions: Record<NonNullable<EditorProps['language']>, LanguageSup
   text: text(),
   markdown: markdown(),
 };
-
-export const emptyExtension: Extension = [];
 
 export function getLanguageExtension({
   language,

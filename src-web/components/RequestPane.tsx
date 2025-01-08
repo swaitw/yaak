@@ -45,8 +45,8 @@ import type {
   GenericCompletionOption,
 } from './core/Editor/genericCompletion';
 import { InlineCode } from './core/InlineCode';
+import { Input } from './core/Input';
 import type { Pair } from './core/PairEditor';
-import { PlainInput } from './core/PlainInput';
 import type { TabItem } from './core/Tabs/Tabs';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
 import { EmptyStateText } from './EmptyStateText';
@@ -481,7 +481,7 @@ export const RequestPane = memo(function RequestPane({
             </TabContent>
             <TabContent value={TAB_DESCRIPTION}>
               <div className="grid grid-rows-[auto_minmax(0,1fr)] h-full">
-                <PlainInput
+                <Input
                   label="Request Name"
                   hideLabel
                   forceUpdateKey={forceUpdateKey}
@@ -490,6 +490,7 @@ export const RequestPane = memo(function RequestPane({
                   containerClassName="border-0"
                   placeholder="Request Name"
                   onChange={(name) => updateRequest({ id: activeRequestId, update: { name } })}
+                  stateKey={`name.${activeRequest.id}`}
                 />
                 <MarkdownEditor
                   name="request-description"

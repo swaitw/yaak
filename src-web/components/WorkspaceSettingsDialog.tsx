@@ -2,7 +2,7 @@ import { useDeleteActiveWorkspace } from '../hooks/useDeleteActiveWorkspace';
 import { useUpdateWorkspace } from '../hooks/useUpdateWorkspace';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import { Button } from './core/Button';
-import { PlainInput } from './core/PlainInput';
+import { Input } from './core/Input';
 import { VStack } from './core/Stacks';
 import { MarkdownEditor } from './MarkdownEditor';
 import { SelectFile } from './SelectFile';
@@ -22,10 +22,11 @@ export function WorkspaceSettingsDialog({ workspaceId, hide }: Props) {
 
   return (
     <VStack space={3} alignItems="start" className="pb-3 max-h-[50vh]">
-      <PlainInput
+      <Input
         label="Workspace Name"
         defaultValue={workspace.name}
         onChange={(name) => updateWorkspace({ name })}
+        stateKey={`name.${workspace.id}`}
       />
 
       <MarkdownEditor

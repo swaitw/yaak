@@ -1,3 +1,4 @@
+import type { EditorKeymap } from '@yaakapp-internal/models';
 import React from 'react';
 import { useActiveWorkspace } from '../../hooks/useActiveWorkspace';
 import { useResolvedAppearance } from '../../hooks/useResolvedAppearance';
@@ -9,7 +10,7 @@ import { getThemes } from '../../lib/theme/themes';
 import { isThemeDark } from '../../lib/theme/window';
 import type { ButtonProps } from '../core/Button';
 import { Checkbox } from '../core/Checkbox';
-import {Editor} from "../core/Editor/Editor";
+import { Editor } from '../core/Editor/Editor';
 import type { IconProps } from '../core/Icon';
 import { Icon } from '../core/Icon';
 import { IconButton } from '../core/IconButton';
@@ -18,9 +19,12 @@ import { Select } from '../core/Select';
 import { Separator } from '../core/Separator';
 import { HStack, VStack } from '../core/Stacks';
 
-const fontSizes = [
+const fontSizeOptions = [
   8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
 ].map((n) => ({ label: `${n}`, value: `${n}` }));
+
+const keymaps: EditorKeymap[] = ['default', 'vim', 'vscode', 'emacs'];
+const keymapOptions = keymaps.map((n) => ({ label: n, value: n }));
 
 const buttonColors: ButtonProps['color'][] = [
   'primary',
@@ -86,9 +90,9 @@ export function SettingsAppearance() {
         label="Font Size"
         labelPosition="left"
         value={`${settings.interfaceFontSize}`}
-        options={fontSizes}
+        options={fontSizeOptions}
         onChange={(v) => updateSettings.mutate({ interfaceFontSize: parseInt(v) })}
-        event="font-size.interface"
+        event="ui-font-size"
       />
       <Select
         size="sm"
@@ -96,15 +100,25 @@ export function SettingsAppearance() {
         label="Editor Font Size"
         labelPosition="left"
         value={`${settings.editorFontSize}`}
-        options={fontSizes}
+        options={fontSizeOptions}
         onChange={(v) => updateSettings.mutate({ editorFontSize: clamp(parseInt(v) || 14, 8, 30) })}
-        event="font-size.editor"
+        event="editor-font-size"
       />
       <Checkbox
         checked={settings.editorSoftWrap}
         title="Wrap Editor Lines"
         onChange={(editorSoftWrap) => updateSettings.mutate({ editorSoftWrap })}
-        event="wrap-lines"
+        event="editor-wrap-lines"
+      />
+      <Select
+        size="sm"
+        name="editorKeymap"
+        label="Editor Key Map"
+        labelPosition="left"
+        value={`${settings.editorKeymap}`}
+        options={keymapOptions}
+        onChange={(v) => updateSettings.mutate({ editorKeymap: v })}
+        event="editor-keymap"
       />
 
       <Separator className="my-4" />

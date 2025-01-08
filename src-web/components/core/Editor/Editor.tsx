@@ -3,7 +3,10 @@ import { foldState, forceParsing } from '@codemirror/language';
 import type { EditorStateConfig, Extension } from '@codemirror/state';
 import { Compartment, EditorState } from '@codemirror/state';
 import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/view';
-import type { EnvironmentVariable } from '@yaakapp-internal/models';
+import { emacs } from '@replit/codemirror-emacs';
+import { vim } from '@replit/codemirror-vim';
+import { vscodeKeymap } from '@replit/codemirror-vscode-keymap';
+import type { EditorKeymap, EnvironmentVariable } from '@yaakapp-internal/models';
 import type { TemplateFunction } from '@yaakapp-internal/plugins';
 import classNames from 'classnames';
 import { EditorView } from 'codemirror';
@@ -33,14 +36,16 @@ import { TemplateVariableDialog } from '../../TemplateVariableDialog';
 import { IconButton } from '../IconButton';
 import { HStack } from '../Stacks';
 import './Editor.css';
-import {
-  baseExtensions,
-  emptyExtension,
-  getLanguageExtension,
-  multiLineExtensions,
-} from './extensions';
+import { baseExtensions, getLanguageExtension, multiLineExtensions } from './extensions';
 import type { GenericCompletionConfig } from './genericCompletion';
 import { singleLineExtensions } from './singleLine';
+
+const keymapExtensions: Record<EditorKeymap, Extension> = {
+  vim: vim(),
+  emacs: emacs(),
+  vscode: keymap.of(vscodeKeymap),
+  default: [],
+};
 
 export interface EditorProps {
   id?: string;
@@ -86,6 +91,7 @@ export interface EditorProps {
 const stateFields = { history: historyField, folds: foldState };
 
 const emptyVariables: EnvironmentVariable[] = [];
+const emptyExtension: Extension = [];
 
 export const Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
   {
@@ -119,6 +125,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
   ref,
 ) {
   const settings = useSettings();
+
   const templateFunctions = useTemplateFunctions();
   const allEnvironmentVariables = useActiveEnvironmentVariables();
   const environmentVariables = autocompleteVariables ? allEnvironmentVariables : emptyVariables;
@@ -178,6 +185,25 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
     [placeholder],
   );
 
+  // Update vim
+  const keymapCompartment = useRef(new Compartment());
+  useEffect(
+    function configureKeymap() {
+      if (cm.current === null) return;
+      const current = keymapCompartment.current.get(cm.current.view.state) ?? [];
+      // PERF: This is expensive with hundreds of editors on screen, so only do it when necessary
+      if (settings.editorKeymap === 'default' && current === keymapExtensions['default']) return; // Nothing to do
+      if (settings.editorKeymap === 'vim' && current === keymapExtensions['vim']) return; // Nothing to do
+      if (settings.editorKeymap === 'vscode' && current === keymapExtensions['vscode']) return; // Nothing to do
+      if (settings.editorKeymap === 'emacs' && current === keymapExtensions['emacs']) return; // Nothing to do
+
+      const ext = keymapExtensions[settings.editorKeymap] ?? keymapExtensions['default'];
+      const effect = keymapCompartment.current.reconfigure(ext);
+      cm.current.view.dispatch({ effects: effect });
+    },
+    [settings.editorKeymap],
+  );
+
   // Update wrap lines
   const wrapLinesCompartment = useRef(new Compartment());
   useEffect(
@@ -188,7 +214,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
       if (wrapLines && current !== emptyExtension) return; // Nothing to do
       if (!wrapLines && current === emptyExtension) return; // Nothing to do
 
-      const ext = wrapLines ? EditorView.lineWrapping : emptyExtension;
+      const ext = wrapLines ? EditorView.lineWrapping : [];
       const effect = wrapLinesCompartment.current.reconfigure(ext);
       cm.current?.view.dispatch({ effects: effect });
     },
@@ -331,7 +357,10 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
           placeholderCompartment.current.of(
             placeholderExt(placeholderElFromText(placeholder ?? '')),
           ),
-          wrapLinesCompartment.current.of(wrapLines ? EditorView.lineWrapping : emptyExtension),
+          wrapLinesCompartment.current.of(wrapLines ? EditorView.lineWrapping : []),
+          keymapCompartment.current.of(
+            keymapExtensions[settings.editorKeymap] ?? keymapExtensions['default'],
+          ),
           ...getExtensions({
             container,
             readOnly,

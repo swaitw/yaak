@@ -4,14 +4,26 @@
   .cm-editor {
     @apply w-full block text-base;
 
+    /* Regular cursor */
     .cm-cursor {
       @apply border-text !important;
-      /* Widen the cursor */
+      /* Widen the cursor a bit */
       @apply border-l-[2px];
+    }
+
+    /* Vim-mode cursor */
+    .cm-fat-cursor {
+      @apply bg-text opacity-60;
     }
 
     &.cm-focused {
       outline: none !important;
+    }
+
+    &:not(.cm-focused) {
+      .cm-cursor, .cm-fat-cursor {
+        display: none;
+      }
     }
 
     .cm-content {
