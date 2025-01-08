@@ -20,12 +20,12 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { useKey, useWindowSize } from 'react-use';
+import {useClickAway, useKey, useWindowSize} from 'react-use';
 import type { HotkeyAction } from '../../hooks/useHotKey';
 import { useHotKey } from '../../hooks/useHotKey';
 import { useStateWithDeps } from '../../hooks/useStateWithDeps';
 import { getNodeText } from '../../lib/getNodeText';
-import { Overlay } from '../Overlay';
+import { Portal } from '../Portal';
 import { Button } from './Button';
 import { HotKey } from './HotKey';
 import { Icon } from './Icon';
@@ -414,6 +414,9 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle' | 'items'
       [filteredItems, setSelectedIndex],
     );
 
+    const menuRef = useRef<HTMLDivElement | null>(null);
+    useClickAway(menuRef, handleClose);
+
     return (
       <>
         {items.map(
@@ -429,9 +432,8 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle' | 'items'
             ),
         )}
         {isOpen && (
-          <Overlay open={true} variant="transparent" portalName="dropdown" zIndex={50}>
-            <div className="x-theme-menu">
-              <div tabIndex={-1} aria-hidden className="fixed inset-0 z-30" onClick={handleClose} />
+          <Portal name="dropdown-menu">
+            <div ref={menuRef} className="x-theme-menu">
               <motion.div
                 tabIndex={0}
                 onKeyDown={handleMenuKeyDown}
@@ -497,7 +499,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle' | 'items'
                 </VStack>
               </motion.div>
             </div>
-          </Overlay>
+          </Portal>
         )}
       </>
     );
