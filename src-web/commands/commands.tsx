@@ -65,7 +65,6 @@ export const syncWorkspace = createFastMutation<
   mutationKey: [],
   mutationFn: async ({ workspaceId, syncDir }) => {
     const ops = (await calculateSync(workspaceId, syncDir)) ?? [];
-    console.log('SYNCING WORKSPACE', ops);
     if (ops.length === 0) {
       return;
     }

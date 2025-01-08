@@ -24,7 +24,14 @@ export function WorkspaceSettingsDialog({ workspaceId, hide }: Props) {
   const { mutate: updateWorkspace } = useUpdateWorkspace(workspaceId ?? null);
   const { mutateAsync: deleteActiveWorkspace } = useDeleteActiveWorkspace();
 
-  if (workspace == null) return null;
+  if (workspace == null) {
+    return (
+      <Banner color="danger">
+        <InlineCode>Workspace</InlineCode> not found
+      </Banner>
+    );
+  }
+
   if (workspaceMeta == null)
     return (
       <Banner color="danger">

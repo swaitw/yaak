@@ -921,10 +921,17 @@ async fn cmd_import_data<R: Runtime>(
         })
         .collect();
 
-    let upserted =
-        batch_upsert(&window, workspaces, environments, folders, http_requests, grpc_requests)
-            .await
-            .map_err(|e| e.to_string())?;
+    let upserted = batch_upsert(
+        &window,
+        workspaces,
+        environments,
+        folders,
+        http_requests,
+        grpc_requests,
+        &UpdateSource::Import,
+    )
+    .await
+    .map_err(|e| e.to_string())?;
 
     analytics::track_event(
         &window,

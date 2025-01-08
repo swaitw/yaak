@@ -416,6 +416,7 @@ pub(crate) async fn apply_sync_ops<R: Runtime>(
         folders_to_upsert,
         http_requests_to_upsert,
         grpc_requests_to_upsert,
+        &UpdateSource::Sync,
     )
     .await?;
 

@@ -1,8 +1,10 @@
 import classNames from 'classnames';
 import { atom, useAtom } from 'jotai';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
+import type { Components } from 'react-markdown';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { useStateWithDeps } from '../hooks/useStateWithDeps';
 import { Button } from './core/Button';
 import type { EditorProps } from './core/Editor/Editor';
 import { Editor } from './core/Editor/Editor';
@@ -30,12 +32,14 @@ export function MarkdownEditor({
   name,
   defaultMode = 'preview',
   doneButtonLabel = 'Save',
+  forceUpdateKey,
   ...editorProps
 }: Props) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const [rawViewMode, setViewMode] = useAtom(viewModeAtom);
+  const [value, setValue] = useStateWithDeps<string>(defaultValue, [forceUpdateKey]);
+
+  const containerRef = useRef<HTMLDivElement>(null);
   const viewMode = rawViewMode[name] ?? defaultMode;
-  const [value, setValue] = useState<string>(defaultValue);
 
   const editor = (
     <Editor
@@ -46,6 +50,7 @@ export function MarkdownEditor({
       defaultValue={defaultValue}
       onChange={setValue}
       autoFocus
+      forceUpdateKey={forceUpdateKey}
       {...editorProps}
     />
   );
@@ -55,21 +60,7 @@ export function MarkdownEditor({
       <p className="text-text-subtle">No description</p>
     ) : (
       <Prose className="max-w-xl overflow-y-auto max-h-full">
-        <Markdown
-          remarkPlugins={[remarkGfm]}
-          components={{
-            a: ({ href, children, ...rest }) => {
-              if (href && !href.match(/https?:\/\//)) {
-                href = `http://${href}`;
-              }
-              return (
-                <a target="_blank" rel="noreferrer noopener" href={href} {...rest}>
-                  {children}
-                </a>
-              );
-            },
-          }}
-        >
+        <Markdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
           {value}
         </Markdown>
       </Prose>
@@ -131,3 +122,17 @@ export function MarkdownEditor({
     </div>
   );
 }
+
+const markdownComponents: Partial<Components> = {
+  // Ensure links open in external browser by adding target="_blank"
+  a: ({ href, children, ...rest }) => {
+    if (href && !href.match(/https?:\/\//)) {
+      href = `http://${href}`;
+    }
+    return (
+      <a target="_blank" rel="noreferrer noopener" href={href} {...rest}>
+        {children}
+      </a>
+    );
+  },
+};

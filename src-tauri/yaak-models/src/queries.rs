@@ -2013,6 +2013,7 @@ pub enum UpdateSource {
     Window,
     Plugin,
     Background,
+    Import,
 }
 
 fn emit_upserted_model<R: Runtime>(
@@ -2100,11 +2101,12 @@ pub async fn batch_upsert<R: Runtime>(
     folders: Vec<Folder>,
     http_requests: Vec<HttpRequest>,
     grpc_requests: Vec<GrpcRequest>,
+    update_source: &UpdateSource,
 ) -> Result<BatchUpsertResult> {
     let mut imported_resources = BatchUpsertResult::default();
 
     for v in workspaces {
-        let x = upsert_workspace(&window, v, &UpdateSource::Window).await?;
+        let x = upsert_workspace(&window, v, update_source).await?;
         imported_resources.workspaces.push(x.clone());
     }
     info!("Imported {} workspaces", imported_resources.workspaces.len());
@@ -2120,7 +2122,7 @@ pub async fn batch_upsert<R: Runtime>(
             if let Some(_) = imported_resources.environments.iter().find(|f| f.id == v.id) {
                 continue;
             }
-            let x = upsert_environment(&window, v, &UpdateSource::Window).await?;
+            let x = upsert_environment(&window, v, update_source).await?;
             imported_resources.environments.push(x.clone());
         }
     }
@@ -2137,20 +2139,20 @@ pub async fn batch_upsert<R: Runtime>(
             if let Some(_) = imported_resources.folders.iter().find(|f| f.id == v.id) {
                 continue;
             }
-            let x = upsert_folder(&window, v, &UpdateSource::Window).await?;
+            let x = upsert_folder(&window, v, update_source).await?;
             imported_resources.folders.push(x.clone());
         }
     }
     info!("Imported {} folders", imported_resources.folders.len());
 
     for v in http_requests {
-        let x = upsert_http_request(&window, v, &UpdateSource::Window).await?;
+        let x = upsert_http_request(&window, v, update_source).await?;
         imported_resources.http_requests.push(x.clone());
     }
     info!("Imported {} http_requests", imported_resources.http_requests.len());
 
     for v in grpc_requests {
-        let x = upsert_grpc_request(&window, v, &UpdateSource::Window).await?;
+        let x = upsert_grpc_request(&window, v, update_source).await?;
         imported_resources.grpc_requests.push(x.clone());
     }
     info!("Imported {} grpc_requests", imported_resources.grpc_requests.len());
