@@ -1,15 +1,15 @@
 import classNames from 'classnames';
-import { useRef } from 'react';
+import { atom, useAtom } from 'jotai';
+import { useRef, useState } from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { useContainerSize } from '../hooks/useContainerQuery';
-import { useKeyValue } from '../hooks/useKeyValue';
+import { Button } from './core/Button';
 import type { EditorProps } from './core/Editor/Editor';
 import { Editor } from './core/Editor/Editor';
-import { IconButton } from './core/IconButton';
-import { SplitLayout } from './core/SplitLayout';
-import { VStack } from './core/Stacks';
+import { HStack, VStack } from './core/Stacks';
 import { Prose } from './Prose';
+
+type ViewMode = 'edit' | 'preview';
 
 interface Props extends Pick<EditorProps, 'heightMode' | 'stateKey' | 'forceUpdateKey'> {
   placeholder: string;
@@ -17,35 +17,35 @@ interface Props extends Pick<EditorProps, 'heightMode' | 'stateKey' | 'forceUpda
   defaultValue: string;
   onChange: (value: string) => void;
   name: string;
+  defaultMode?: ViewMode;
+  doneButtonLabel?: string;
 }
 
-export function MarkdownEditor({ className, defaultValue, onChange, name, ...editorProps }: Props) {
+const viewModeAtom = atom<Record<string, ViewMode>>({});
+
+export function MarkdownEditor({
+  className,
+  defaultValue,
+  onChange,
+  name,
+  defaultMode = 'preview',
+  doneButtonLabel = 'Save',
+  ...editorProps
+}: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
-
-  const { width } = useContainerSize(containerRef);
-  const wideEnoughForSplit = width > 600;
-
-  const { set: setViewMode, value: rawViewMode } = useKeyValue<'edit' | 'preview' | 'both'>({
-    namespace: 'global',
-    key: ['md_view', name],
-    fallback: 'edit',
-  });
-
-  if (rawViewMode == null) return null;
-
-  let viewMode = rawViewMode;
-  if (rawViewMode === 'both' && !wideEnoughForSplit) {
-    viewMode = 'edit';
-  }
+  const [rawViewMode, setViewMode] = useAtom(viewModeAtom);
+  const viewMode = rawViewMode[name] ?? defaultMode;
+  const [value, setValue] = useState<string>(defaultValue);
 
   const editor = (
     <Editor
       hideGutter
       wrapLines
-      className="max-w-2xl max-h-full" 
+      className="max-w-2xl max-h-full"
       language="markdown"
       defaultValue={defaultValue}
-      onChange={onChange}
+      onChange={setValue}
+      autoFocus
       {...editorProps}
     />
   );
@@ -70,28 +70,12 @@ export function MarkdownEditor({ className, defaultValue, onChange, name, ...edi
             },
           }}
         >
-          {defaultValue}
+          {value}
         </Markdown>
       </Prose>
     );
 
-  const contents =
-    viewMode === 'both' ? (
-      <SplitLayout
-        name="markdown-editor"
-        layout="horizontal"
-        firstSlot={({ style }) => <div style={style}>{editor}</div>}
-        secondSlot={({ style }) => (
-          <div style={style} className="border-l border-border-subtle pl-6">
-            {preview}
-          </div>
-        )}
-      />
-    ) : viewMode === 'preview' ? (
-      preview
-    ) : (
-      editor
-    );
+  const contents = viewMode === 'preview' ? preview : editor;
 
   return (
     <div
@@ -106,32 +90,43 @@ export function MarkdownEditor({ className, defaultValue, onChange, name, ...edi
         space={1}
         className="bg-surface opacity-20 group-hover:opacity-100 transition-opacity transform-gpu"
       >
-        <IconButton
-          size="xs"
-          icon="text"
-          title="Switch to edit mode"
-          className={classNames(viewMode === 'edit' && 'bg-surface-highlight !text-text')}
-          event={{ id: 'md_mode', mode: viewMode }}
-          onClick={() => setViewMode('edit')}
-        />
-        {wideEnoughForSplit && (
-          <IconButton
+        {viewMode === 'preview' && (
+          <Button
             size="xs"
-            icon="columns_2"
-            title="Switch to edit mode"
-            className={classNames(viewMode === 'both' && 'bg-surface-highlight !text-text')}
+            variant="border"
             event={{ id: 'md_mode', mode: viewMode }}
-            onClick={() => setViewMode('both')}
-          />
+            onClick={() => setViewMode((prev) => ({ ...prev, [name]: 'edit' }))}
+          >
+            Edit
+          </Button>
         )}
-        <IconButton
-          size="xs"
-          icon="eye"
-          title="Switch to preview mode"
-          className={classNames(viewMode === 'preview' && 'bg-surface-highlight !text-text')}
-          event={{ id: 'md_mode', mode: viewMode }}
-          onClick={() => setViewMode('preview')}
-        />
+        {viewMode === 'edit' && (
+          <HStack space={2}>
+            <Button
+              size="xs"
+              event={{ id: 'md_mode', mode: viewMode }}
+              color="secondary"
+              variant="border"
+              onClick={() => {
+                setViewMode((prev) => ({ ...prev, [name]: 'preview' }));
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="xs"
+              variant="border"
+              color="primary"
+              event={{ id: 'md_mode', mode: viewMode }}
+              onClick={() => {
+                onChange(value);
+                setViewMode((prev) => ({ ...prev, [name]: 'preview' }));
+              }}
+            >
+              {doneButtonLabel}
+            </Button>
+          </HStack>
+        )}
       </VStack>
     </div>
   );

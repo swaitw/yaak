@@ -46,9 +46,9 @@ export function SelectFile({
   const selectOrChange = (filePath ? 'Change ' : 'Select ') + itemLabel;
 
   return (
-    <HStack space={1.5} className="group relative justify-stretch overflow-hidden">
+    <HStack className="group relative justify-stretch overflow-hidden">
       <Button
-        className={classNames(className, 'font-mono text-xs rtl', inline && 'w-full')}
+        className={classNames(className, 'font-mono text-xs rtl mr-1.5', inline && 'w-full')}
         color="secondary"
         onClick={handleClick}
         size={size}
@@ -57,6 +57,7 @@ export function SelectFile({
         {rtlEscapeChar}
         {inline ? filePath || selectOrChange : selectOrChange}
       </Button>
+
       {!inline && (
         <>
           {filePath && (

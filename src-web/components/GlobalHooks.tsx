@@ -31,17 +31,18 @@ export function GlobalHooks() {
   useNotificationToast();
   useActiveWorkspaceChangedToast();
 
-  // Listen for toasts
-  useListenToTauriEvent<ShowToastRequest>('show_toast', (event) => {
-    showToast({ ...event.payload });
-  });
-
   // Trigger workspace sync operation when workspace files change
   const activeWorkspace = useActiveWorkspace();
   const { debouncedSync } = useSyncWorkspace(activeWorkspace, { debounceMillis: 1000 });
   useListenToTauriEvent('upserted_model', debouncedSync);
   useWatchWorkspace(activeWorkspace, debouncedSync);
 
+  // Listen for toasts
+  useListenToTauriEvent<ShowToastRequest>('show_toast', (event) => {
+    showToast({ ...event.payload });
+  });
+
+  // Listen for prompts
   useListenToTauriEvent<{ replyId: string; args: PromptTextRequest }>(
     'show_prompt',
     async (event) => {

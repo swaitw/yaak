@@ -7,7 +7,7 @@ export function useCreateWorkspace() {
     showDialog({
       id: 'create-workspace',
       title: 'Create Workspace',
-      size: 'md',
+      size: 'sm',
       render: ({ hide }) => <CreateWorkspaceDialog hide={hide} />,
     });
   }, []);

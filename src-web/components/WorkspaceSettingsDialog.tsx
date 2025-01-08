@@ -5,7 +5,7 @@ import { Button } from './core/Button';
 import { Input } from './core/Input';
 import { VStack } from './core/Stacks';
 import { MarkdownEditor } from './MarkdownEditor';
-import { SelectFile } from './SelectFile';
+import { SyncToFilesystemSetting } from './SyncToFilesystemSetting';
 
 interface Props {
   workspaceId: string | null;
@@ -21,7 +21,7 @@ export function WorkspaceSettingsDialog({ workspaceId, hide }: Props) {
   if (workspace == null) return null;
 
   return (
-    <VStack space={3} alignItems="start" className="pb-3 max-h-[50vh]">
+    <VStack space={3} alignItems="start" className="pb-3 h-full">
       <Input
         label="Workspace Name"
         defaultValue={workspace.name}
@@ -40,11 +40,11 @@ export function WorkspaceSettingsDialog({ workspaceId, hide }: Props) {
       />
 
       <VStack space={3} className="mt-3" alignItems="start">
-        <SelectFile
-          directory
-          noun="Sync Directory"
-          filePath={workspace.settingSyncDir}
-          onChange={({ filePath: settingSyncDir }) => updateWorkspace({ settingSyncDir })}
+        <SyncToFilesystemSetting
+          value={workspace.settingSyncDir}
+          onChange={({ value: settingSyncDir }) => {
+            updateWorkspace({ settingSyncDir });
+          }}
         />
         <Button
           onClick={async () => {

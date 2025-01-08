@@ -4,6 +4,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { useStateWithDeps } from '../../hooks/useStateWithDeps';
 import { IconButton } from './IconButton';
 import type { InputProps } from './Input';
+import { Label } from './Label';
 import { HStack } from './Stacks';
 
 export type PlainInputProps = Omit<InputProps, 'wrapLines' | 'onKeyDown' | 'type' | 'stateKey'> &
@@ -45,15 +46,18 @@ export function PlainInput({
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleFocus = useCallback((e: FocusEvent<HTMLInputElement>) => {
-    onFocusRaw?.(e);
-    setFocused(true);
-    if (autoSelect) {
-      inputRef.current?.select();
-      textareaRef.current?.select();
-    }
-    onFocus?.();
-  }, [autoSelect, onFocus, onFocusRaw]);
+  const handleFocus = useCallback(
+    (e: FocusEvent<HTMLInputElement>) => {
+      onFocusRaw?.(e);
+      setFocused(true);
+      if (autoSelect) {
+        inputRef.current?.select();
+        textareaRef.current?.select();
+      }
+      onFocus?.();
+    },
+    [autoSelect, onFocus, onFocusRaw],
+  );
 
   const handleBlur = useCallback(() => {
     setFocused(false);
@@ -94,16 +98,9 @@ export function PlainInput({
         labelPosition === 'top' && 'flex-row gap-0.5',
       )}
     >
-      <label
-        htmlFor={id}
-        className={classNames(
-          labelClassName,
-          'text-text-subtle whitespace-nowrap flex-shrink-0',
-          hideLabel && 'sr-only',
-        )}
-      >
+      <Label htmlFor={id} className={classNames(labelClassName, hideLabel && 'sr-only')}>
         {label}
-      </label>
+      </Label>
       <HStack
         alignItems="stretch"
         className={classNames(

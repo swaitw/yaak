@@ -6,6 +6,7 @@ import { useStateWithDeps } from '../../hooks/useStateWithDeps';
 import type { EditorProps } from './Editor/Editor';
 import { Editor } from './Editor/Editor';
 import { IconButton } from './IconButton';
+import { Label } from './Label';
 import { HStack } from './Stacks';
 
 export type InputProps = Pick<
@@ -136,16 +137,9 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
         labelPosition === 'top' && 'flex-row gap-0.5',
       )}
     >
-      <label
-        htmlFor={id}
-        className={classNames(
-          labelClassName,
-          'text-text-subtle whitespace-nowrap',
-          hideLabel && 'sr-only',
-        )}
-      >
+      <Label htmlFor={id} className={classNames(labelClassName, hideLabel && 'sr-only')}>
         {label}
-      </label>
+      </Label>
       <HStack
         alignItems="stretch"
         className={classNames(
