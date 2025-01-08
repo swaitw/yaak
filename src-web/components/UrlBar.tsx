@@ -74,7 +74,7 @@ export const UrlBar = memo(function UrlBar({
         hideLabel
         useTemplating
         language="url"
-        className="pl-0 pr-1.5 py-0.5"
+        className="px-1.5 py-0.5"
         label="Enter URL"
         name="url"
         autocomplete={autocomplete}
