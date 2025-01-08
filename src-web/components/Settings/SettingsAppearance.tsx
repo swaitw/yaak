@@ -23,8 +23,12 @@ const fontSizeOptions = [
   8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
 ].map((n) => ({ label: `${n}`, value: `${n}` }));
 
-const keymaps: EditorKeymap[] = ['default', 'vim', 'vscode', 'emacs'];
-const keymapOptions = keymaps.map((n) => ({ label: n, value: n }));
+const keymaps: { value: EditorKeymap; label: string }[] = [
+  { value: 'default', label: 'Default' },
+  { value: 'vim', label: 'Vim' },
+  { value: 'vscode', label: 'VSCode' },
+  { value: 'emacs', label: 'Emacs' },
+];
 
 const buttonColors: ButtonProps['color'][] = [
   'primary',
@@ -104,21 +108,21 @@ export function SettingsAppearance() {
         onChange={(v) => updateSettings.mutate({ editorFontSize: clamp(parseInt(v) || 14, 8, 30) })}
         event="editor-font-size"
       />
+      <Select
+        size="sm"
+        name="editorKeymap"
+        label="Editor Keymap"
+        labelPosition="left"
+        value={`${settings.editorKeymap}`}
+        options={keymaps}
+        onChange={(v) => updateSettings.mutate({ editorKeymap: v })}
+        event="editor-keymap"
+      />
       <Checkbox
         checked={settings.editorSoftWrap}
         title="Wrap Editor Lines"
         onChange={(editorSoftWrap) => updateSettings.mutate({ editorSoftWrap })}
         event="editor-wrap-lines"
-      />
-      <Select
-        size="sm"
-        name="editorKeymap"
-        label="Editor Key Map"
-        labelPosition="left"
-        value={`${settings.editorKeymap}`}
-        options={keymapOptions}
-        onChange={(v) => updateSettings.mutate({ editorKeymap: v })}
-        event="editor-keymap"
       />
 
       <Separator className="my-4" />

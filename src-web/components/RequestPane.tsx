@@ -19,6 +19,7 @@ import { useSendAnyHttpRequest } from '../hooks/useSendAnyHttpRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
 import { deepEqualAtom } from '../lib/atoms';
 import { languageFromContentType } from '../lib/contentType';
+import { fallbackRequestName } from '../lib/fallbackRequestName';
 import { tryFormatJson } from '../lib/formatters';
 import { generateId } from '../lib/generateId';
 import {
@@ -486,9 +487,10 @@ export const RequestPane = memo(function RequestPane({
                   hideLabel
                   forceUpdateKey={forceUpdateKey}
                   defaultValue={activeRequest.name}
-                  className="font-sans !text-xl !px-0"
+                  className="font-sans !text-xl"
+                  inputWrapperClassName="!px-0"
                   containerClassName="border-0"
-                  placeholder="Request Name"
+                  placeholder={fallbackRequestName(activeRequest)}
                   onChange={(name) => updateRequest({ id: activeRequestId, update: { name } })}
                   stateKey={`name.${activeRequest.id}`}
                 />

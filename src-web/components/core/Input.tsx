@@ -27,6 +27,7 @@ export type InputProps = Pick<
   labelPosition?: 'top' | 'left';
   labelClassName?: string;
   containerClassName?: string;
+  inputWrapperClassName?: string;
   onChange?: (value: string) => void;
   onFocus?: () => void;
   onBlur?: () => void;
@@ -48,6 +49,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
   {
     className,
     containerClassName,
+    inputWrapperClassName,
     defaultValue,
     forceUpdateKey,
     hideLabel,
@@ -161,7 +163,8 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
         {leftSlot}
         <HStack
           className={classNames(
-            'w-full min-w-0',
+            inputWrapperClassName,
+            'w-full min-w-0 px-2',
             leftSlot && 'pl-0.5 -ml-2',
             rightSlot && 'pr-0.5 -mr-2',
           )}
