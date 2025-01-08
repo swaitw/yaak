@@ -22,4 +22,4 @@ export type HttpResponseState = "initialized" | "connected" | "closed";
 
 export type HttpUrlParameter = { enabled?: boolean, name: string, value: string, id: string, };
 
-export type Workspace = { model: "workspace", id: string, createdAt: string, updatedAt: string, name: string, description: string, settingValidateCertificates: boolean, settingFollowRedirects: boolean, settingRequestTimeout: number, settingSyncDir: string | null, };
+export type Workspace = { model: "workspace", id: string, createdAt: string, updatedAt: string, name: string, description: string, settingValidateCertificates: boolean, settingFollowRedirects: boolean, settingRequestTimeout: number, };

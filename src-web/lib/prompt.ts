@@ -14,6 +14,7 @@ export async function showPrompt({ id, title, description, ...props }: PromptArg
       description,
       hideX: true,
       size: 'sm',
+      disableBackdropClose: true, // Prevent accidental dismisses
       onClose: () => {
         // Click backdrop, close, or escape
         resolve(null);

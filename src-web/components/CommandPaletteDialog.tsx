@@ -16,7 +16,7 @@ import type { HotkeyAction } from '../hooks/useHotKey';
 import { useHotKey } from '../hooks/useHotKey';
 import { useHttpRequestActions } from '../hooks/useHttpRequestActions';
 import { useOpenSettings } from '../hooks/useOpenSettings';
-import { useOpenWorkspace } from '../hooks/useOpenWorkspace';
+import { useSwitchWorkspace } from '../hooks/useSwitchWorkspace';
 import { useRecentEnvironments } from '../hooks/useRecentEnvironments';
 import { useRecentRequests } from '../hooks/useRecentRequests';
 import { useRecentWorkspaces } from '../hooks/useRecentWorkspaces';
@@ -26,7 +26,6 @@ import { useScrollIntoView } from '../hooks/useScrollIntoView';
 import { useSendAnyHttpRequest } from '../hooks/useSendAnyHttpRequest';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useWorkspaces } from '../hooks/useWorkspaces';
-import { createFolder } from '../lib/commands';
 import { showDialog, toggleDialog } from '../lib/dialog';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import { router } from '../lib/router';
@@ -39,6 +38,7 @@ import { Icon } from './core/Icon';
 import { PlainInput } from './core/PlainInput';
 import { HStack } from './core/Stacks';
 import { EnvironmentEditDialog } from './EnvironmentEditDialog';
+import { createFolder } from '../commands/commands';
 
 interface CommandPaletteGroup {
   key: string;
@@ -71,7 +71,7 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
   const [, setSidebarHidden] = useSidebarHidden();
   const { baseEnvironment } = useEnvironments();
   const { mutate: openSettings } = useOpenSettings();
-  const { mutate: openWorkspace } = useOpenWorkspace();
+  const { mutate: switchWorkspace } = useSwitchWorkspace();
   const { mutate: createHttpRequest } = useCreateHttpRequest();
   const { mutate: createGrpcRequest } = useCreateGrpcRequest();
   const { mutate: createEnvironment } = useCreateEnvironment();
@@ -315,7 +315,7 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
       workspaceGroup.items.push({
         key: `switch-workspace-${w.id}`,
         label: w.name,
-        onSelect: () => openWorkspace({ workspaceId: w.id, inNewWindow: false }),
+        onSelect: () => switchWorkspace({ workspaceId: w.id, inNewWindow: false }),
       });
     }
 
@@ -327,7 +327,7 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
     activeEnvironment?.id,
     setActiveEnvironmentId,
     sortedWorkspaces,
-    openWorkspace,
+    switchWorkspace,
   ]);
 
   const allItems = useMemo(() => groups.flatMap((g) => g.items), [groups]);

@@ -20,7 +20,7 @@ export function SettingsGeneral() {
   const settings = useSettings();
   const updateSettings = useUpdateSettings();
   const appInfo = useAppInfo();
-  const checkForUpdates = useCheckForUpdates(); 
+  const checkForUpdates = useCheckForUpdates();
 
   if (settings == null || workspace == null) {
     return null;
@@ -53,12 +53,12 @@ export function SettingsGeneral() {
         />
       </div>
       <Select
-        name="openWorkspace"
-        label="Open Workspace"
+        name="switchWorkspaceBehavior"
+        label="Switch Workspace Behavior"
         labelPosition="left"
         labelClassName="w-[12rem]"
         size="sm"
-        event="workspace-open"
+        event="workspace-switch-behavior"
         value={
           settings.openWorkspaceNewWindow === true
             ? 'new'

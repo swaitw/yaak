@@ -3,13 +3,10 @@ import { Confirm } from '../components/core/Confirm';
 import type { DialogProps } from '../components/core/Dialog';
 import { showDialog } from './dialog';
 
-interface ConfirmArgs {
+type ConfirmArgs = {
   id: string;
-  title: DialogProps['title'];
-  description?: DialogProps['description'];
-  variant?: ConfirmProps['variant'];
-  confirmText?: ConfirmProps['confirmText'];
-}
+} & Pick<DialogProps, 'title' | 'description'> &
+  Pick<ConfirmProps, 'variant' | 'confirmText'>;
 
 export async function showConfirm({ id, title, description, variant, confirmText }: ConfirmArgs) {
   return new Promise((onResult: ConfirmProps['onResult']) => {
@@ -19,6 +16,7 @@ export async function showConfirm({ id, title, description, variant, confirmText
       description,
       hideX: true,
       size: 'sm',
+      disableBackdropClose: true, // Prevent accidental dismisses
       render: ({ hide }) => Confirm({ onHide: hide, variant, onResult, confirmText }),
     });
   });

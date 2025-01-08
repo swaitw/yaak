@@ -165,7 +165,6 @@ pub struct Workspace {
     #[serde(default = "default_true")]
     pub setting_follow_redirects: bool,
     pub setting_request_timeout: i32,
-    pub setting_sync_dir: Option<String>,
 }
 
 #[derive(Iden)]
@@ -181,7 +180,6 @@ pub enum WorkspaceIden {
     Name,
     SettingFollowRedirects,
     SettingRequestTimeout,
-    SettingSyncDir,
     SettingValidateCertificates,
 }
 
@@ -198,7 +196,6 @@ impl<'s> TryFrom<&Row<'s>> for Workspace {
             description: r.get("description")?,
             setting_follow_redirects: r.get("setting_follow_redirects")?,
             setting_request_timeout: r.get("setting_request_timeout")?,
-            setting_sync_dir: r.get("setting_sync_dir")?,
             setting_validate_certificates: r.get("setting_validate_certificates")?,
         })
     }
@@ -213,6 +210,47 @@ impl Workspace {
             setting_follow_redirects: true,
             ..Default::default()
         }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "models.ts")]
+pub struct WorkspaceMeta {
+    #[ts(type = "\"workspace_meta\"")]
+    pub model: String,
+    pub id: String,
+    pub workspace_id: String,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+    pub setting_sync_dir: Option<String>,
+}
+
+#[derive(Iden)]
+pub enum WorkspaceMetaIden {
+    #[iden = "workspace_metas"]
+    Table,
+    Model,
+    Id,
+    WorkspaceId,
+    CreatedAt,
+    UpdatedAt,
+
+    SettingSyncDir,
+}
+
+impl<'s> TryFrom<&Row<'s>> for WorkspaceMeta {
+    type Error = rusqlite::Error;
+
+    fn try_from(r: &Row<'s>) -> Result<Self, Self::Error> {
+        Ok(WorkspaceMeta {
+            id: r.get("id")?,
+            workspace_id: r.get("workspace_id")?,
+            model: r.get("model")?,
+            created_at: r.get("created_at")?,
+            updated_at: r.get("updated_at")?,
+            setting_sync_dir: r.get("setting_sync_dir")?,
+        })
     }
 }
 
@@ -933,6 +971,22 @@ pub struct SyncState {
     pub sync_dir: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "models.ts")]
+pub struct SyncHistory {
+    #[ts(type = "\"sync_history\"")]
+    pub model: String,
+    pub id: String,
+    pub workspace_id: String,
+    pub created_at: NaiveDateTime,
+
+    pub states: Vec<SyncState>,
+    pub checksum: String,
+    pub rel_path: String,
+    pub sync_dir: String,
+}
+
 #[derive(Iden)]
 pub enum SyncStateIden {
     #[iden = "sync_states"]
@@ -1030,6 +1084,7 @@ pub enum ModelType {
     TypeHttpResponse,
     TypePlugin,
     TypeWorkspace,
+    TypeWorkspaceMeta,
     TypeSyncState,
 }
 
@@ -1046,6 +1101,7 @@ impl ModelType {
             ModelType::TypeHttpResponse => "rs",
             ModelType::TypePlugin => "pg",
             ModelType::TypeWorkspace => "wk",
+            ModelType::TypeWorkspaceMeta => "wm",
             ModelType::TypeSyncState => "ss",
         }
         .to_string()
@@ -1068,6 +1124,7 @@ pub enum AnyModel {
     Settings(Settings),
     KeyValue(KeyValue),
     Workspace(Workspace),
+    WorkspaceMeta(WorkspaceMeta),
 }
 
 impl<'de> Deserialize<'de> for AnyModel {

@@ -1,13 +1,9 @@
-import { useFastMutation } from './useFastMutation';
 import type { Workspace } from '@yaakapp-internal/models';
-import {useSetAtom} from "jotai/index";
 import { getWorkspace } from '../lib/store';
 import { invokeCmd } from '../lib/tauri';
-import {updateModelList} from "./useSyncModelStores";
-import {workspacesAtom} from "./useWorkspaces";
+import { useFastMutation } from './useFastMutation';
 
 export function useUpdateWorkspace(id: string | null) {
-  const setWorkspaces = useSetAtom(workspacesAtom);
   return useFastMutation<Workspace, unknown, Partial<Workspace> | ((w: Workspace) => Workspace)>({
     mutationKey: ['update_workspace', id],
     mutationFn: async (v) => {
@@ -18,9 +14,6 @@ export function useUpdateWorkspace(id: string | null) {
 
       const newWorkspace = typeof v === 'function' ? v(workspace) : { ...workspace, ...v };
       return invokeCmd('cmd_update_workspace', { workspace: newWorkspace });
-    },
-    onSuccess: async (workspace) => {
-      setWorkspaces(updateModelList(workspace));
     },
   });
 }

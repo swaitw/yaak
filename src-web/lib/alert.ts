@@ -16,6 +16,15 @@ export function showAlert({ id, title, body, size = 'sm' }: AlertArgs) {
     title,
     hideX: true,
     size,
+    disableBackdropClose: true, // Prevent accidental dismisses
     render: ({ hide }) => Alert({ onHide: hide, body }),
+  });
+}
+
+export function showSimpleAlert(title: string, message: string) {
+  showAlert({
+    id: 'simple-alert',
+    body: message,
+    title: title,
   });
 }

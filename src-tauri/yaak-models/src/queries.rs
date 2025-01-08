@@ -5,7 +5,8 @@ use crate::models::{
     GrpcConnection, GrpcConnectionIden, GrpcConnectionState, GrpcEvent, GrpcEventIden, GrpcRequest,
     GrpcRequestIden, HttpRequest, HttpRequestIden, HttpResponse, HttpResponseHeader,
     HttpResponseIden, HttpResponseState, KeyValue, KeyValueIden, ModelType, Plugin, PluginIden,
-    Settings, SettingsIden, SyncState, SyncStateIden, Workspace, WorkspaceIden,
+    Settings, SettingsIden, SyncState, SyncStateIden, Workspace, WorkspaceIden, WorkspaceMeta,
+    WorkspaceMetaIden,
 };
 use crate::plugin::SqliteConnection;
 use chrono::NaiveDateTime;
@@ -18,7 +19,7 @@ use sea_query::{Cond, Expr, OnConflict, Order, Query, SqliteQueryBuilder};
 use sea_query_rusqlite::RusqliteBinder;
 use serde::{Deserialize, Serialize};
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use tauri::{AppHandle, Emitter, Listener, Manager, Runtime, WebviewWindow};
 use ts_rs::TS;
 
@@ -177,6 +178,18 @@ pub async fn list_workspaces<R: Runtime>(mgr: &impl Manager<R>) -> Result<Vec<Wo
     Ok(items.map(|v| v.unwrap()).collect())
 }
 
+pub async fn list_workspace_metas<R: Runtime>(mgr: &impl Manager<R>) -> Result<Vec<WorkspaceMeta>> {
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
+    let (sql, params) = Query::select()
+        .from(WorkspaceMetaIden::Table)
+        .column(Asterisk)
+        .build_rusqlite(SqliteQueryBuilder);
+    let mut stmt = db.prepare(sql.as_str())?;
+    let items = stmt.query_map(&*params.as_params(), |row| row.try_into())?;
+    Ok(items.map(|v| v.unwrap()).collect())
+}
+
 pub async fn get_workspace<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Result<Workspace> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
@@ -187,6 +200,54 @@ pub async fn get_workspace<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Resul
         .build_rusqlite(SqliteQueryBuilder);
     let mut stmt = db.prepare(sql.as_str())?;
     Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
+}
+
+pub async fn get_workspace_meta<R: Runtime>(
+    mgr: &impl Manager<R>,
+    workspace: &Workspace,
+) -> Result<Option<WorkspaceMeta>> {
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
+    let (sql, params) = Query::select()
+        .from(WorkspaceMetaIden::Table)
+        .column(Asterisk)
+        .cond_where(Expr::col(WorkspaceMetaIden::WorkspaceId).eq(&workspace.id))
+        .build_rusqlite(SqliteQueryBuilder);
+    let mut stmt = db.prepare(sql.as_str())?;
+    Ok(stmt.query_row(&*params.as_params(), |row| row.try_into()).optional()?)
+}
+
+pub async fn get_or_create_workspace_meta<R: Runtime>(
+    window: &WebviewWindow<R>,
+    workspace: &Workspace,
+    update_source: &UpdateSource,
+) -> Result<WorkspaceMeta> {
+    let workspace_meta = get_workspace_meta(window, workspace).await?;
+    if let Some(m) = workspace_meta {
+        return Ok(m);
+    }
+
+    upsert_workspace_meta(
+        window,
+        WorkspaceMeta {
+            workspace_id: workspace.to_owned().id,
+            ..Default::default()
+        },
+        update_source,
+    )
+    .await
+}
+
+pub async fn exists_workspace<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Result<bool> {
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
+    let (sql, params) = Query::select()
+        .from(WorkspaceIden::Table)
+        .column(Asterisk)
+        .cond_where(Expr::col(WorkspaceIden::Id).eq(id))
+        .build_rusqlite(SqliteQueryBuilder);
+    let mut stmt = db.prepare(sql.as_str())?;
+    Ok(stmt.exists(&*params.as_params())?)
 }
 
 pub async fn upsert_workspace<R: Runtime>(
@@ -200,56 +261,96 @@ pub async fn upsert_workspace<R: Runtime>(
     };
     let trimmed_name = workspace.name.trim();
 
-    let m: Workspace = {
-        let dbm = &*window.app_handle().state::<SqliteConnection>();
-        let db = dbm.0.lock().await.get().unwrap();
+    let dbm = &*window.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
 
-        let (sql, params) = Query::insert()
-            .into_table(WorkspaceIden::Table)
-            .columns([
-                WorkspaceIden::Id,
-                WorkspaceIden::CreatedAt,
-                WorkspaceIden::UpdatedAt,
-                WorkspaceIden::Name,
-                WorkspaceIden::Description,
-                WorkspaceIden::SettingFollowRedirects,
-                WorkspaceIden::SettingRequestTimeout,
-                WorkspaceIden::SettingSyncDir,
-                WorkspaceIden::SettingValidateCertificates,
-            ])
-            .values_panic([
-                id.as_str().into(),
-                CurrentTimestamp.into(),
-                CurrentTimestamp.into(),
-                trimmed_name.into(),
-                workspace.description.into(),
-                workspace.setting_follow_redirects.into(),
-                workspace.setting_request_timeout.into(),
-                workspace.setting_sync_dir.into(),
-                workspace.setting_validate_certificates.into(),
-            ])
-            .on_conflict(
-                OnConflict::column(GrpcRequestIden::Id)
-                    .update_columns([
-                        WorkspaceIden::UpdatedAt,
-                        WorkspaceIden::Name,
-                        WorkspaceIden::Description,
-                        WorkspaceIden::SettingRequestTimeout,
-                        WorkspaceIden::SettingFollowRedirects,
-                        WorkspaceIden::SettingRequestTimeout,
-                        WorkspaceIden::SettingSyncDir,
-                        WorkspaceIden::SettingValidateCertificates,
-                    ])
-                    .to_owned(),
-            )
-            .returning_all()
-            .build_rusqlite(SqliteQueryBuilder);
+    let (sql, params) = Query::insert()
+        .into_table(WorkspaceIden::Table)
+        .columns([
+            WorkspaceIden::Id,
+            WorkspaceIden::CreatedAt,
+            WorkspaceIden::UpdatedAt,
+            WorkspaceIden::Name,
+            WorkspaceIden::Description,
+            WorkspaceIden::SettingFollowRedirects,
+            WorkspaceIden::SettingRequestTimeout,
+            WorkspaceIden::SettingValidateCertificates,
+        ])
+        .values_panic([
+            id.as_str().into(),
+            CurrentTimestamp.into(),
+            CurrentTimestamp.into(),
+            trimmed_name.into(),
+            workspace.description.into(),
+            workspace.setting_follow_redirects.into(),
+            workspace.setting_request_timeout.into(),
+            workspace.setting_validate_certificates.into(),
+        ])
+        .on_conflict(
+            OnConflict::column(GrpcRequestIden::Id)
+                .update_columns([
+                    WorkspaceIden::UpdatedAt,
+                    WorkspaceIden::Name,
+                    WorkspaceIden::Description,
+                    WorkspaceIden::SettingRequestTimeout,
+                    WorkspaceIden::SettingFollowRedirects,
+                    WorkspaceIden::SettingRequestTimeout,
+                    WorkspaceIden::SettingValidateCertificates,
+                ])
+                .to_owned(),
+        )
+        .returning_all()
+        .build_rusqlite(SqliteQueryBuilder);
 
-        let mut stmt = db.prepare(&sql)?;
-        stmt.query_row(&*params.as_params(), |row| row.try_into())?
-    };
+    let mut stmt = db.prepare(&sql)?;
+    let m: Workspace = stmt.query_row(&*params.as_params(), |row| row.try_into())?;
     emit_upserted_model(window, &AnyModel::Workspace(m.to_owned()), update_source);
-    ensure_base_environment(window, &m.id).await?;
+    Ok(m)
+}
+
+pub async fn upsert_workspace_meta<R: Runtime>(
+    window: &WebviewWindow<R>,
+    workspace_meta: WorkspaceMeta,
+    update_source: &UpdateSource,
+) -> Result<WorkspaceMeta> {
+    let id = match workspace_meta.id.as_str() {
+        "" => generate_model_id(ModelType::TypeWorkspaceMeta),
+        _ => workspace_meta.id.to_string(),
+    };
+
+    let dbm = &*window.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
+
+    let (sql, params) = Query::insert()
+        .into_table(WorkspaceMetaIden::Table)
+        .columns([
+            WorkspaceMetaIden::Id,
+            WorkspaceMetaIden::WorkspaceId,
+            WorkspaceMetaIden::CreatedAt,
+            WorkspaceMetaIden::UpdatedAt,
+            WorkspaceMetaIden::SettingSyncDir,
+        ])
+        .values_panic([
+            id.as_str().into(),
+            workspace_meta.workspace_id.into(),
+            CurrentTimestamp.into(),
+            CurrentTimestamp.into(),
+            workspace_meta.setting_sync_dir.into(),
+        ])
+        .on_conflict(
+            OnConflict::column(GrpcRequestIden::Id)
+                .update_columns([
+                    WorkspaceMetaIden::UpdatedAt,
+                    WorkspaceMetaIden::SettingSyncDir,
+                ])
+                .to_owned(),
+        )
+        .returning_all()
+        .build_rusqlite(SqliteQueryBuilder);
+
+    let mut stmt = db.prepare(&sql)?;
+    let m: WorkspaceMeta = stmt.query_row(&*params.as_params(), |row| row.try_into())?;
+    emit_upserted_model(window, &AnyModel::WorkspaceMeta(m.to_owned()), update_source);
     Ok(m)
 }
 
@@ -1788,7 +1889,7 @@ pub async fn get_sync_state_for_model<R: Runtime>(
 pub async fn list_sync_states_for_workspace<R: Runtime>(
     mgr: &impl Manager<R>,
     workspace_id: &str,
-    sync_dir: PathBuf,
+    sync_dir: &Path,
 ) -> Result<Vec<SyncState>> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();

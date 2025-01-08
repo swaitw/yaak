@@ -36,6 +36,8 @@ export function createFastMutation<TData = unknown, TError = unknown, TVariables
     } finally {
       onSettled?.();
     }
+
+    return null;
   };
 
   const mutate = (

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useOpenWorkspace } from '../hooks/useOpenWorkspace';
+import { useSwitchWorkspace } from '../hooks/useSwitchWorkspace';
 import { useSettings } from '../hooks/useSettings';
 import { useUpdateSettings } from '../hooks/useUpdateSettings';
 import type { Workspace } from '@yaakapp-internal/models';
@@ -14,8 +14,8 @@ interface Props {
   workspace: Workspace;
 }
 
-export function OpenWorkspaceDialog({ hide, workspace }: Props) {
-  const openWorkspace = useOpenWorkspace();
+export function SwitchWorkspaceDialog({ hide, workspace }: Props) {
+  const switchWorkspace = useSwitchWorkspace();
   const settings = useSettings();
   const updateSettings = useUpdateSettings();
   const [remember, setRemember] = useState<boolean>(false);
@@ -31,7 +31,7 @@ export function OpenWorkspaceDialog({ hide, workspace }: Props) {
           color="primary"
           onClick={() => {
             hide();
-            openWorkspace.mutate({ workspaceId: workspace.id, inNewWindow: false });
+            switchWorkspace.mutate({ workspaceId: workspace.id, inNewWindow: false });
             if (remember) {
               updateSettings.mutate({ openWorkspaceNewWindow: false });
             }
@@ -45,7 +45,7 @@ export function OpenWorkspaceDialog({ hide, workspace }: Props) {
           rightSlot={<Icon icon="external_link" />}
           onClick={() => {
             hide();
-            openWorkspace.mutate({ workspaceId: workspace.id, inNewWindow: true });
+            switchWorkspace.mutate({ workspaceId: workspace.id, inNewWindow: true });
             if (remember) {
               updateSettings.mutate({ openWorkspaceNewWindow: true });
             }

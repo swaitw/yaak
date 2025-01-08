@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
+import { createFolder } from '../commands/commands';
 import type { DropdownItem } from '../components/core/Dropdown';
 import { Icon } from '../components/core/Icon';
-import { createFolder } from '../lib/commands';
 import { generateId } from '../lib/generateId';
 import { BODY_TYPE_GRAPHQL } from '../lib/model_util';
 import { getActiveRequest } from './useActiveRequest';

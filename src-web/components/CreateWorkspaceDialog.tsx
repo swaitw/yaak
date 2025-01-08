@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { createWorkspace } from '../lib/commands';
+import { createWorkspace } from '../commands/commands';
 import { Button } from './core/Button';
 import { PlainInput } from './core/PlainInput';
 import { VStack } from './core/Stacks';
@@ -32,7 +32,11 @@ export function CreateWorkspaceDialog({ hide }: Props) {
     >
       <PlainInput require label="Workspace Name" defaultValue={name} onChange={setName} />
 
-      <SyncToFilesystemSetting onChange={setSettingSyncDir} value={settingSyncDir.value} />
+      <SyncToFilesystemSetting
+        onChange={setSettingSyncDir}
+        value={settingSyncDir.value}
+        allowNonEmptyDirectory // Will do initial import when the workspace is created
+      />
       <Button
         type="submit"
         color="primary"

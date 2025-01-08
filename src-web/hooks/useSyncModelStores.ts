@@ -19,6 +19,7 @@ import { useListenToTauriEvent } from './useListenToTauriEvent';
 import { pluginsAtom } from './usePlugins';
 import { useRequestUpdateKey } from './useRequestUpdateKey';
 import { settingsAtom } from './useSettings';
+import { workspaceMetaAtom } from './useWorkspaceMeta';
 import { workspacesAtom } from './useWorkspaces';
 
 export function useSyncModelStores() {
@@ -51,6 +52,8 @@ export function useSyncModelStores() {
 
     if (payload.model.model === 'workspace') {
       jotaiStore.set(workspacesAtom, updateModelList(payload.model));
+    } else if (payload.model.model === 'workspace_meta') {
+      jotaiStore.set(workspaceMetaAtom, payload.model);
     } else if (payload.model.model === 'plugin') {
       jotaiStore.set(pluginsAtom, updateModelList(payload.model));
     } else if (payload.model.model === 'http_request') {

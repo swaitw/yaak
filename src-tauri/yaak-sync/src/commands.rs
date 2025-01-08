@@ -1,26 +1,38 @@
 use crate::error::Result;
 use crate::sync::{
     apply_sync_ops, apply_sync_state_ops, compute_sync_ops, get_db_candidates, get_fs_candidates,
-    get_workspace_sync_dir, SyncOp,
+    SyncOp,
 };
 use crate::watch::{watch_directory, WatchEvent};
 use chrono::Utc;
 use log::warn;
 use serde::{Deserialize, Serialize};
+use std::path::Path;
 use tauri::ipc::Channel;
 use tauri::{command, Listener, Runtime, WebviewWindow};
 use tokio::sync::watch;
 use ts_rs::TS;
-use yaak_models::queries::get_workspace;
 
 #[command]
 pub async fn calculate<R: Runtime>(
     window: WebviewWindow<R>,
     workspace_id: &str,
+    sync_dir: &Path,
 ) -> Result<Vec<SyncOp>> {
-    let workspace = get_workspace(&window, workspace_id).await?;
-    let db_candidates = get_db_candidates(&window, &workspace).await?;
-    let fs_candidates = get_fs_candidates(&workspace).await?;
+    let db_candidates = get_db_candidates(&window, workspace_id, sync_dir).await?;
+    let fs_candidates = get_fs_candidates(sync_dir)
+        .await?
+        .into_iter()
+        // Strip out any non-workspace candidates
+        .filter(|fs| fs.model.workspace_id() == workspace_id)
+        .collect();
+    Ok(compute_sync_ops(db_candidates, fs_candidates))
+}
+
+#[command]
+pub async fn calculate_fs(dir: &Path) -> Result<Vec<SyncOp>> {
+    let db_candidates = Vec::new();
+    let fs_candidates = get_fs_candidates(Path::new(&dir)).await?;
     Ok(compute_sync_ops(db_candidates, fs_candidates))
 }
 
@@ -28,11 +40,11 @@ pub async fn calculate<R: Runtime>(
 pub async fn apply<R: Runtime>(
     window: WebviewWindow<R>,
     sync_ops: Vec<SyncOp>,
+    sync_dir: &Path,
     workspace_id: &str,
 ) -> Result<()> {
-    let workspace = get_workspace(&window, workspace_id).await?;
-    let sync_state_ops = apply_sync_ops(&window, &workspace, sync_ops).await?;
-    apply_sync_state_ops(&window, &workspace, sync_state_ops).await
+    let sync_state_ops = apply_sync_ops(&window, &workspace_id, sync_dir, sync_ops).await?;
+    apply_sync_state_ops(&window, workspace_id, sync_dir, sync_state_ops).await
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -45,11 +57,10 @@ pub(crate) struct WatchResult {
 #[command]
 pub async fn watch<R: Runtime>(
     window: WebviewWindow<R>,
+    sync_dir: &Path,
     workspace_id: &str,
     channel: Channel<WatchEvent>,
 ) -> Result<WatchResult> {
-    let workspace = get_workspace(&window, workspace_id).await?;
-    let sync_dir = get_workspace_sync_dir(&workspace)?;
     let (cancel_tx, cancel_rx) = watch::channel(());
 
     watch_directory(&sync_dir, channel, cancel_rx).await?;

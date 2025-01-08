@@ -29,7 +29,7 @@ export function SelectFile({
 }: Props) {
   const handleClick = async () => {
     const filePath = await open({
-      title: 'Select File',
+      title: directory ? 'Select Folder' : 'Select File',
       multiple: false,
       directory,
     });

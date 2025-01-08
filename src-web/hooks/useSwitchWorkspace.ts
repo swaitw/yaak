@@ -5,7 +5,7 @@ import { getRecentCookieJars } from './useRecentCookieJars';
 import { getRecentEnvironments } from './useRecentEnvironments';
 import { getRecentRequests } from './useRecentRequests';
 
-export function useOpenWorkspace() {
+export function useSwitchWorkspace() {
   return useFastMutation({
     mutationKey: ['open_workspace'],
     mutationFn: async ({

@@ -1,3 +1,4 @@
+import type { WorkspaceMeta } from '@yaakapp-internal/models';
 import { useEffect } from 'react';
 import { jotaiStore } from '../lib/jotai';
 import { invokeCmd } from '../lib/tauri';
@@ -10,6 +11,7 @@ import { grpcRequestsAtom } from './useGrpcRequests';
 import { httpRequestsAtom } from './useHttpRequests';
 import { httpResponsesAtom } from './useHttpResponses';
 import { keyValuesAtom } from './useKeyValue';
+import { workspaceMetaAtom } from './useWorkspaceMeta';
 
 export function useSyncWorkspaceChildModels() {
   useEffect(() => {
@@ -39,4 +41,7 @@ async function sync() {
   jotaiStore.set(httpResponsesAtom, await invokeCmd('cmd_list_http_responses', args));
   jotaiStore.set(grpcConnectionsAtom, await invokeCmd('cmd_list_grpc_connections', args));
   jotaiStore.set(environmentsAtom, await invokeCmd('cmd_list_environments', args));
+
+  // Single models
+  jotaiStore.set(workspaceMetaAtom, await invokeCmd<WorkspaceMeta>('cmd_get_workspace_meta', args));
 }

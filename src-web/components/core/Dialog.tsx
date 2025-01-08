@@ -11,6 +11,7 @@ export interface DialogProps {
   children: ReactNode;
   open: boolean;
   onClose?: () => void;
+  disableBackdropClose?: boolean;
   title?: ReactNode;
   description?: ReactNode;
   className?: string;
@@ -27,6 +28,7 @@ export function Dialog({
   size = 'full',
   open,
   onClose,
+  disableBackdropClose,
   title,
   description,
   hideX,
@@ -51,7 +53,7 @@ export function Dialog({
   );
 
   return (
-    <Overlay open={open} onClose={onClose} portalName="dialog">
+    <Overlay open={open} onClose={disableBackdropClose ? undefined : onClose} portalName="dialog">
       <div
         role="dialog"
         className={classNames(

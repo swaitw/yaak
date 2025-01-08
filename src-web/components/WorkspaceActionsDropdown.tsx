@@ -1,9 +1,10 @@
 import classNames from 'classnames';
 import { memo, useCallback, useMemo } from 'react';
+import {openWorkspace} from "../commands/openWorkspace";
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useCreateWorkspace } from '../hooks/useCreateWorkspace';
 import { useDeleteSendHistory } from '../hooks/useDeleteSendHistory';
-import { useOpenWorkspace } from '../hooks/useOpenWorkspace';
+import { useSwitchWorkspace } from '../hooks/useSwitchWorkspace';
 import { useSettings } from '../hooks/useSettings';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import { showDialog } from '../lib/dialog';
@@ -14,7 +15,7 @@ import type { DropdownItem } from './core/Dropdown';
 import { Icon } from './core/Icon';
 import type { RadioDropdownItem } from './core/RadioDropdown';
 import { RadioDropdown } from './core/RadioDropdown';
-import { OpenWorkspaceDialog } from './OpenWorkspaceDialog';
+import { SwitchWorkspaceDialog } from './SwitchWorkspaceDialog';
 import { WorkspaceSettingsDialog } from './WorkspaceSettingsDialog';
 
 type Props = Pick<ButtonProps, 'className' | 'justify' | 'forDropdown' | 'leftSlot'>;
@@ -28,7 +29,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
   const createWorkspace = useCreateWorkspace();
   const { mutate: deleteSendHistory } = useDeleteSendHistory();
   const settings = useSettings();
-  const openWorkspace = useOpenWorkspace();
+  const switchWorkspace = useSwitchWorkspace();
   const openWorkspaceNewWindow = settings?.openWorkspaceNewWindow ?? null;
 
   const orderedWorkspaces = useMemo(
@@ -77,6 +78,12 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
         leftSlot: <Icon icon="plus" />,
         onSelect: createWorkspace,
       },
+      {
+        key: 'open-workspace',
+        label: 'Open Workspace',
+        leftSlot: <Icon icon="folder" />,
+        onSelect: openWorkspace.mutate,
+      },
     ];
 
     return { workspaceItems, extraItems };
@@ -87,7 +94,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
       if (workspaceId == null) return;
 
       if (typeof openWorkspaceNewWindow === 'boolean') {
-        openWorkspace.mutate({ workspaceId, inNewWindow: openWorkspaceNewWindow });
+        switchWorkspace.mutate({ workspaceId, inNewWindow: openWorkspaceNewWindow });
         return;
       }
 
@@ -95,13 +102,13 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
       if (workspace == null) return;
 
       showDialog({
-        id: 'open-workspace',
+        id: 'switch-workspace',
         size: 'sm',
-        title: 'Open Workspace',
-        render: ({ hide }) => <OpenWorkspaceDialog workspace={workspace} hide={hide} />,
+        title: 'Switch Workspace',
+        render: ({ hide }) => <SwitchWorkspaceDialog workspace={workspace} hide={hide} />,
       });
     },
-    [openWorkspace, openWorkspaceNewWindow],
+    [switchWorkspace, openWorkspaceNewWindow],
   );
 
   return (

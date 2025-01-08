@@ -4,6 +4,7 @@ import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { type } from '@tauri-apps/plugin-os';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { initSync } from './init/sync';
 import { router } from './lib/router';
 
 import('react-pdf').then(({ pdfjs }) => {
@@ -35,6 +36,9 @@ window.addEventListener('keydown', (e) => {
     e.preventDefault();
   }
 });
+
+// Initialize a bunch of watchers
+initSync();
 
 console.log('Creating React root');
 createRoot(document.getElementById('root') as HTMLElement).render(

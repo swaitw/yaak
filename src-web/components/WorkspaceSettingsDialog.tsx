@@ -1,8 +1,13 @@
+import { upsertWorkspaceMeta } from '../commands/upsertWorkspaceMeta';
 import { useDeleteActiveWorkspace } from '../hooks/useDeleteActiveWorkspace';
 import { useUpdateWorkspace } from '../hooks/useUpdateWorkspace';
+import { useWorkspaceMeta } from '../hooks/useWorkspaceMeta';
 import { useWorkspaces } from '../hooks/useWorkspaces';
+import { Banner } from './core/Banner';
 import { Button } from './core/Button';
+import { InlineCode } from './core/InlineCode';
 import { Input } from './core/Input';
+import { Separator } from './core/Separator';
 import { VStack } from './core/Stacks';
 import { MarkdownEditor } from './MarkdownEditor';
 import { SyncToFilesystemSetting } from './SyncToFilesystemSetting';
@@ -15,10 +20,17 @@ interface Props {
 export function WorkspaceSettingsDialog({ workspaceId, hide }: Props) {
   const workspaces = useWorkspaces();
   const workspace = workspaces.find((w) => w.id === workspaceId);
+  const workspaceMeta = useWorkspaceMeta();
   const { mutate: updateWorkspace } = useUpdateWorkspace(workspaceId ?? null);
   const { mutateAsync: deleteActiveWorkspace } = useDeleteActiveWorkspace();
 
   if (workspace == null) return null;
+  if (workspaceMeta == null)
+    return (
+      <Banner color="danger">
+        <InlineCode>WorkspaceMeta</InlineCode> not found for workspace
+      </Banner>
+    );
 
   return (
     <VStack space={3} alignItems="start" className="pb-3 h-full">
@@ -39,21 +51,24 @@ export function WorkspaceSettingsDialog({ workspaceId, hide }: Props) {
         heightMode="auto"
       />
 
-      <VStack space={3} className="mt-3" alignItems="start">
+      <VStack space={6} className="mt-3 w-full" alignItems="start">
         <SyncToFilesystemSetting
-          value={workspace.settingSyncDir}
+          value={workspaceMeta.settingSyncDir}
           onChange={({ value: settingSyncDir }) => {
-            updateWorkspace({ settingSyncDir });
+            upsertWorkspaceMeta.mutate({ settingSyncDir });
           }}
         />
+        <Separator />
         <Button
           onClick={async () => {
-            await deleteActiveWorkspace();
-            hide();
+            const workspace = await deleteActiveWorkspace();
+            if (workspace) {
+              hide(); // Only hide if actually deleted workspace
+            }
           }}
           color="danger"
           variant="border"
-          size="sm"
+          size="xs"
         >
           Delete Workspace
         </Button>

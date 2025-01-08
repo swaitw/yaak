@@ -96,6 +96,7 @@ impl TryFrom<AnyModel> for SyncModel {
             AnyModel::GrpcRequest(m) => SyncModel::GrpcRequest(m),
             AnyModel::HttpRequest(m) => SyncModel::HttpRequest(m),
             AnyModel::Workspace(m) => SyncModel::Workspace(m),
+            AnyModel::WorkspaceMeta(m) => return Err(UnknownModel(m.model)),
             AnyModel::CookieJar(m) => return Err(UnknownModel(m.model)),
             AnyModel::GrpcConnection(m) => return Err(UnknownModel(m.model)),
             AnyModel::GrpcEvent(m) => return Err(UnknownModel(m.model)),
