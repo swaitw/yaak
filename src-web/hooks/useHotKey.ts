@@ -15,6 +15,7 @@ export type HotkeyAction =
   | 'grpc_request.send'
   | 'hotkeys.showHelp'
   | 'http_request.create'
+  | 'http_request.delete'
   | 'http_request.duplicate'
   | 'http_request.send'
   | 'request_switcher.next'
@@ -34,6 +35,7 @@ const hotkeys: Record<HotkeyAction, string[]> = {
   'grpc_request.send': ['CmdCtrl+Enter', 'CmdCtrl+r'],
   'hotkeys.showHelp': ['CmdCtrl+Shift+/'],
   'http_request.create': ['CmdCtrl+n'],
+  'http_request.delete': ['Backspace'],
   'http_request.duplicate': ['CmdCtrl+d'],
   'http_request.send': ['CmdCtrl+Enter', 'CmdCtrl+r'],
   'request_switcher.next': ['Control+Shift+Tab'],
@@ -54,6 +56,7 @@ const hotkeyLabels: Record<HotkeyAction, string> = {
   'grpc_request.send': 'Send Message',
   'hotkeys.showHelp': 'Show Keyboard Shortcuts',
   'http_request.create': 'New Request',
+  'http_request.delete': 'Delete Request',
   'http_request.duplicate': 'Duplicate Request',
   'http_request.send': 'Send Request',
   'request_switcher.next': 'Go To Previous Request',
@@ -95,8 +98,8 @@ export function useHotKey(
       }
 
       // Don't add key if not holding modifier
-      const isHoldingModifier = e.altKey || e.ctrlKey || e.metaKey || e.shiftKey;
-      if (!isHoldingModifier) {
+      const isValidKeymapKey = e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || e.key === 'Backspace';
+      if (!isValidKeymapKey) {
         return;
       }
 
@@ -189,6 +192,8 @@ export function useFormattedHotkey(action: HotkeyAction | null): string[] | null
         labelParts.push('↩');
       } else if (p === 'Tab') {
         labelParts.push('⇥');
+      } else if (p === 'Backspace') {
+        labelParts.push('⌫');
       } else {
         labelParts.push(capitalize(p));
       }

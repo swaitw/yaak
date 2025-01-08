@@ -6,6 +6,7 @@ import { useKey, useKeyPressEvent } from 'react-use';
 import { getActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useCreateDropdownItems } from '../hooks/useCreateDropdownItems';
+import { useDeleteAnyRequest } from '../hooks/useDeleteAnyRequest';
 import { useGrpcConnections } from '../hooks/useGrpcConnections';
 import { useHotKey } from '../hooks/useHotKey';
 import { useHttpResponses } from '../hooks/useHttpResponses';
@@ -123,6 +124,17 @@ export function Sidebar({ className }: Props) {
   }, [focusActiveRequest, hasFocus]);
 
   const handleBlur = useCallback(() => setHasFocus(false), [setHasFocus]);
+  const deleteRequest = useDeleteAnyRequest();
+
+  useHotKey(
+    'http_request.delete',
+    async () => {
+      // Delete only works if a request is focused
+      if (selectedId == null) return;
+      deleteRequest.mutate(selectedId);
+    },
+    { enable: hasFocus },
+  );
 
   useHotKey('sidebar.focus', async () => {
     // Hide the sidebar if it's already focused

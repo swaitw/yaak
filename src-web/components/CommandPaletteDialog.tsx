@@ -10,7 +10,7 @@ import { useCreateGrpcRequest } from '../hooks/useCreateGrpcRequest';
 import { useCreateHttpRequest } from '../hooks/useCreateHttpRequest';
 import { useCreateWorkspace } from '../hooks/useCreateWorkspace';
 import { useDebouncedState } from '../hooks/useDebouncedState';
-import { useDeleteRequest } from '../hooks/useDeleteRequest';
+import { useDeleteAnyRequest } from '../hooks/useDeleteAnyRequest';
 import { useEnvironments } from '../hooks/useEnvironments';
 import type { HotkeyAction } from '../hooks/useHotKey';
 import { useHotKey } from '../hooks/useHotKey';
@@ -66,18 +66,18 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
   const recentWorkspaces = useRecentWorkspaces();
   const requests = useRequests();
   const activeRequest = useActiveRequest();
-  const [recentRequests] = useRecentRequests();
-  const openWorkspace = useOpenWorkspace();
-  const createHttpRequest = useCreateHttpRequest();
   const activeCookieJar = useActiveCookieJar();
-  const createGrpcRequest = useCreateGrpcRequest();
-  const createEnvironment = useCreateEnvironment();
-  const sendRequest = useSendAnyHttpRequest();
-  const renameRequest = useRenameRequest(activeRequest?.id ?? null);
-  const deleteRequest = useDeleteRequest(activeRequest?.id ?? null);
+  const [recentRequests] = useRecentRequests();
   const [, setSidebarHidden] = useSidebarHidden();
-  const openSettings = useOpenSettings();
   const { baseEnvironment } = useEnvironments();
+  const { mutate: openSettings } = useOpenSettings();
+  const { mutate: openWorkspace } = useOpenWorkspace();
+  const { mutate: createHttpRequest } = useCreateHttpRequest();
+  const { mutate: createGrpcRequest } = useCreateGrpcRequest();
+  const { mutate: createEnvironment } = useCreateEnvironment();
+  const { mutate: sendRequest } = useSendAnyHttpRequest();
+  const { mutate: renameRequest } = useRenameRequest(activeRequest?.id ?? null);
+  const { mutate: deleteRequest } = useDeleteAnyRequest();
 
   const workspaceCommands = useMemo<CommandPaletteItem[]>(() => {
     const commands: CommandPaletteItem[] = [
@@ -85,7 +85,7 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
         key: 'settings.open',
         label: 'Open Settings',
         action: 'settings.show',
-        onSelect: openSettings.mutate,
+        onSelect: openSettings,
       },
       {
         key: 'app.create',
@@ -95,7 +95,7 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
       {
         key: 'http_request.create',
         label: 'Create HTTP Request',
-        onSelect: () => createHttpRequest.mutate({}),
+        onSelect: () => createHttpRequest({}),
       },
       {
         key: 'folder.create',
@@ -117,7 +117,7 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
       {
         key: 'grpc_request.create',
         label: 'Create GRPC Request',
-        onSelect: () => createGrpcRequest.mutate({}),
+        onSelect: () => createGrpcRequest({}),
       },
       {
         key: 'environment.edit',
@@ -136,7 +136,7 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
       {
         key: 'environment.create',
         label: 'Create Environment',
-        onSelect: () => createEnvironment.mutate(baseEnvironment),
+        onSelect: () => createEnvironment(baseEnvironment),
       },
       {
         key: 'sidebar.toggle',
@@ -151,7 +151,7 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
         key: 'http_request.send',
         action: 'http_request.send',
         label: 'Send Request',
-        onSelect: () => sendRequest.mutateAsync(activeRequest.id),
+        onSelect: () => sendRequest(activeRequest.id),
       });
       for (const a of httpRequestActions) {
         commands.push({
@@ -166,13 +166,13 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
       commands.push({
         key: 'http_request.rename',
         label: 'Rename Request',
-        onSelect: renameRequest.mutate,
+        onSelect: renameRequest,
       });
 
       commands.push({
         key: 'http_request.delete',
         label: 'Delete Request',
-        onSelect: deleteRequest.mutate,
+        onSelect: () => deleteRequest(activeRequest.id),
       });
     }
 
@@ -190,10 +190,10 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
     createGrpcRequest,
     createHttpRequest,
     createWorkspace,
-    deleteRequest.mutate,
+    deleteRequest,
     httpRequestActions,
-    openSettings.mutate,
-    renameRequest.mutate,
+    openSettings,
+    renameRequest,
     sendRequest,
     setSidebarHidden,
   ]);
@@ -315,7 +315,7 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
       workspaceGroup.items.push({
         key: `switch-workspace-${w.id}`,
         label: w.name,
-        onSelect: () => openWorkspace.mutate({ workspaceId: w.id, inNewWindow: false }),
+        onSelect: () => openWorkspace({ workspaceId: w.id, inNewWindow: false }),
       });
     }
 

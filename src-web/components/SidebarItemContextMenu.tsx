@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useCreateDropdownItems } from '../hooks/useCreateDropdownItems';
 import { useDeleteFolder } from '../hooks/useDeleteFolder';
-import { useDeleteRequest } from '../hooks/useDeleteRequest';
+import { useDeleteAnyRequest } from '../hooks/useDeleteAnyRequest';
 import { useDuplicateFolder } from '../hooks/useDuplicateFolder';
 import { useDuplicateGrpcRequest } from '../hooks/useDuplicateGrpcRequest';
 import { useDuplicateHttpRequest } from '../hooks/useDuplicateHttpRequest';
@@ -33,7 +33,7 @@ export function SidebarItemContextMenu({ child, show, close }: Props) {
   const httpRequestActions = useHttpRequestActions();
   const sendRequest = useSendAnyHttpRequest();
   const workspaces = useWorkspaces();
-  const deleteRequest = useDeleteRequest(child.id);
+  const deleteRequest = useDeleteAnyRequest();
   const renameRequest = useRenameRequest(child.id);
   const duplicateHttpRequest = useDuplicateHttpRequest({ id: child.id, navigateAfter: true });
   const duplicateGrpcRequest = useDuplicateGrpcRequest({ id: child.id, navigateAfter: true });
@@ -134,8 +134,10 @@ export function SidebarItemContextMenu({ child, show, close }: Props) {
           key: 'delete-request',
           variant: 'danger',
           label: 'Delete',
+          hotKeyAction: 'http_request.delete',
+          hotKeyLabelOnly: true,
           leftSlot: <Icon icon="trash" />,
-          onSelect: () => deleteRequest.mutate(),
+          onSelect: () => deleteRequest.mutate(child.id),
         },
       ];
     }
