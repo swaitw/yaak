@@ -154,10 +154,6 @@ export const RequestPane = memo(function RequestPane({
   const tabs = useMemo<TabItem[]>(
     () => [
       {
-        value: TAB_DESCRIPTION,
-        label: 'Info',
-      },
-      {
         value: TAB_BODY,
         rightSlot: numParams > 0 ? <CountBadge count={numParams} /> : null,
         options: {
@@ -263,6 +259,10 @@ export const RequestPane = memo(function RequestPane({
             });
           },
         },
+      },
+      {
+        value: TAB_DESCRIPTION,
+        label: 'Info',
       },
     ],
     [
