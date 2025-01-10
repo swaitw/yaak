@@ -437,6 +437,11 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle' | 'items'
               <motion.div
                 tabIndex={0}
                 onKeyDown={handleMenuKeyDown}
+                onContextMenu={e => {
+                  // Prevent showing any ancestor context menus
+                  e.stopPropagation();
+                  e.preventDefault();
+                }}
                 initial={{ opacity: 0, y: (styles.upsideDown ? 1 : -1) * 5, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 role="menu"

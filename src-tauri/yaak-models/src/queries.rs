@@ -2106,57 +2106,68 @@ pub async fn batch_upsert<R: Runtime>(
 ) -> Result<BatchUpsertResult> {
     let mut imported_resources = BatchUpsertResult::default();
 
-    for v in workspaces {
-        let x = upsert_workspace(&window, v, update_source).await?;
-        imported_resources.workspaces.push(x.clone());
+    if workspaces.len() > 0 {
+        for v in workspaces {
+            let x = upsert_workspace(&window, v, update_source).await?;
+            imported_resources.workspaces.push(x.clone());
+        }
+        info!("Imported {} workspaces", imported_resources.workspaces.len());
     }
-    info!("Imported {} workspaces", imported_resources.workspaces.len());
 
-    while imported_resources.environments.len() < environments.len() {
-        for v in environments.clone() {
-            if let Some(fid) = v.environment_id.clone() {
-                let imported_parent = imported_resources.environments.iter().find(|f| f.id == fid);
-                if imported_parent.is_none() {
+    if environments.len() > 0 {
+        while imported_resources.environments.len() < environments.len() {
+            for v in environments.clone() {
+                if let Some(fid) = v.environment_id.clone() {
+                    let imported_parent =
+                        imported_resources.environments.iter().find(|f| f.id == fid);
+                    if imported_parent.is_none() {
+                        continue;
+                    }
+                }
+                if let Some(_) = imported_resources.environments.iter().find(|f| f.id == v.id) {
                     continue;
                 }
+                let x = upsert_environment(&window, v, update_source).await?;
+                imported_resources.environments.push(x.clone());
             }
-            if let Some(_) = imported_resources.environments.iter().find(|f| f.id == v.id) {
-                continue;
-            }
-            let x = upsert_environment(&window, v, update_source).await?;
-            imported_resources.environments.push(x.clone());
         }
+        info!("Imported {} environments", imported_resources.environments.len());
     }
-    info!("Imported {} environments", imported_resources.environments.len());
 
-    while imported_resources.folders.len() < folders.len() {
-        for v in folders.clone() {
-            if let Some(fid) = v.folder_id.clone() {
-                let imported_parent = imported_resources.folders.iter().find(|f| f.id == fid);
-                if imported_parent.is_none() {
+    if folders.len() > 0 {
+        while imported_resources.folders.len() < folders.len() {
+            for v in folders.clone() {
+                if let Some(fid) = v.folder_id.clone() {
+                    let imported_parent = imported_resources.folders.iter().find(|f| f.id == fid);
+                    if imported_parent.is_none() {
+                        continue;
+                    }
+                }
+                if let Some(_) = imported_resources.folders.iter().find(|f| f.id == v.id) {
                     continue;
                 }
+                let x = upsert_folder(&window, v, update_source).await?;
+                imported_resources.folders.push(x.clone());
             }
-            if let Some(_) = imported_resources.folders.iter().find(|f| f.id == v.id) {
-                continue;
-            }
-            let x = upsert_folder(&window, v, update_source).await?;
-            imported_resources.folders.push(x.clone());
         }
+        info!("Imported {} folders", imported_resources.folders.len());
     }
-    info!("Imported {} folders", imported_resources.folders.len());
 
-    for v in http_requests {
-        let x = upsert_http_request(&window, v, update_source).await?;
-        imported_resources.http_requests.push(x.clone());
+    if http_requests.len() > 0 {
+        for v in http_requests {
+            let x = upsert_http_request(&window, v, update_source).await?;
+            imported_resources.http_requests.push(x.clone());
+        }
+        info!("Imported {} http_requests", imported_resources.http_requests.len());
     }
-    info!("Imported {} http_requests", imported_resources.http_requests.len());
 
-    for v in grpc_requests {
-        let x = upsert_grpc_request(&window, v, update_source).await?;
-        imported_resources.grpc_requests.push(x.clone());
+    if grpc_requests.len() > 0 {
+        for v in grpc_requests {
+            let x = upsert_grpc_request(&window, v, update_source).await?;
+            imported_resources.grpc_requests.push(x.clone());
+        }
+        info!("Imported {} grpc_requests", imported_resources.grpc_requests.len());
     }
-    info!("Imported {} grpc_requests", imported_resources.grpc_requests.len());
 
     Ok(imported_resources)
 }
@@ -2211,7 +2222,7 @@ fn timestamp_for_upsert(update_source: &UpdateSource, dt: NaiveDateTime) -> Naiv
             } else {
                 dt
             }
-        },
+        }
         // Other sources will always update to the latest time
         _ => Utc::now().naive_utc(),
     }
