@@ -26,6 +26,7 @@ import { useClickOutside } from '../../hooks/useClickOutside';
 import type { HotkeyAction } from '../../hooks/useHotKey';
 import { useHotKey } from '../../hooks/useHotKey';
 import { useStateWithDeps } from '../../hooks/useStateWithDeps';
+import {generateId} from "../../lib/generateId";
 import { getNodeText } from '../../lib/getNodeText';
 import { Overlay } from '../Overlay';
 import { Button } from './Button';
@@ -33,6 +34,7 @@ import { HotKey } from './HotKey';
 import { Icon } from './Icon';
 import { Separator } from './Separator';
 import { HStack, VStack } from './Stacks';
+import { atom, useAtom } from 'jotai';
 
 export type DropdownItemSeparator = {
   type: 'separator';
@@ -76,19 +78,28 @@ export interface DropdownRef {
   select?: () => void;
 }
 
+// Every dropdown gets a unique ID and we use this global atom to ensure
+// only one dropdown can be open at a time.
+const openAtom = atom<string | null>(null);
+
 export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown(
   { children, items, onOpen, onClose, hotKeyAction, fullWidth }: DropdownProps,
   ref,
 ) {
-  const [isOpen, _setIsOpen] = useState<boolean>(false);
+  const id = useRef(generateId()).current;
+  const [openId, setOpenId] = useAtom(openAtom);
+  const isOpen = openId === id;
+
+  // const [isOpen, _setIsOpen] = useState<boolean>(false);
   const [defaultSelectedIndex, setDefaultSelectedIndex] = useState<number | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<Omit<DropdownRef, 'open'>>(null);
 
   const setIsOpen = useCallback(
     (o: SetStateAction<boolean>) => {
-      _setIsOpen((prev) => {
-        const newIsOpen = typeof o === 'function' ? o(prev) : o;
+      setOpenId((prevId) => {
+        const prevIsOpen = prevId === id;
+        const newIsOpen = typeof o === 'function' ? o(prevIsOpen) : o;
 
         if (newIsOpen) onOpen?.();
         else onClose?.();
@@ -96,10 +107,11 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
         // Set to different value when opened and closed to force it to update. This is to force
         // <Menu/> to reset its selected-index state, which it does when this prop changes
         setDefaultSelectedIndex(newIsOpen ? -1 : null);
-        return newIsOpen;
+
+        return newIsOpen ? id : null; // Set global atom to current ID to signify open state
       });
     },
-    [onClose, onOpen],
+    [id, onClose, onOpen, setOpenId],
   );
 
   const handleClose = useCallback(() => {
