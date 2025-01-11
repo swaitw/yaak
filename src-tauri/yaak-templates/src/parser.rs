@@ -3,25 +3,20 @@ use std::fmt::Display;
 use ts_rs::TS;
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize, TS)]
-#[ts(export, export_to="parser.ts")]
+#[ts(export, export_to = "parser.ts")]
 pub struct Tokens {
     pub tokens: Vec<Token>,
 }
 
 impl Display for Tokens {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let str = self
-            .tokens
-            .iter()
-            .map(|t| t.to_string())
-            .collect::<Vec<String>>()
-            .join("");
+        let str = self.tokens.iter().map(|t| t.to_string()).collect::<Vec<String>>().join("");
         write!(f, "{}", str)
     }
 }
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize, TS)]
-#[ts(export, export_to="parser.ts")]
+#[ts(export, export_to = "parser.ts")]
 pub struct FnArg {
     pub name: String,
     pub value: Val,
@@ -36,7 +31,7 @@ impl Display for FnArg {
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "snake_case", tag = "type")]
-#[ts(export, export_to="parser.ts")]
+#[ts(export, export_to = "parser.ts")]
 pub enum Val {
     Str { text: String },
     Var { name: String },
@@ -71,7 +66,7 @@ impl Display for Val {
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "snake_case", tag = "type")]
-#[ts(export, export_to="parser.ts")]
+#[ts(export, export_to = "parser.ts")]
 pub enum Token {
     Raw { text: String },
     Tag { val: Val },
@@ -396,9 +391,7 @@ impl Parser {
             return false;
         }
 
-        let cmp = self.chars[self.pos..self.pos + value.len()]
-            .iter()
-            .collect::<String>();
+        let cmp = self.chars[self.pos..self.pos + value.len()].iter().collect::<String>();
 
         if cmp == value {
             // We have a match, so advance the current index

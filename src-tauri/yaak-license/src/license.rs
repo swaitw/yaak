@@ -115,7 +115,9 @@ pub async fn check_license<R: Runtime>(app_handle: &AppHandle<R>) -> Result<Lice
 
     match (has_activation_id, trial_period_active) {
         (false, true) => Ok(LicenseCheckStatus::Trialing { end: trial_end }),
-        (false, false) => Ok(LicenseCheckStatus::PersonalUse { trial_ended: trial_end }),
+        (false, false) => Ok(LicenseCheckStatus::PersonalUse {
+            trial_ended: trial_end,
+        }),
         (true, _) => {
             info!("Checking license activation");
             // A license has been activated, so let's check the license server
