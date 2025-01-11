@@ -80,6 +80,7 @@ export interface DropdownRef {
 
 // Every dropdown gets a unique ID and we use this global atom to ensure
 // only one dropdown can be open at a time.
+// TODO: Also make ContextMenu use this
 const openAtom = atom<string | null>(null);
 
 export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown(
