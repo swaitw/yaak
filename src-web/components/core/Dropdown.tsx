@@ -11,11 +11,11 @@ import type {
   SetStateAction,
 } from 'react';
 import React, {
+  useEffect,
   Children,
   cloneElement,
   forwardRef,
   useCallback,
-  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -71,8 +71,8 @@ export interface DropdownRef {
   open: () => void;
   toggle: () => void;
   close?: () => void;
-  next?: () => void;
-  prev?: () => void;
+  next?: (incrBy?: number) => void;
+  prev?: (incrBy?: number) => void;
   select?: () => void;
 }
 
@@ -81,15 +81,23 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
   ref,
 ) {
   const [isOpen, _setIsOpen] = useState<boolean>(false);
-  const [defaultSelectedIndex, setDefaultSelectedIndex] = useState<number>();
+  const [defaultSelectedIndex, setDefaultSelectedIndex] = useState<number | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<Omit<DropdownRef, 'open'>>(null);
 
   const setIsOpen = useCallback(
     (o: SetStateAction<boolean>) => {
-      _setIsOpen(o);
-      if (o) onOpen?.();
-      else onClose?.();
+      _setIsOpen((prev) => {
+        const newIsOpen = typeof o === 'function' ? o(prev) : o;
+
+        if (newIsOpen) onOpen?.();
+        else onClose?.();
+
+        // Set to different value when opened and closed to force it to update. This is to force
+        // <Menu/> to reset its selected-index state, which it does when this prop changes
+        setDefaultSelectedIndex(newIsOpen ? -1 : null);
+        return newIsOpen;
+      });
     },
     [onClose, onOpen],
   );
@@ -97,14 +105,16 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
   const handleClose = useCallback(() => {
     setIsOpen(false);
     buttonRef.current?.focus();
-    // Reset so it triggers a render if opening sets to 0, for example
-    setDefaultSelectedIndex(undefined);
   }, [setIsOpen]);
+
+  // Pull into variable so linter forces us to add it as a hook dep to useImperativeHandle. If we don't,
+  // the ref will not update when menuRef updates, causing stale callback state to be used.
+  const menuRefCurrent = menuRef.current;
 
   useImperativeHandle(
     ref,
     () => ({
-      ...menuRef.current,
+      ...menuRefCurrent,
       isOpen: isOpen,
       toggle() {
         if (!isOpen) this.open();
@@ -117,7 +127,7 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
         handleClose();
       },
     }),
-    [handleClose, isOpen, setIsOpen],
+    [handleClose, isOpen, setIsOpen, menuRefCurrent],
   );
 
   useHotKey(hotKeyAction ?? null, () => {
@@ -132,12 +142,11 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
       ...existingChild.props,
       ref: buttonRef,
       'aria-haspopup': 'true',
-      onMouseDown:
+      onClick:
         existingChild.props?.onClick ??
         ((e: MouseEvent<HTMLButtonElement>) => {
           e.preventDefault();
           e.stopPropagation();
-          setDefaultSelectedIndex(undefined);
           setIsOpen((o) => !o); // Toggle dropdown
         }),
     };
@@ -200,6 +209,7 @@ export const ContextMenu = forwardRef<DropdownRef, ContextMenuProps>(function Co
     <Menu
       isOpen={true} // Always open because we return null if not
       className={className}
+      defaultSelectedIndex={null}
       ref={ref}
       items={items}
       onClose={onClose}
@@ -210,7 +220,7 @@ export const ContextMenu = forwardRef<DropdownRef, ContextMenuProps>(function Co
 
 interface MenuProps {
   className?: string;
-  defaultSelectedIndex?: number;
+  defaultSelectedIndex: number | null;
   triggerShape: Pick<DOMRect, 'top' | 'bottom' | 'left' | 'right'> | null;
   onClose: () => void;
   showTriangle?: boolean;
@@ -243,9 +253,8 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle' | 'items'
 
     const handleClose = useCallback(() => {
       onClose();
-      setSelectedIndex(null);
       setFilter('');
-    }, [onClose, setSelectedIndex]);
+    }, [onClose]);
 
     // Close menu on space bar
     const handleMenuKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -272,39 +281,45 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle' | 'items'
       [isOpen, filter, setFilter, handleClose],
     );
 
-    const handlePrev = useCallback(() => {
-      setSelectedIndex((currIndex) => {
-        let nextIndex = (currIndex ?? 0) - 1;
-        const maxTries = items.length;
-        for (let i = 0; i < maxTries; i++) {
-          if (items[nextIndex]?.hidden || items[nextIndex]?.type === 'separator') {
-            nextIndex--;
-          } else if (nextIndex < 0) {
-            nextIndex = items.length - 1;
-          } else {
-            break;
+    const handlePrev = useCallback(
+      (incrBy = 1) => {
+        setSelectedIndex((currIndex) => {
+          let nextIndex = (currIndex ?? 0) - incrBy;
+          const maxTries = items.length;
+          for (let i = 0; i < maxTries; i++) {
+            if (items[nextIndex]?.hidden || items[nextIndex]?.type === 'separator') {
+              nextIndex--;
+            } else if (nextIndex < 0) {
+              nextIndex = items.length - 1;
+            } else {
+              break;
+            }
           }
-        }
-        return nextIndex;
-      });
-    }, [items, setSelectedIndex]);
+          return nextIndex;
+        });
+      },
+      [items, setSelectedIndex],
+    );
 
-    const handleNext = useCallback(() => {
-      setSelectedIndex((currIndex) => {
-        let nextIndex = (currIndex ?? -1) + 1;
-        const maxTries = items.length;
-        for (let i = 0; i < maxTries; i++) {
-          if (items[nextIndex]?.hidden || items[nextIndex]?.type === 'separator') {
-            nextIndex++;
-          } else if (nextIndex >= items.length) {
-            nextIndex = 0;
-          } else {
-            break;
+    const handleNext = useCallback(
+      (incrBy: number = 1) => {
+        setSelectedIndex((currIndex) => {
+          let nextIndex = (currIndex ?? -1) + incrBy;
+          const maxTries = items.length;
+          for (let i = 0; i < maxTries; i++) {
+            if (items[nextIndex]?.hidden || items[nextIndex]?.type === 'separator') {
+              nextIndex++;
+            } else if (nextIndex >= items.length) {
+              nextIndex = 0;
+            } else {
+              break;
+            }
           }
-        }
-        return nextIndex;
-      });
-    }, [items, setSelectedIndex]);
+          return nextIndex;
+        });
+      },
+      [items, setSelectedIndex],
+    );
 
     useKey(
       'ArrowUp',
@@ -341,20 +356,18 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle' | 'items'
       [handleClose, setSelectedIndex],
     );
 
-    useImperativeHandle(
-      ref,
-      () => ({
+    useImperativeHandle(ref, () => {
+      return {
         close: handleClose,
         prev: handlePrev,
         next: handleNext,
-        select: () => {
+        select() {
           const item = items[selectedIndex ?? -1] ?? null;
           if (!item) return;
           handleSelect(item);
         },
-      }),
-      [handleClose, handleNext, handlePrev, handleSelect, items, selectedIndex],
-    );
+      };
+    }, [handleClose, handleNext, handlePrev, handleSelect, items, selectedIndex]);
 
     const styles = useMemo<{
       container: CSSProperties;

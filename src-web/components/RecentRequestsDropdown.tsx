@@ -22,8 +22,7 @@ interface Props {
 export function RecentRequestsDropdown({ className }: Props) {
   const activeRequest = useActiveRequest();
   const dropdownRef = useRef<DropdownRef>(null);
-  const [allRecentRequestIds] = useRecentRequests();
-  const recentRequestIds = useMemo(() => allRecentRequestIds.slice(1), [allRecentRequestIds]);
+  const [recentRequestIds] = useRecentRequests();
 
   // Handle key-up
   useKeyPressEvent('Control', undefined, () => {
@@ -32,8 +31,13 @@ export function RecentRequestsDropdown({ className }: Props) {
   });
 
   useHotKey('request_switcher.prev', () => {
-    if (!dropdownRef.current?.isOpen) dropdownRef.current?.open();
-    dropdownRef.current?.next?.();
+    if (!dropdownRef.current?.isOpen) {
+      dropdownRef.current?.open();
+      // Select the second because the first is the current request
+      dropdownRef.current?.next?.(2);
+    } else {
+      dropdownRef.current?.next?.();
+    }
   });
 
   useHotKey('request_switcher.next', () => {
@@ -83,7 +87,6 @@ export function RecentRequestsDropdown({ className }: Props) {
   return (
     <Dropdown ref={dropdownRef} items={items}>
       <Button
-        data-tauri-drag-region
         size="sm"
         hotkeyAction="request_switcher.toggle"
         className={classNames(
