@@ -89,7 +89,7 @@ export function SettingsGeneral() {
 
       <Separator className="my-4" />
 
-      <Heading size={2}>
+      <Heading level={2}>
         Workspace{' '}
         <div className="inline-block ml-1 bg-surface-highlight px-2 py-0.5 rounded text text-shrink">
           {workspace.name}
@@ -134,7 +134,7 @@ export function SettingsGeneral() {
 
       <Separator className="my-4" />
 
-      <Heading size={2}>App Info</Heading>
+      <Heading level={2}>App Info</Heading>
       <KeyValueRows>
         <KeyValueRow label="Version">{appInfo.version}</KeyValueRow>
         <KeyValueRow

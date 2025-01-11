@@ -420,7 +420,7 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
       <div className="h-full px-1.5 overflow-y-auto pt-2 pb-1">
         {filteredGroups.map((g) => (
           <div key={g.key} className="mb-1.5 w-full">
-            <Heading size={2} className="!text-xs uppercase px-1.5 h-sm flex items-center">
+            <Heading level={2} className="!text-xs uppercase px-1.5 h-sm flex items-center">
               {g.label}
             </Heading>
             {g.items.map((v) => (

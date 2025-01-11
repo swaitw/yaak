@@ -111,7 +111,7 @@ pub(crate) async fn get_db_candidates<R: Runtime>(
     sync_dir: &Path,
 ) -> Result<Vec<DbCandidate>> {
     let models: HashMap<_, _> =
-        workspace_models(mgr, workspace_id).await.into_iter().map(|m| (m.id(), m)).collect();
+        workspace_models(mgr, workspace_id).await?.into_iter().map(|m| (m.id(), m)).collect();
     let sync_states: HashMap<_, _> = list_sync_states_for_workspace(mgr, workspace_id, sync_dir)
         .await?
         .into_iter()
@@ -270,12 +270,15 @@ pub(crate) fn compute_sync_ops(
         .collect()
 }
 
-async fn workspace_models<R: Runtime>(mgr: &impl Manager<R>, workspace_id: &str) -> Vec<SyncModel> {
-    let resources = get_workspace_export_resources(mgr, vec![workspace_id]).await.resources;
+async fn workspace_models<R: Runtime>(
+    mgr: &impl Manager<R>,
+    workspace_id: &str,
+) -> Result<Vec<SyncModel>> {
+    let resources = get_workspace_export_resources(mgr, vec![workspace_id], true).await?.resources;
     let workspace = resources.workspaces.iter().find(|w| w.id == workspace_id);
 
     let workspace = match workspace {
-        None => return Vec::new(),
+        None => return Ok(Vec::new()),
         Some(w) => w,
     };
 
@@ -294,7 +297,7 @@ async fn workspace_models<R: Runtime>(mgr: &impl Manager<R>, workspace_id: &str)
         sync_models.push(SyncModel::GrpcRequest(m));
     }
 
-    sync_models
+    Ok(sync_models)
 }
 
 pub(crate) async fn apply_sync_ops<R: Runtime>(

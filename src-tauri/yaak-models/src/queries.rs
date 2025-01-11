@@ -2175,7 +2175,8 @@ pub async fn batch_upsert<R: Runtime>(
 pub async fn get_workspace_export_resources<R: Runtime>(
     mgr: &impl Manager<R>,
     workspace_ids: Vec<&str>,
-) -> WorkspaceExport {
+    include_environments: bool,
+) -> Result<WorkspaceExport> {
     let mut data = WorkspaceExport {
         yaak_version: mgr.package_info().version.clone().to_string(),
         yaak_schema: 2,
@@ -2190,24 +2191,19 @@ pub async fn get_workspace_export_resources<R: Runtime>(
     };
 
     for workspace_id in workspace_ids {
-        data.resources
-            .workspaces
-            .push(get_workspace(mgr, workspace_id).await.expect("Failed to get workspace"));
-        data.resources.environments.append(
-            &mut list_environments(mgr, workspace_id).await.expect("Failed to get environments"),
-        );
-        data.resources
-            .folders
-            .append(&mut list_folders(mgr, workspace_id).await.expect("Failed to get folders"));
-        data.resources.http_requests.append(
-            &mut list_http_requests(mgr, workspace_id).await.expect("Failed to get http requests"),
-        );
-        data.resources.grpc_requests.append(
-            &mut list_grpc_requests(mgr, workspace_id).await.expect("Failed to get grpc requests"),
-        );
+        data.resources.workspaces.push(get_workspace(mgr, workspace_id).await?);
+        data.resources.environments.append(&mut list_environments(mgr, workspace_id).await?);
+        data.resources.folders.append(&mut list_folders(mgr, workspace_id).await?);
+        data.resources.http_requests.append(&mut list_http_requests(mgr, workspace_id).await?);
+        data.resources.grpc_requests.append(&mut list_grpc_requests(mgr, workspace_id).await?);
     }
 
-    data
+    // Nuke environments if we don't want them
+    if !include_environments {
+        data.resources.environments.clear();
+    }
+
+    Ok(data)
 }
 
 // Generate the created_at or updated_at timestamps for an upsert operation, depending on the ID

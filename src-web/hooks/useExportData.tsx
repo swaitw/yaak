@@ -21,7 +21,7 @@ export function useExportData() {
 
       showDialog({
         id: 'export-data',
-        title: 'Export App Data',
+        title: 'Export Data',
         size: 'md',
         noPadding: true,
         render: ({ hide }) => (

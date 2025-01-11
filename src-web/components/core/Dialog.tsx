@@ -84,7 +84,7 @@ export function Dialog({
           )}
         >
           {title ? (
-            <Heading className="px-6 mt-4 mb-2" size={1} id={titleId}>
+            <Heading className="px-6 mt-4 mb-2" level={1} id={titleId}>
               {title}
             </Heading>
           ) : (

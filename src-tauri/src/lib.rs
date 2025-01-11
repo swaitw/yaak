@@ -1002,8 +1002,11 @@ async fn cmd_export_data(
     window: WebviewWindow,
     export_path: &str,
     workspace_ids: Vec<&str>,
+    include_environments: bool,
 ) -> Result<(), String> {
-    let export_data = get_workspace_export_resources(window.app_handle(), workspace_ids).await;
+    let export_data = get_workspace_export_resources(&window, workspace_ids, include_environments)
+        .await
+        .map_err(|e| e.to_string())?;
     let f = File::options()
         .create(true)
         .truncate(true)

@@ -6,6 +6,7 @@ import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import { pluralizeCount } from '../lib/pluralize';
 import { invokeCmd } from '../lib/tauri';
+import { Banner } from './core/Banner';
 import { Button } from './core/Button';
 import { Checkbox } from './core/Checkbox';
 import { HStack, VStack } from './core/Stacks';
@@ -39,6 +40,7 @@ function ExportDataDialogContent({
   allWorkspaces: Workspace[];
   activeWorkspace: Workspace;
 }) {
+  const [includeEnvironments, setIncludeEnvironments] = useState<boolean>(true);
   const [selectedWorkspaces, setSelectedWorkspaces] = useState<Record<string, boolean>>({
     [activeWorkspace.id]: true,
   });
@@ -67,10 +69,14 @@ function ExportDataDialogContent({
       return;
     }
 
-    await invokeCmd('cmd_export_data', { workspaceIds: ids, exportPath });
+    await invokeCmd('cmd_export_data', {
+      workspaceIds: ids,
+      exportPath,
+      includeEnvironments: includeEnvironments,
+    });
     onHide();
     onSuccess(exportPath);
-  }, [onHide, onSuccess, selectedWorkspaces, workspaces]);
+  }, [includeEnvironments, onHide, onSuccess, selectedWorkspaces, workspaces]);
 
   const allSelected = workspaces.every((w) => selectedWorkspaces[w.id]);
   const numSelected = Object.values(selectedWorkspaces).filter(Boolean).length;
@@ -117,6 +123,18 @@ function ExportDataDialogContent({
           ))}
         </tbody>
       </table>
+      <Banner className="!p-0">
+        <details open>
+          <summary className="px-3 py-2">Extra Settings</summary>
+          <div className="px-3 pb-2">
+            <Checkbox
+              checked={includeEnvironments}
+              onChange={setIncludeEnvironments}
+              title="Include environments"
+            />
+          </div>
+        </details>
+      </Banner>
       <HStack space={2} justifyContent="end">
         <Button className="focus" variant="border" onClick={onHide}>
           Cancel
@@ -128,7 +146,8 @@ function ExportDataDialogContent({
           disabled={noneSelected}
           onClick={() => handleExport()}
         >
-          Export {pluralizeCount('Workspace', numSelected, { omitSingle: true, noneWord: 'Nothing' })}
+          Export{' '}
+          {pluralizeCount('Workspace', numSelected, { omitSingle: true, noneWord: 'Nothing' })}
         </Button>
       </HStack>
     </VStack>
