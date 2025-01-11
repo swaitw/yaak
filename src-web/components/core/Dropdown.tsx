@@ -11,11 +11,11 @@ import type {
   SetStateAction,
 } from 'react';
 import React, {
-  useEffect,
   Children,
   cloneElement,
   forwardRef,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -27,7 +27,7 @@ import type { HotkeyAction } from '../../hooks/useHotKey';
 import { useHotKey } from '../../hooks/useHotKey';
 import { useStateWithDeps } from '../../hooks/useStateWithDeps';
 import { getNodeText } from '../../lib/getNodeText';
-import { Portal } from '../Portal';
+import { Overlay } from '../Overlay';
 import { Button } from './Button';
 import { HotKey } from './HotKey';
 import { Icon } from './Icon';
@@ -446,79 +446,79 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle' | 'items'
             ),
         )}
         {isOpen && (
-          <Portal name="dropdown-menu">
-            <div ref={menuRef} className="x-theme-menu">
-              <motion.div
-                tabIndex={0}
-                onKeyDown={handleMenuKeyDown}
-                onContextMenu={(e) => {
-                  // Prevent showing any ancestor context menus
-                  e.stopPropagation();
-                  e.preventDefault();
-                }}
-                initial={{ opacity: 0, y: (styles.upsideDown ? 1 : -1) * 5, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                role="menu"
-                aria-orientation="vertical"
-                dir="ltr"
-                style={styles.container}
+          <Overlay noBackdrop open={isOpen} portalName="dropdown-menu">
+            <motion.div
+              ref={menuRef}
+              tabIndex={0}
+              onKeyDown={handleMenuKeyDown}
+              onContextMenu={(e) => {
+                // Prevent showing any ancestor context menus
+                e.stopPropagation();
+                e.preventDefault();
+              }}
+              initial={{ opacity: 0, y: (styles.upsideDown ? 1 : -1) * 5, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              role="menu"
+              aria-orientation="vertical"
+              dir="ltr"
+              style={styles.container}
+              className={classNames(
+                className,
+                'x-theme-menu',
+                'outline-none my-1 pointer-events-auto fixed z-50',
+              )}
+            >
+              {showTriangle && (
+                <span
+                  aria-hidden
+                  style={styles.triangle}
+                  className="bg-surface absolute border-border-subtle border-t border-l"
+                />
+              )}
+              <VStack
+                style={styles.menu}
                 className={classNames(
                   className,
-                  'outline-none my-1 pointer-events-auto fixed z-50',
+                  'h-auto bg-surface rounded-md shadow-lg py-1.5 border',
+                  'border-border-subtle overflow-auto mx-0.5',
                 )}
               >
-                {showTriangle && (
-                  <span
-                    aria-hidden
-                    style={styles.triangle}
-                    className="bg-surface absolute border-border-subtle border-t border-l"
-                  />
+                {filter && (
+                  <HStack
+                    space={2}
+                    className="pb-0.5 px-1.5 mb-2 text-sm border border-border-subtle mx-2 rounded font-mono h-xs"
+                  >
+                    <Icon icon="search" size="xs" className="text-text-subtle" />
+                    <div className="text">{filter}</div>
+                  </HStack>
                 )}
-                <VStack
-                  style={styles.menu}
-                  className={classNames(
-                    className,
-                    'h-auto bg-surface rounded-md shadow-lg py-1.5 border',
-                    'border-border-subtle overflow-auto mx-0.5',
-                  )}
-                >
-                  {filter && (
-                    <HStack
-                      space={2}
-                      className="pb-0.5 px-1.5 mb-2 text-sm border border-border-subtle mx-2 rounded font-mono h-xs"
-                    >
-                      <Icon icon="search" size="xs" className="text-text-subtle" />
-                      <div className="text">{filter}</div>
-                    </HStack>
-                  )}
-                  {filteredItems.length === 0 && (
-                    <span className="text-text-subtlest text-center px-2 py-1">No matches</span>
-                  )}
-                  {filteredItems.map((item, i) => {
-                    if (item.hidden) {
-                      return null;
-                    }
-                    if (item.type === 'separator') {
-                      return (
-                        <Separator key={i} className={classNames('my-1.5', item.label && 'ml-2')}>
-                          {item.label}
-                        </Separator>
-                      );
-                    }
+                {filteredItems.length === 0 && (
+                  <span className="text-text-subtlest text-center px-2 py-1">No matches</span>
+                )}
+                {filteredItems.map((item, i) => {
+                  if (item.hidden) {
+                    return null;
+                  }
+                  if (item.type === 'separator') {
                     return (
-                      <MenuItem
-                        focused={i === selectedIndex}
-                        onFocus={handleFocus}
-                        onSelect={handleSelect}
-                        key={item.key}
-                        item={item}
-                      />
+                      <Separator key={i} className={classNames('my-1.5', item.label && 'ml-2')}>
+                        {item.label}
+                      </Separator>
                     );
-                  })}
-                </VStack>
-              </motion.div>
-            </div>
-          </Portal>
+                  }
+                  return (
+                    <MenuItem
+                      focused={i === selectedIndex}
+                      onFocus={handleFocus}
+                      onSelect={handleSelect}
+                      key={item.key}
+                      item={item}
+                    />
+                  );
+                })}
+              </VStack>
+            </motion.div>
+          </Overlay>
         )}
       </>
     );
