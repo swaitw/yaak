@@ -1,15 +1,14 @@
 extern crate core;
 #[cfg(target_os = "macos")]
 extern crate objc;
-
-use std::collections::BTreeMap;
-use std::fs::{create_dir_all, File};
-use std::path::PathBuf;
-use std::process::exit;
-use std::str::FromStr;
-use std::time::Duration;
-use std::{fs, panic};
-
+use crate::analytics::{AnalyticsAction, AnalyticsResource};
+use crate::grpc::metadata_to_map;
+use crate::http_request::send_http_request;
+use crate::notifications::YaakNotifier;
+use crate::render::{render_grpc_request, render_http_request, render_json_value, render_template};
+use crate::template_callback::PluginTemplateCallback;
+use crate::updates::{UpdateMode, YaakUpdater};
+use crate::window_menu::app_menu;
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
 use chrono::Utc;
@@ -19,27 +18,27 @@ use rand::random;
 use regex::Regex;
 use serde::Serialize;
 use serde_json::{json, Value};
+use std::collections::BTreeMap;
+use std::fs::{create_dir_all, File};
+use std::path::PathBuf;
+use std::process::exit;
+use std::str::FromStr;
+use std::time::Duration;
+use std::{fs, panic};
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
 use tauri::{AppHandle, Emitter, LogicalSize, RunEvent, State, WebviewUrl, WebviewWindow};
 use tauri::{Listener, Runtime};
 use tauri::{Manager, WindowEvent};
 use tauri_plugin_clipboard_manager::ClipboardExt;
+use tauri_plugin_log::fern::colors::ColoredLevelConfig;
+use tauri_plugin_log::{Builder, Target, TargetKind};
 use tauri_plugin_opener::OpenerExt;
 use tokio::fs::read_to_string;
 use tokio::sync::Mutex;
 use tokio::task::block_in_place;
 use yaak_grpc::manager::{DynamicMessage, GrpcHandle};
 use yaak_grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
-
-use crate::analytics::{AnalyticsAction, AnalyticsResource};
-use crate::grpc::metadata_to_map;
-use crate::http_request::send_http_request;
-use crate::notifications::YaakNotifier;
-use crate::render::{render_grpc_request, render_http_request, render_json_value, render_template};
-use crate::template_callback::PluginTemplateCallback;
-use crate::updates::{UpdateMode, YaakUpdater};
-use crate::window_menu::app_menu;
 use yaak_models::models::{
     CookieJar, Environment, EnvironmentVariable, Folder, GrpcConnection, GrpcConnectionState,
     GrpcEvent, GrpcEventType, GrpcRequest, HttpRequest, HttpResponse, HttpResponseState, KeyValue,
@@ -1708,53 +1707,71 @@ async fn cmd_check_for_updates(
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    // #[cfg(debug_assertions)] // only enable instrumentation in development builds
-    // let devtools = tauri_plugin_devtools::init();
-
-    let mut builder = tauri::Builder::default();
-    // #[cfg(debug_assertions)]
-    // {
-    //     builder = builder.plugin(devtools);
-    // }
-
-    // Only use logger in production, because it conflicts with Tauri devtools
-    // #[cfg(not(debug_assertions))]
-    {
-        use tauri_plugin_log::fern::colors::ColoredLevelConfig;
-        use tauri_plugin_log::{Builder, Target, TargetKind};
-
-        let log_plugin = Builder::default()
-            .targets([
-                Target::new(TargetKind::Stdout),
-                Target::new(TargetKind::LogDir { file_name: None }),
-                Target::new(TargetKind::Webview),
-            ])
-            .level_for("plugin_runtime", log::LevelFilter::Info)
-            .level_for("cookie_store", log::LevelFilter::Info)
-            .level_for("eventsource_client::event_parser", log::LevelFilter::Info)
-            .level_for("h2", log::LevelFilter::Info)
-            .level_for("hyper", log::LevelFilter::Info)
-            .level_for("hyper_util", log::LevelFilter::Info)
-            .level_for("hyper_rustls", log::LevelFilter::Info)
-            .level_for("reqwest", log::LevelFilter::Info)
-            .level_for("sqlx", log::LevelFilter::Warn)
-            .level_for("tao", log::LevelFilter::Info)
-            .level_for("tokio_util", log::LevelFilter::Info)
-            .level_for("tonic", log::LevelFilter::Info)
-            .level_for("tower", log::LevelFilter::Info)
-            .level_for("tracing", log::LevelFilter::Warn)
-            .level_for("swc_ecma_codegen", log::LevelFilter::Off)
-            .level_for("swc_ecma_transforms_base", log::LevelFilter::Off)
-            .with_colors(ColoredLevelConfig::default())
-            .level(if is_dev() { log::LevelFilter::Debug } else { log::LevelFilter::Info })
-            .build();
-
-        builder = builder.plugin(log_plugin);
-    }
-
     #[allow(unused_mut)]
     let mut builder =
-        builder
+        tauri::Builder::default()
+            .plugin(
+                Builder::default()
+                    .targets([
+                        Target::new(TargetKind::Stdout),
+                        Target::new(TargetKind::LogDir { file_name: None }),
+                        Target::new(TargetKind::Webview),
+                    ])
+                    .level_for("plugin_runtime", log::LevelFilter::Info)
+                    .level_for("cookie_store", log::LevelFilter::Info)
+                    .level_for("eventsource_client::event_parser", log::LevelFilter::Info)
+                    .level_for("h2", log::LevelFilter::Info)
+                    .level_for("hyper", log::LevelFilter::Info)
+                    .level_for("hyper_util", log::LevelFilter::Info)
+                    .level_for("hyper_rustls", log::LevelFilter::Info)
+                    .level_for("reqwest", log::LevelFilter::Info)
+                    .level_for("sqlx", log::LevelFilter::Warn)
+                    .level_for("tao", log::LevelFilter::Info)
+                    .level_for("tokio_util", log::LevelFilter::Info)
+                    .level_for("tonic", log::LevelFilter::Info)
+                    .level_for("tower", log::LevelFilter::Info)
+                    .level_for("tracing", log::LevelFilter::Warn)
+                    .level_for("swc_ecma_codegen", log::LevelFilter::Off)
+                    .level_for("swc_ecma_transforms_base", log::LevelFilter::Off)
+                    .with_colors(ColoredLevelConfig::default())
+                    .level(if is_dev() { log::LevelFilter::Debug } else { log::LevelFilter::Info })
+                    .build(),
+            )
+            .plugin(
+                Builder::default()
+                    .targets([
+                        Target::new(TargetKind::Stdout),
+                        Target::new(TargetKind::LogDir { file_name: None }),
+                        Target::new(TargetKind::Webview),
+                    ])
+                    .level_for("plugin_runtime", log::LevelFilter::Info)
+                    .level_for("cookie_store", log::LevelFilter::Info)
+                    .level_for("eventsource_client::event_parser", log::LevelFilter::Info)
+                    .level_for("h2", log::LevelFilter::Info)
+                    .level_for("hyper", log::LevelFilter::Info)
+                    .level_for("hyper_util", log::LevelFilter::Info)
+                    .level_for("hyper_rustls", log::LevelFilter::Info)
+                    .level_for("reqwest", log::LevelFilter::Info)
+                    .level_for("sqlx", log::LevelFilter::Warn)
+                    .level_for("tao", log::LevelFilter::Info)
+                    .level_for("tokio_util", log::LevelFilter::Info)
+                    .level_for("tonic", log::LevelFilter::Info)
+                    .level_for("tower", log::LevelFilter::Info)
+                    .level_for("tracing", log::LevelFilter::Warn)
+                    .level_for("swc_ecma_codegen", log::LevelFilter::Off)
+                    .level_for("swc_ecma_transforms_base", log::LevelFilter::Off)
+                    .with_colors(ColoredLevelConfig::default())
+                    .level(if is_dev() { log::LevelFilter::Debug } else { log::LevelFilter::Info })
+                    .build(),
+            )
+            .plugin(tauri_plugin_single_instance::init(|app, args, cwd| {
+                // When trying to open a new app instance (common operation on Linux),
+                // focus the first existing window we find instead of opening a new one
+                // TODO: Keep track of the last focused window and always focus that one
+                if let Some(window) = app.webview_windows().values().next() {
+                    let _ = window.set_focus();
+                }
+            }))
             .plugin(tauri_plugin_clipboard_manager::init())
             .plugin(tauri_plugin_opener::init())
             .plugin(
