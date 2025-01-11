@@ -8,6 +8,7 @@ import { useContainerSize } from '../hooks/useContainerQuery';
 import type { ReflectResponseService } from '../hooks/useGrpc';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
+import { fallbackRequestName } from '../lib/fallbackRequestName';
 import { AUTH_TYPE_BASIC, AUTH_TYPE_BEARER, AUTH_TYPE_NONE } from '../lib/model_util';
 import { BasicAuth } from './BasicAuth';
 import { BearerAuth } from './BearerAuth';
@@ -16,6 +17,7 @@ import { CountBadge } from './core/CountBadge';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { PairOrBulkEditor } from './core/PairOrBulkEditor';
+import { PlainInput } from './core/PlainInput';
 import { RadioDropdown } from './core/RadioDropdown';
 import { HStack, VStack } from './core/Stacks';
 import type { TabItem } from './core/Tabs/Tabs';
@@ -340,13 +342,25 @@ export function GrpcConnectionSetupPane({
           />
         </TabContent>
         <TabContent value={TAB_DESCRIPTION}>
-          <MarkdownEditor
-            name="request-description"
-            placeholder="Request description"
-            defaultValue={activeRequest.description}
-            stateKey={`description.${activeRequest.id}`}
-            onChange={handleDescriptionChange}
-          />
+          <div className="grid grid-rows-[auto_minmax(0,1fr)] h-full">
+            <PlainInput
+              label="Request Name"
+              hideLabel
+              forceUpdateKey={forceUpdateKey}
+              defaultValue={activeRequest.name}
+              className="font-sans !text-xl !px-0"
+              containerClassName="border-0"
+              placeholder={fallbackRequestName(activeRequest)}
+              onChange={(name) => updateRequest.mutate({ id: activeRequest.id, update: { name } })}
+            />
+            <MarkdownEditor
+              name="request-description"
+              placeholder="Request description"
+              defaultValue={activeRequest.description}
+              stateKey={`description.${activeRequest.id}`}
+              onChange={handleDescriptionChange}
+            />
+          </div>
         </TabContent>
       </Tabs>
     </VStack>

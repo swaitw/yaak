@@ -57,9 +57,9 @@ export function MarkdownEditor({
 
   const preview =
     defaultValue.length === 0 ? (
-      <p className="text-text-subtle">No description</p>
+      <p className="text-text-subtlest">No description</p>
     ) : (
-      <Prose className="max-w-xl overflow-y-auto max-h-full">
+      <Prose className="max-w-xl overflow-y-auto max-h-full [&_*]:cursor-auto [&_*]:select-auto">
         <Markdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
           {value}
         </Markdown>
