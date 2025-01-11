@@ -105,6 +105,7 @@ export function getLanguageExtension({
     return graphql();
   }
 
+  console.log("SELECTING SYNTAX", language);
   const base = syntaxExtensions[language ?? 'text'] ?? text();
   if (!useTemplating) {
     return base;

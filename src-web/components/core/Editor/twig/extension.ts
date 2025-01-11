@@ -5,7 +5,7 @@ import { parseMixed } from '@lezer/common';
 import type { EnvironmentVariable } from '@yaakapp-internal/models';
 import type { GenericCompletionConfig } from '../genericCompletion';
 import { genericCompletion } from '../genericCompletion';
-import { textLanguageName } from '../text/extension';
+import { textLanguage } from '../text/extension';
 import type { TwigCompletionOption } from './completion';
 import { twigCompletion } from './completion';
 import { templateTagsPlugin } from './templateTags';
@@ -63,12 +63,10 @@ function mixLanguage(base: LanguageSupport): LRLanguage {
     return cached;
   }
 
-  const name = 'twig';
-
   const parser = twigParser.configure({
     wrap: parseMixed((node) => {
       // If the base language is text, we can overwrite at the top
-      if (base.language.name !== textLanguageName && !node.type.isTop) {
+      if (base.language.name !== textLanguage.name && !node.type.isTop) {
         return null;
       }
 
@@ -79,7 +77,7 @@ function mixLanguage(base: LanguageSupport): LRLanguage {
     }),
   });
 
-  const language = LRLanguage.define({ name, parser });
+  const language = LRLanguage.define({ name: 'twig', parser });
   mixedLanguagesCache[base.language.name] = language;
   return language;
 }
