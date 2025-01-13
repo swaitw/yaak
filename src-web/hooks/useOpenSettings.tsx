@@ -23,7 +23,7 @@ export function useOpenSettings(tab = SettingsTab.General) {
         url: location.href,
         label: 'settings',
         title: 'Yaak Settings',
-        innerSize: [600, 550],
+        innerSize: [750, 600],
       });
     },
   });

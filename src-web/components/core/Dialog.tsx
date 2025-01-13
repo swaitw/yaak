@@ -80,7 +80,7 @@ export function Dialog({
             size === 'md' && 'w-[45rem]',
             size === 'lg' && 'w-[65rem]',
             size === 'full' && 'w-[100vw] h-[100vh]',
-            size === 'dynamic' && 'min-w-[20rem] max-w-[100vw] w-full',
+            size === 'dynamic' && 'min-w-[20rem] max-w-[100vw]',
           )}
         >
           {title ? (

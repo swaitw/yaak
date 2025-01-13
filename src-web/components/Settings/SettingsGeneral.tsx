@@ -34,7 +34,7 @@ export function SettingsGeneral() {
           name="updateChannel"
           label="Update Channel"
           labelPosition="left"
-          labelClassName="w-[12rem]"
+          labelClassName="w-[14rem]"
           size="sm"
           value={settings.updateChannel}
           onChange={(updateChannel) => updateSettings.mutate({ updateChannel })}
@@ -57,7 +57,7 @@ export function SettingsGeneral() {
         name="switchWorkspaceBehavior"
         label="Switch Workspace Behavior"
         labelPosition="left"
-        labelClassName="w-[12rem]"
+        labelClassName="w-[14rem]"
         size="sm"
         event="workspace-switch-behavior"
         value={
@@ -100,6 +100,7 @@ export function SettingsGeneral() {
           size="sm"
           name="requestTimeout"
           label="Request Timeout (ms)"
+          labelClassName="w-[14rem]"
           placeholder="0"
           labelPosition="left"
           defaultValue={`${workspace.settingRequestTimeout}`}
