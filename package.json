@@ -22,6 +22,7 @@
     "start": "npm run app-dev",
     "app-build": "tauri build",
     "app-dev": "tauri dev --no-watch --config ./src-tauri/tauri-dev.conf.json",
+    "build": "npm run --workspaces --if-present build",
     "bootstrap": "run-p bootstrap:* && npm run --workspaces --if-present bootstrap",
     "bootstrap:vendor-node": "node scripts/vendor-node.cjs",
     "bootstrap:vendor-plugins": "node scripts/vendor-plugins.cjs",
