@@ -1,5 +1,6 @@
 import classNames from 'classnames';
 import { motion } from 'framer-motion';
+import { atom, useAtom } from 'jotai';
 import type {
   CSSProperties,
   FocusEvent as ReactFocusEvent,
@@ -26,7 +27,7 @@ import { useClickOutside } from '../../hooks/useClickOutside';
 import type { HotkeyAction } from '../../hooks/useHotKey';
 import { useHotKey } from '../../hooks/useHotKey';
 import { useStateWithDeps } from '../../hooks/useStateWithDeps';
-import {generateId} from "../../lib/generateId";
+import { generateId } from '../../lib/generateId';
 import { getNodeText } from '../../lib/getNodeText';
 import { Overlay } from '../Overlay';
 import { Button } from './Button';
@@ -34,7 +35,6 @@ import { HotKey } from './HotKey';
 import { Icon } from './Icon';
 import { Separator } from './Separator';
 import { HStack, VStack } from './Stacks';
-import { atom, useAtom } from 'jotai';
 
 export type DropdownItemSeparator = {
   type: 'separator';
@@ -102,8 +102,19 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
         const prevIsOpen = prevId === id;
         const newIsOpen = typeof o === 'function' ? o(prevIsOpen) : o;
 
-        if (newIsOpen) onOpen?.();
-        else onClose?.();
+        if (newIsOpen) {
+          onOpen?.();
+
+          // Persist background color of button until we close the dropdown
+          buttonRef.current!.style.backgroundColor = window
+            .getComputedStyle(buttonRef.current!)
+            .getPropertyValue('background-color');
+        } else {
+          onClose?.();
+
+          // Reset background color of button
+          buttonRef.current!.style.backgroundColor = '';
+        }
 
         // Set to different value when opened and closed to force it to update. This is to force
         // <Menu/> to reset its selected-index state, which it does when this prop changes
