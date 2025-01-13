@@ -268,7 +268,12 @@ impl Parser {
         let mut text = String::new();
         while self.pos < self.chars.len() {
             let ch = self.peek_char();
-            if ch.is_alphanumeric() || ch == '_' {
+            let is_valid = if start_pos == self.pos {
+                ch.is_alphabetic() // First char has to be alphabetic
+            } else {
+                ch.is_alphanumeric() || ch == '-' || ch == '-'
+            };
+            if is_valid {
                 text.push(ch);
                 self.pos += 1;
             } else {
@@ -416,6 +421,49 @@ mod tests {
             vec![
                 Token::Tag {
                     val: Val::Var { name: "foo".into() }
+                },
+                Token::Eof
+            ]
+        );
+    }
+
+    #[test]
+    fn var_dashes() {
+        let mut p = Parser::new("${[ a-b ]}");
+        assert_eq!(
+            p.parse().tokens,
+            vec![
+                Token::Tag {
+                    val: Val::Var { name: "a-b".into() }
+                },
+                Token::Eof
+            ]
+        );
+    }
+
+    #[test]
+    fn var_prefixes() {
+        let mut p = Parser::new("${[ -a ]}${[ _a ]}${[ 0a ]}");
+        assert_eq!(
+            p.parse().tokens,
+            vec![
+                Token::Raw {
+                    // Shouldn't be parsed, because they're invalid
+                    text: "${[ -a ]}${[ _a ]}${[ 0a ]}".into()
+                },
+                Token::Eof
+            ]
+        );
+    }
+
+    #[test]
+    fn var_underscore_prefix() {
+        let mut p = Parser::new("${[ _a ]}");
+        assert_eq!(
+            p.parse().tokens,
+            vec![
+                Token::Raw {
+                    text: "${[ _a ]}".into()
                 },
                 Token::Eof
             ]
