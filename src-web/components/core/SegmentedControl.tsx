@@ -51,8 +51,8 @@ export function SegmentedControl<T extends string>({ value, onChange, options, n
             event={{ id: name, value: String(o.value) }}
             tabIndex={isSelected ? 0 : -1}
             className={classNames(
+                isActive && '!text-text',
                 '!px-1.5 !w-auto',
-                !isActive &&  'opacity-disabled',
                 'focus:ring-border-focus',
             )}
             key={i}
