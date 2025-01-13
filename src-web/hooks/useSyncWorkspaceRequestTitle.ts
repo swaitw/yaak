@@ -10,7 +10,7 @@ import { useOsInfo } from './useOsInfo';
 
 export function useSyncWorkspaceRequestTitle() {
   const activeWorkspace = useActiveWorkspace();
-  const [activeEnvironment] = useActiveEnvironment();
+  const activeEnvironment = useActiveEnvironment();
   const osInfo = useOsInfo();
   const appInfo = useAppInfo();
 

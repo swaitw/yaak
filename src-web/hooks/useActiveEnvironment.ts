@@ -2,9 +2,8 @@ import { useSearch } from '@tanstack/react-router';
 import type { Environment } from '@yaakapp-internal/models';
 import { useAtomValue } from 'jotai';
 import { atom } from 'jotai/index';
-import { useCallback, useEffect } from 'react';
+import { useEffect } from 'react';
 import { jotaiStore } from '../lib/jotai';
-import { setWorkspaceSearchParams } from '../lib/setWorkspaceSearchParams';
 import { environmentsAtom } from './useEnvironments';
 
 export const QUERY_ENVIRONMENT_ID = 'environment_id';
@@ -17,12 +16,7 @@ export const activeEnvironmentAtom = atom<Environment | null>((get) => {
 });
 
 export function useActiveEnvironment() {
-  const setId = useCallback(
-    (id: string | null) => setWorkspaceSearchParams({ environment_id: id }),
-    [],
-  );
-  const environment = useAtomValue(activeEnvironmentAtom);
-  return [environment, setId] as const;
+  return useAtomValue(activeEnvironmentAtom);
 }
 
 export function getActiveEnvironment() {

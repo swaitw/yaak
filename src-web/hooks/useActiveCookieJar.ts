@@ -36,6 +36,7 @@ export function useEnsureActiveCookieJar() {
   // Set the active cookie jar to the first one, if none set
   useEffect(() => {
     if (cookieJars == null) return; // Hasn't loaded yet
+
     if (cookieJars.find((j) => j.id === activeCookieJarId)) {
       return; // There's an active jar
     }
@@ -47,7 +48,13 @@ export function useEnsureActiveCookieJar() {
     }
 
     // There's no active jar, so set it to the first one
-    console.log('Setting active cookie jar to', cookieJars, activeCookieJarId, firstJar.id);
+    console.log('Defaulting active cookie jar to first jar', firstJar);
     setWorkspaceSearchParams({ cookie_jar_id: firstJar.id });
-  }, [activeCookieJarId, cookieJars]);
+
+    // NOTE: We only run this on cookieJars to prevent data races when switching workspaces since a lot of
+    //  things change when switching workspaces, and we don't currently have a good way to ensure that all
+    //  stores have updated.
+    // TODO: Create a global data store that can handle this case
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cookieJars]);
 }

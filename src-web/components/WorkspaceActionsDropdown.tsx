@@ -34,16 +34,11 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
   const workspaceMeta = useWorkspaceMeta();
   const { mutate: deleteSendHistory } = useDeleteSendHistory();
 
-  const orderedWorkspaces = useMemo(
-    () => [...workspaces].sort((a, b) => (a.name.localeCompare(b.name) > 0 ? 1 : -1)),
-    [workspaces],
-  );
-
   const { workspaceItems, extraItems } = useMemo<{
     workspaceItems: RadioDropdownItem[];
     extraItems: DropdownItem[];
   }>(() => {
-    const workspaceItems: RadioDropdownItem[] = orderedWorkspaces.map((w) => ({
+    const workspaceItems: RadioDropdownItem[] = workspaces.map((w) => ({
       key: w.id,
       label: w.name,
       value: w.id,
@@ -100,7 +95,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
     ];
 
     return { workspaceItems, extraItems };
-  }, [orderedWorkspaces, deleteSendHistory, createWorkspace, workspaceMeta, workspace?.id]);
+  }, [workspaces, workspaceMeta, deleteSendHistory, createWorkspace, workspace?.id]);
 
   const handleChangeWorkspace = useCallback(async (workspaceId: string | null) => {
     if (workspaceId == null) return;

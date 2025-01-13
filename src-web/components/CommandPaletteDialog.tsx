@@ -30,6 +30,7 @@ import { useWorkspaces } from '../hooks/useWorkspaces';
 import { showDialog, toggleDialog } from '../lib/dialog';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import { router } from '../lib/router';
+import { setWorkspaceSearchParams } from '../lib/setWorkspaceSearchParams';
 import { CookieDialog } from './CookieDialog';
 import { Button } from './core/Button';
 import { Heading } from './core/Heading';
@@ -57,7 +58,7 @@ const MAX_PER_GROUP = 8;
 export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
   const [command, setCommand] = useDebouncedState<string>('', 150);
   const [selectedItemKey, setSelectedItemKey] = useState<string | null>(null);
-  const [activeEnvironment, setActiveEnvironmentId] = useActiveEnvironment();
+  const activeEnvironment = useActiveEnvironment();
   const httpRequestActions = useHttpRequestActions();
   const workspaces = useWorkspaces();
   const { subEnvironments } = useEnvironments();
@@ -300,7 +301,7 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
       environmentGroup.items.push({
         key: `switch-environment-${e.id}`,
         label: e.name,
-        onSelect: () => setActiveEnvironmentId(e.id),
+        onSelect: () => setWorkspaceSearchParams({ environment_id: e.id }),
       });
     }
 
@@ -324,7 +325,6 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
     sortedRequests,
     sortedEnvironments,
     activeEnvironment?.id,
-    setActiveEnvironmentId,
     sortedWorkspaces,
   ]);
 

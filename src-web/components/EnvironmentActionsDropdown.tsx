@@ -3,6 +3,7 @@ import { memo, useCallback, useMemo } from 'react';
 import { useActiveEnvironment } from '../hooks/useActiveEnvironment';
 import { useEnvironments } from '../hooks/useEnvironments';
 import { toggleDialog } from '../lib/dialog';
+import { setWorkspaceSearchParams } from '../lib/setWorkspaceSearchParams';
 import type { ButtonProps } from './core/Button';
 import { Button } from './core/Button';
 import type { DropdownItem } from './core/Dropdown';
@@ -19,7 +20,7 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
   ...buttonProps
 }: Props) {
   const { subEnvironments, baseEnvironment } = useEnvironments();
-  const [activeEnvironment, setActiveEnvironmentId] = useActiveEnvironment();
+  const activeEnvironment = useActiveEnvironment();
 
   const showEnvironmentDialog = useCallback(() => {
     toggleDialog({
@@ -40,9 +41,9 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
           leftSlot: e.id === activeEnvironment?.id ? <Icon icon="check" /> : <Icon icon="empty" />,
           onSelect: async () => {
             if (e.id !== activeEnvironment?.id) {
-              await setActiveEnvironmentId(e.id);
+              setWorkspaceSearchParams({ environment_id: e.id });
             } else {
-              await setActiveEnvironmentId(null);
+              setWorkspaceSearchParams({ environment_id: null });
             }
           },
         }),
@@ -59,7 +60,7 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
         onSelect: showEnvironmentDialog,
       },
     ],
-    [activeEnvironment?.id, subEnvironments, setActiveEnvironmentId, showEnvironmentDialog],
+    [activeEnvironment?.id, subEnvironments, showEnvironmentDialog],
   );
 
   const hasBaseVars =

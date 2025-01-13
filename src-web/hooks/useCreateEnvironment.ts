@@ -1,14 +1,12 @@
 import type { Environment } from '@yaakapp-internal/models';
 import { trackEvent } from '../lib/analytics';
 import { showPrompt } from '../lib/prompt';
+import { setWorkspaceSearchParams } from '../lib/setWorkspaceSearchParams';
 import { invokeCmd } from '../lib/tauri';
-import { useActiveEnvironment } from './useActiveEnvironment';
 import { getActiveWorkspaceId } from './useActiveWorkspace';
 import { useFastMutation } from './useFastMutation';
 
 export function useCreateEnvironment() {
-  const [, setActiveEnvironmentId] = useActiveEnvironment();
-
   return useFastMutation<Environment | null, unknown, Environment | null>({
     mutationKey: ['create_environment'],
     mutationFn: async (baseEnvironment) => {
@@ -38,7 +36,7 @@ export function useCreateEnvironment() {
     onSettled: () => trackEvent('environment', 'create'),
     onSuccess: async (environment) => {
       if (environment == null) return;
-      await setActiveEnvironmentId(environment.id);
+      setWorkspaceSearchParams({ environment_id: environment.id });
     },
   });
 }

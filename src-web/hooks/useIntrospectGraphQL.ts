@@ -20,7 +20,7 @@ export function useIntrospectGraphQL(
   // Debounce the request because it can change rapidly and we don't
   // want to send so too many requests.
   const request = useDebouncedValue(baseRequest);
-  const [activeEnvironment] = useActiveEnvironment();
+  const activeEnvironment = useActiveEnvironment();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>();
 
