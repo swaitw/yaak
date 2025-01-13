@@ -271,7 +271,7 @@ impl Parser {
             let is_valid = if start_pos == self.pos {
                 ch.is_alphabetic() // First char has to be alphabetic
             } else {
-                ch.is_alphanumeric() || ch == '-' || ch == '-'
+                ch.is_alphanumeric() || ch == '-' || ch == '_'
             };
             if is_valid {
                 text.push(ch);
@@ -435,6 +435,20 @@ mod tests {
             vec![
                 Token::Tag {
                     val: Val::Var { name: "a-b".into() }
+                },
+                Token::Eof
+            ]
+        );
+    }
+
+    #[test]
+    fn var_underscores() {
+        let mut p = Parser::new("${[ a_b ]}");
+        assert_eq!(
+            p.parse().tokens,
+            vec![
+                Token::Tag {
+                    val: Val::Var { name: "a_b".into() }
                 },
                 Token::Eof
             ]
