@@ -244,6 +244,7 @@ export const SidebarItem = memo(function SidebarItem({
           className={classNames(
             'w-full flex gap-1.5 items-center h-xs px-1.5 rounded-md focus-visible:ring focus-visible:ring-border-focus outline-0',
             editing && 'ring-1 focus-within:ring-focus',
+            'hover:bg-surface-highlight',
             active && 'bg-surface-highlight text-text',
             !active && 'text-text-subtle',
             showContextMenu && '!text-text', // Show as "active" when the context menu is open
