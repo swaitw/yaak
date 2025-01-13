@@ -1,4 +1,4 @@
-import type { OsType } from '@tauri-apps/plugin-os';
+import { type } from '@tauri-apps/plugin-os';
 import { useEffect, useRef } from 'react';
 import { capitalize } from '../lib/capitalize';
 import { useOsInfo } from './useOsInfo';
@@ -81,8 +81,6 @@ export function useHotKey(
 ) {
   const currentKeys = useRef<Set<string>>(new Set());
   const callbackRef = useRef(callback);
-  const osInfo = useOsInfo();
-  const os = osInfo?.osType ?? null;
 
   useEffect(() => {
     callbackRef.current = callback;
@@ -98,25 +96,24 @@ export function useHotKey(
       }
 
       // Don't add key if not holding modifier
-      const isValidKeymapKey = e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || e.key === 'Backspace';
+      const isValidKeymapKey =
+        e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || e.key === 'Backspace';
       if (!isValidKeymapKey) {
         return;
       }
 
-      const key = normalizeKey(e.key, os);
-
       // Don't add hold keys
-      if (HOLD_KEYS.includes(key)) {
+      if (HOLD_KEYS.includes(e.key)) {
         return;
       }
 
-      currentKeys.current.add(key);
+      currentKeys.current.add(e.key);
 
       const currentKeysWithModifiers = new Set(currentKeys.current);
-      if (e.altKey) currentKeysWithModifiers.add(normalizeKey('Alt', os));
-      if (e.ctrlKey) currentKeysWithModifiers.add(normalizeKey('Control', os));
-      if (e.metaKey) currentKeysWithModifiers.add(normalizeKey('Meta', os));
-      if (e.shiftKey) currentKeysWithModifiers.add(normalizeKey('Shift', os));
+      if (e.altKey) currentKeysWithModifiers.add('Alt');
+      if (e.ctrlKey) currentKeysWithModifiers.add('Control');
+      if (e.metaKey) currentKeysWithModifiers.add('Meta');
+      if (e.shiftKey) currentKeysWithModifiers.add('Shift');
 
       for (const [hkAction, hkKeys] of Object.entries(hotkeys) as [HotkeyAction, string[]][]) {
         for (const hkKey of hkKeys) {
@@ -124,7 +121,7 @@ export function useHotKey(
             continue;
           }
 
-          const keys = hkKey.split('+');
+          const keys = hkKey.split('+').map(resolveHotkeyKey);
           if (
             keys.length === currentKeysWithModifiers.size &&
             keys.every((key) => currentKeysWithModifiers.has(key))
@@ -144,8 +141,7 @@ export function useHotKey(
       if (options.enable === false) {
         return;
       }
-      const key = normalizeKey(e.key, os);
-      currentKeys.current.delete(key);
+      currentKeys.current.delete(e.key);
 
       // Clear all keys if no longer holding modifier
       // HACK: This is to get around the case of DOWN SHIFT -> DOWN : -> UP SHIFT -> UP ;
@@ -162,7 +158,7 @@ export function useHotKey(
       document.removeEventListener('keydown', down, { capture: true });
       document.removeEventListener('keyup', up, { capture: true });
     };
-  }, [action, options.enable, os]);
+  }, [action, options.enable]);
 }
 
 export function useHotKeyLabel(action: HotkeyAction): string {
@@ -213,8 +209,9 @@ export function useFormattedHotkey(action: HotkeyAction | null): string[] | null
   }
 }
 
-const normalizeKey = (key: string, os: OsType | null) => {
-  if (key === 'Meta' && os === 'macos') return 'CmdCtrl';
-  else if (key === 'Control' && os !== 'macos') return 'CmdCtrl';
+const resolveHotkeyKey = (key: string) => {
+  const os = type();
+  if (key === 'CmdCtrl' && os === 'macos') return 'Meta';
+  else if (key === 'CmdCtrl') return 'Control';
   else return key;
 };

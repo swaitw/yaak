@@ -25,6 +25,8 @@ export function RecentRequestsDropdown({ className }: Props) {
   const [recentRequestIds] = useRecentRequests();
 
   // Handle key-up
+  // TODO: Somehow make useHotKey have this functionality. Note: e.key does not work
+  //  on Linux, for example, when Control is mapped to CAPS. This will never fire.
   useKeyPressEvent('Control', undefined, () => {
     if (!dropdownRef.current?.isOpen) return;
     dropdownRef.current?.select?.();
