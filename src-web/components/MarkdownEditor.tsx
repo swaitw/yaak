@@ -1,15 +1,12 @@
 import classNames from 'classnames';
-import { atom, useAtom } from 'jotai';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import type { Components } from 'react-markdown';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { useStateWithDeps } from '../hooks/useStateWithDeps';
-import { Button } from './core/Button';
 import type { EditorProps } from './core/Editor/Editor';
 import { Editor } from './core/Editor/Editor';
-import { HStack, VStack } from './core/Stacks';
 import { Prose } from './Prose';
+import { SegmentedControl } from './core/SegmentedControl';
 
 type ViewMode = 'edit' | 'preview';
 
@@ -19,27 +16,19 @@ interface Props extends Pick<EditorProps, 'heightMode' | 'stateKey' | 'forceUpda
   defaultValue: string;
   onChange: (value: string) => void;
   name: string;
-  defaultMode?: ViewMode;
-  doneButtonLabel?: string;
 }
-
-const viewModeAtom = atom<Record<string, ViewMode>>({});
 
 export function MarkdownEditor({
   className,
   defaultValue,
   onChange,
   name,
-  defaultMode = 'preview',
-  doneButtonLabel = 'Save',
   forceUpdateKey,
   ...editorProps
 }: Props) {
-  const [rawViewMode, setViewMode] = useAtom(viewModeAtom);
-  const [value, setValue] = useStateWithDeps<string>(defaultValue, [forceUpdateKey]);
+  const [viewMode, setViewMode] = useState<ViewMode>(defaultValue ? 'preview' : 'edit');
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const viewMode = rawViewMode[name] ?? defaultMode;
 
   const editor = (
     <Editor
@@ -48,8 +37,7 @@ export function MarkdownEditor({
       className="max-w-2xl max-h-full"
       language="markdown"
       defaultValue={defaultValue}
-      onChange={setValue}
-      autoFocus
+      onChange={onChange}
       forceUpdateKey={forceUpdateKey}
       {...editorProps}
     />
@@ -61,7 +49,7 @@ export function MarkdownEditor({
     ) : (
       <Prose className="max-w-xl overflow-y-auto max-h-full [&_*]:cursor-auto [&_*]:select-auto">
         <Markdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-          {value}
+          {defaultValue}
         </Markdown>
       </Prose>
     );
@@ -72,53 +60,31 @@ export function MarkdownEditor({
     <div
       ref={containerRef}
       className={classNames(
-        'w-full h-full pt-1.5 group rounded-md grid grid-cols-[minmax(0,1fr)_auto] grid-rows-1 gap-x-1.5',
+        'group/markdown',
+        'w-full h-full pt-1.5 rounded-md grid grid-cols-[minmax(0,1fr)_auto] grid-rows-1 gap-x-1.5',
         className,
       )}
     >
       <div className="h-full w-full">{contents}</div>
-      <VStack
-        space={1}
-        className="bg-surface opacity-20 group-hover:opacity-100 transition-opacity transform-gpu"
-      >
-        {viewMode === 'preview' && (
-          <Button
-            size="xs"
-            variant="border"
-            event={{ id: 'md_mode', mode: viewMode }}
-            onClick={() => setViewMode((prev) => ({ ...prev, [name]: 'edit' }))}
-          >
-            Edit
-          </Button>
-        )}
-        {viewMode === 'edit' && (
-          <HStack space={2}>
-            <Button
-              size="xs"
-              event={{ id: 'md_mode', mode: viewMode }}
-              color="secondary"
-              variant="border"
-              onClick={() => {
-                setViewMode((prev) => ({ ...prev, [name]: 'preview' }));
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              size="xs"
-              variant="border"
-              color="primary"
-              event={{ id: 'md_mode', mode: viewMode }}
-              onClick={() => {
-                onChange(value);
-                setViewMode((prev) => ({ ...prev, [name]: 'preview' }));
-              }}
-            >
-              {doneButtonLabel}
-            </Button>
-          </HStack>
-        )}
-      </VStack>
+      <SegmentedControl
+        name={name}
+        onChange={setViewMode}
+        value={viewMode}
+        options={[
+          {
+            event: { id: 'md_mode', mode: 'preview' },
+            icon: 'eye',
+            label: 'Preview mode',
+            value: 'preview',
+          },
+          {
+            event: { id: 'md_mode', mode: 'edit' },
+            icon: 'pencil',
+            label: 'Edit mode',
+            value: 'edit',
+          },
+        ]}
+      />
     </div>
   );
 }

@@ -44,7 +44,7 @@ const hotkeys: Record<HotkeyAction, string[]> = {
   'settings.show': ['CmdCtrl+,'],
   'sidebar.focus': ['CmdCtrl+b'],
   'url_bar.focus': ['CmdCtrl+l'],
-  'workspace_settings.show': ['CmdCtrl+Shift+,'],
+  'workspace_settings.show': ['CmdCtrl+;'],
 };
 
 const hotkeyLabels: Record<HotkeyAction, string> = {
