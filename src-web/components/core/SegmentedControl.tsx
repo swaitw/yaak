@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import { useRef } from 'react';
 import { useStateWithDeps } from '../../hooks/useStateWithDeps';
 import type { IconProps } from './Icon';
@@ -18,10 +19,10 @@ export function SegmentedControl<T extends string>({ value, onChange, options, n
   return (
     <HStack
       ref={containerRef}
-      space={1}
       role="group"
       dir="ltr"
-      className="mb-auto bg-surface opacity-0 group-focus-within/markdown:opacity-100 group-hover/markdown:opacity-100 transition-opacity transform-gpu"
+      space={0.5}
+      className="bg-surface-highlight rounded-md mb-auto opacity-0 group-focus-within/markdown:opacity-100 group-hover/markdown:opacity-100 transition-opacity transform-gpu"
       onKeyDown={(e) => {
         const selectedIndex = options.findIndex((o) => o.value === selectedValue);
         if (e.key === 'ArrowRight') {
@@ -37,20 +38,30 @@ export function SegmentedControl<T extends string>({ value, onChange, options, n
         }
       }}
     >
-      {options.map((o, i) => (
-        <IconButton
-          size="xs"
-          variant={value === o.value ? 'solid' : 'border'}
-          color={value === o.value ? 'secondary' : 'default'}
-          role="radio"
-          event={{ id: name, value: String(o.value) }}
-          tabIndex={selectedValue === o.value ? 0 : -1}
-          key={i}
-          title={o.label}
-          icon={o.icon}
-          onClick={() => onChange(o.value)}
-        />
-      ))}
+      {options.map((o, i) => {
+        const isSelected = selectedValue === o.value;
+        const isActive = value === o.value;
+        return (
+          <IconButton
+            size="xs"
+            variant={isActive ? "border" : "solid"}
+            // color={isActive ? "secondary": "default"}
+            color={isActive ? "default" : "default"}
+            role="radio"
+            event={{ id: name, value: String(o.value) }}
+            tabIndex={isSelected ? 0 : -1}
+            className={classNames(
+                '!px-1.5 !w-auto',
+                !isActive &&  'opacity-disabled',
+                'focus:ring-border-focus',
+            )}
+            key={i}
+            title={o.label}
+            icon={o.icon}
+            onClick={() => onChange(o.value)}
+          />
+        );
+      })}
     </HStack>
   );
 }
