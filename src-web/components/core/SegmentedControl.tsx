@@ -44,9 +44,8 @@ export function SegmentedControl<T extends string>({ value, onChange, options, n
         return (
           <IconButton
             size="xs"
-            variant={isActive ? "border" : "solid"}
-            // color={isActive ? "secondary": "default"}
-            color={isActive ? "default" : "default"}
+            variant="solid"
+            color={isActive ? "secondary" : "default"}
             role="radio"
             event={{ id: name, value: String(o.value) }}
             tabIndex={isSelected ? 0 : -1}

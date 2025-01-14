@@ -12,11 +12,11 @@ import type {
   SetStateAction,
 } from 'react';
 import React, {
+  useEffect,
   Children,
   cloneElement,
   forwardRef,
   useCallback,
-  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -101,35 +101,29 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
       setOpenId((prevId) => {
         const prevIsOpen = prevId === id;
         const newIsOpen = typeof o === 'function' ? o(prevIsOpen) : o;
-
-        if (newIsOpen) {
-          onOpen?.();
-
-          // Persist background color of button until we close the dropdown
-          buttonRef.current!.style.backgroundColor = window
-            .getComputedStyle(buttonRef.current!)
-            .getPropertyValue('background-color');
-        } else {
-          onClose?.();
-
-          // Reset background color of button
-          buttonRef.current!.style.backgroundColor = '';
-        }
-
-        // Set to different value when opened and closed to force it to update. This is to force
-        // <Menu/> to reset its selected-index state, which it does when this prop changes
-        setDefaultSelectedIndex(newIsOpen ? -1 : null);
-
         return newIsOpen ? id : null; // Set global atom to current ID to signify open state
       });
     },
-    [id, onClose, onOpen, setOpenId],
+    [id, setOpenId],
   );
 
-  const handleClose = useCallback(() => {
-    setIsOpen(false);
-    buttonRef.current?.focus();
-  }, [setIsOpen]);
+  useEffect(() => {
+    if (isOpen) {
+      // Persist background color of button until we close the dropdown
+      buttonRef.current!.style.backgroundColor = window
+        .getComputedStyle(buttonRef.current!)
+        .getPropertyValue('background-color');
+      onOpen?.();
+    } else {
+      onClose?.();
+      buttonRef.current?.focus(); // Focus button
+      buttonRef.current!.style.backgroundColor = ''; // Clear persisted BG
+    }
+
+    // Set to different value when opened and closed to force it to update. This is to force
+    // <Menu/> to reset its selected-index state, which it does when this prop changes
+    setDefaultSelectedIndex(isOpen ? -1 : null);
+  }, [isOpen, onClose, onOpen]);
 
   // Pull into variable so linter forces us to add it as a hook dep to useImperativeHandle. If we don't,
   // the ref will not update when menuRef updates, causing stale callback state to be used.
@@ -148,10 +142,10 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
         setIsOpen(true);
       },
       close() {
-        handleClose();
+        setIsOpen(false);
       },
     }),
-    [handleClose, isOpen, setIsOpen, menuRefCurrent],
+    [isOpen, setIsOpen, menuRefCurrent],
   );
 
   useHotKey(hotKeyAction ?? null, () => {
@@ -199,7 +193,7 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
         defaultSelectedIndex={defaultSelectedIndex}
         items={items}
         triggerShape={triggerRect ?? null}
-        onClose={handleClose}
+        onClose={() => setIsOpen(false)}
         isOpen={isOpen}
       />
     </>
