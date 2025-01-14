@@ -2179,7 +2179,7 @@ pub async fn get_workspace_export_resources<R: Runtime>(
 ) -> Result<WorkspaceExport> {
     let mut data = WorkspaceExport {
         yaak_version: mgr.package_info().version.clone().to_string(),
-        yaak_schema: 2,
+        yaak_schema: 3,
         timestamp: Utc::now().naive_utc(),
         resources: BatchUpsertResult {
             workspaces: Vec::new(),
