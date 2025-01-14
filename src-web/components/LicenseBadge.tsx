@@ -1,15 +1,20 @@
+import { openUrl } from '@tauri-apps/plugin-opener';
 import type { LicenseCheckStatus } from '@yaakapp-internal/license';
 import { useLicense } from '@yaakapp-internal/license';
+import type { ReactNode } from 'react';
 import { appInfo } from '../hooks/useAppInfo';
 import { useOpenSettings } from '../hooks/useOpenSettings';
 import type { ButtonProps } from './core/Button';
 import { Button } from './core/Button';
+import {HStack} from "./core/Stacks";
 import { SettingsTab } from './Settings/SettingsTab';
+import { Icon } from './core/Icon';
 
 const details: Record<
-  LicenseCheckStatus['type'] | 'dev',
-  { label: string; color: ButtonProps['color'] } | null
+  LicenseCheckStatus['type'] | 'dev' | 'beta',
+  { label: ReactNode; color: ButtonProps['color'] } | null
 > = {
+  beta: { label: <HStack space={1}><span>Beta Feedback</span><Icon size="xs" icon='external_link'/></HStack>, color: 'success' },
   dev: { label: 'Develop', color: 'secondary' },
   commercial_use: null,
   invalid_license: { label: 'License Error', color: 'danger' },
@@ -25,7 +30,11 @@ export function LicenseBadge() {
     return null;
   }
 
-  const checkType = appInfo.isDev ? 'dev' : check.data.type;
+  const checkType = appInfo.version.includes('beta')
+    ? 'beta'
+    : appInfo.isDev
+      ? 'dev'
+      : check.data.type;
   const detail = details[checkType];
   if (detail == null) {
     return null;
@@ -36,7 +45,13 @@ export function LicenseBadge() {
       size="2xs"
       variant="border"
       className="!rounded-full mx-1"
-      onClick={() => openSettings.mutate()}
+      onClick={async () => {
+        if (checkType === 'beta') {
+          await openUrl('https://feedback.yaak.app/p/yaak-20-feedback');
+        } else {
+          openSettings.mutate();
+        }
+      }}
       color={detail.color}
       event={{ id: 'license-badge', status: check.data.type }}
     >
