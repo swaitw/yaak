@@ -18,7 +18,7 @@ export function SyncToFilesystemSetting({
   const [error, setError] = useState<string | null>(null);
 
   return (
-    <details open={value != null}>
+    <details open={value != null} className="w-full">
       <summary>Sync to filesystem</summary>
       <VStack className="my-2" space={3}>
         <Banner color="info">
