@@ -1,11 +1,11 @@
 import { readDir } from '@tauri-apps/plugin-fs';
 import { useState } from 'react';
-import { Checkbox } from './core/Checkbox';
+import { Banner } from './core/Banner';
 import { VStack } from './core/Stacks';
 import { SelectFile } from './SelectFile';
 
 export interface SyncToFilesystemSettingProps {
-  onChange: (args: { value: string | null; enabled: boolean }) => void;
+  onChange: (filePath: string | null) => void;
   value: string | null;
   allowNonEmptyDirectory?: boolean;
 }
@@ -15,47 +15,37 @@ export function SyncToFilesystemSetting({
   value,
   allowNonEmptyDirectory,
 }: SyncToFilesystemSettingProps) {
-  const [useSyncDir, setUseSyncDir] = useState<boolean>(!!value);
   const [error, setError] = useState<string | null>(null);
 
   return (
-    <VStack space={1.5} className="w-full">
-      <Checkbox
-        checked={useSyncDir}
-        onChange={(enabled) => {
-          setUseSyncDir(enabled);
-          if (!enabled) {
-            // Set value to null when disabling
-            onChange({ value: null, enabled });
-          } else {
-            onChange({ value, enabled });
-          }
-        }}
-        title="Sync to a filesystem directory"
-      />
-      {error && <div className="text-danger">{error}</div>}
-      {useSyncDir && (
+    <details open={value != null}>
+      <summary>Sync to filesystem</summary>
+      <VStack className="my-2" space={3}>
+        <Banner color="info">
+          When enabled, workspace data syncs to the chosen folder as text files, ideal for backup
+          and Git collaboration.
+        </Banner>
+        {error && <div className="text-danger">{error}</div>}
+
         <SelectFile
           directory
+          color="primary"
           size="xs"
           noun="Directory"
           filePath={value}
           onChange={async ({ filePath }) => {
-            setError(null);
-            if (filePath == null) {
-              setUseSyncDir(false);
-            } else {
+            if (filePath != null) {
               const files = await readDir(filePath);
               if (files.length > 0 && !allowNonEmptyDirectory) {
-                setError('Directory must be empty');
+                setError('The directory must be empty');
                 return;
               }
             }
 
-            onChange({ value: filePath, enabled: useSyncDir });
+            onChange(filePath);
           }}
         />
-      )}
-    </VStack>
+      </VStack>
+    </details>
   );
 }

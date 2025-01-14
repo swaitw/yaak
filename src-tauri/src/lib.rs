@@ -1764,7 +1764,7 @@ pub fn run() {
                     .level(if is_dev() { log::LevelFilter::Debug } else { log::LevelFilter::Info })
                     .build(),
             )
-            .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
+            .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
                 // When trying to open a new app instance (common operation on Linux),
                 // focus the first existing window we find instead of opening a new one
                 // TODO: Keep track of the last focused window and always focus that one

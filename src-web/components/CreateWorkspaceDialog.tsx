@@ -6,7 +6,6 @@ import { getWorkspaceMeta } from '../lib/store';
 import { Button } from './core/Button';
 import { PlainInput } from './core/PlainInput';
 import { VStack } from './core/Stacks';
-import type { SyncToFilesystemSettingProps } from './SyncToFilesystemSetting';
 import { SyncToFilesystemSetting } from './SyncToFilesystemSetting';
 
 interface Props {
@@ -15,9 +14,7 @@ interface Props {
 
 export function CreateWorkspaceDialog({ hide }: Props) {
   const [name, setName] = useState<string>('');
-  const [settingSyncDir, setSettingSyncDir] = useState<
-    Parameters<SyncToFilesystemSettingProps['onChange']>[0]
-  >({ value: null, enabled: false });
+  const [settingSyncDir, setSettingSyncDir] = useState<string | null>(null);
 
   return (
     <VStack
@@ -27,15 +24,14 @@ export function CreateWorkspaceDialog({ hide }: Props) {
       className="pb-3 max-h-[50vh]"
       onSubmit={async (e) => {
         e.preventDefault();
-        const { enabled, value } = settingSyncDir ?? {};
-        if (enabled && !value) return;
+        if (!settingSyncDir) return;
         const workspace = await upsertWorkspace.mutateAsync({ name });
         if (workspace == null) return;
 
         // Do getWorkspaceMeta instead of naively creating one because it might have
         // been created already when the store refreshes the workspace meta after
         const workspaceMeta = await getWorkspaceMeta(workspace.id);
-        upsertWorkspaceMeta.mutate({ ...workspaceMeta, settingSyncDir: value });
+        upsertWorkspaceMeta.mutate({ ...workspaceMeta, settingSyncDir });
 
         // Navigate to workspace
         await router.navigate({
@@ -46,19 +42,14 @@ export function CreateWorkspaceDialog({ hide }: Props) {
         hide();
       }}
     >
-      <PlainInput require label="Workspace Name" defaultValue={name} onChange={setName} />
+      <PlainInput require label="Name" defaultValue={name} onChange={setName} />
 
       <SyncToFilesystemSetting
         onChange={setSettingSyncDir}
-        value={settingSyncDir.value}
+        value={settingSyncDir}
         allowNonEmptyDirectory // Will do initial import when the workspace is created
       />
-      <Button
-        type="submit"
-        color="primary"
-        className="ml-auto mt-3"
-        disabled={settingSyncDir.enabled && !settingSyncDir.value}
-      >
+      <Button type="submit" color="primary" className="ml-auto mt-3">
         Create Workspace
       </Button>
     </VStack>

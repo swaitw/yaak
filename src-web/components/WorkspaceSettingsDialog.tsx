@@ -41,7 +41,7 @@ export function WorkspaceSettingsDialog({ workspaceId, hide }: Props) {
   return (
     <VStack space={3} alignItems="start" className="pb-3 h-full">
       <Input
-        label="Workspace Name"
+        label="Name"
         defaultValue={workspace.name}
         onChange={(name) => upsertWorkspace.mutate({ ...workspace, name })}
         stateKey={`name.${workspace.id}`}
@@ -60,9 +60,9 @@ export function WorkspaceSettingsDialog({ workspaceId, hide }: Props) {
       <VStack space={6} className="mt-3 w-full" alignItems="start">
         <SyncToFilesystemSetting
           value={workspaceMeta.settingSyncDir}
-          onChange={({ value: settingSyncDir }) => {
-            upsertWorkspaceMeta.mutate({ ...workspaceMeta, settingSyncDir });
-          }}
+          onChange={(settingSyncDir) =>
+            upsertWorkspaceMeta.mutate({ ...workspaceMeta, settingSyncDir })
+          }
         />
         <Separator />
         <Button
