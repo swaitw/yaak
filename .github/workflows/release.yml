@@ -29,6 +29,7 @@ jobs:
             args: ''
             yaak_arch: 'x64'
     runs-on: ${{ matrix.platform }}
+    timeout-minutes: 40
     steps:
       - name: Checkout yaakapp/app
         uses: actions/checkout@v4
