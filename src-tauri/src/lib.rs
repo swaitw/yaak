@@ -1951,22 +1951,17 @@ pub fn run() {
                 }
                 _ => {}
             };
+
+            // Save window state on exit
             match event {
-                RunEvent::WindowEvent {
-                    label,
-                    event: WindowEvent::CloseRequested { .. },
-                    ..
-                } => {
-                    // Save window state on close because, for some reason, it doesn't
-                    if !label.starts_with(OTHER_WINDOW_PREFIX) {
-                        let handle = app_handle.clone();
-                        if let Err(e) = handle.save_window_state(StateFlags::all()) {
-                            warn!("Failed to save window state {e:?}");
-                        } else {
-                            debug!("Saved window state");
-                        };
-                    }
-                }
+                RunEvent::ExitRequested{..} => {
+                    let handle = app_handle.clone();
+                    if let Err(e) = handle.save_window_state(StateFlags::all()) {
+                        warn!("Failed to save window state {e:?}");
+                    } else {
+                        debug!("Saved window state");
+                    };
+                },
                 _ => {}
             };
         });
@@ -2005,7 +2000,19 @@ fn create_main_window(handle: &AppHandle, url: &str) -> WebviewWindow {
             100.0 + random::<f64>() * 20.0,
         ),
     };
-    create_window(handle, config)
+
+    let window = create_window(handle, config);
+
+    // Restore window state if it's a main window
+    if !label.starts_with(OTHER_WINDOW_PREFIX) {
+        if let Err(e) = window.restore_state(StateFlags::all()) {
+            warn!("Failed to restore window state {e:?}");
+        } else {
+            debug!("Restored window state");
+        }
+    }
+
+    window
 }
 
 struct CreateWindowConfig<'s> {
@@ -2098,12 +2105,6 @@ fn create_window(handle: &AppHandle, config: CreateWindowConfig) -> WebviewWindo
             _ => {}
         }
     });
-
-    if let Err(e) = win.restore_state(StateFlags::all()) {
-        warn!("Failed to restore window state {e:?}");
-    } else {
-        debug!("Restored window state");
-    }
 
     win
 }
