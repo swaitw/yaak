@@ -34,6 +34,7 @@ use tauri_plugin_clipboard_manager::ClipboardExt;
 use tauri_plugin_log::fern::colors::ColoredLevelConfig;
 use tauri_plugin_log::{Builder, Target, TargetKind};
 use tauri_plugin_opener::OpenerExt;
+use tauri_plugin_window_state::{AppHandleExt, StateFlags, WindowExt};
 use tokio::fs::read_to_string;
 use tokio::sync::Mutex;
 use tokio::task::block_in_place;
@@ -1950,6 +1951,24 @@ pub fn run() {
                 }
                 _ => {}
             };
+            match event {
+                RunEvent::WindowEvent {
+                    label,
+                    event: WindowEvent::CloseRequested { .. },
+                    ..
+                } => {
+                    // Save window state on close because, for some reason, it doesn't
+                    if !label.starts_with(OTHER_WINDOW_PREFIX) {
+                        let handle = app_handle.clone();
+                        if let Err(e) = handle.save_window_state(StateFlags::all()) {
+                            warn!("Failed to save window state {e:?}");
+                        } else {
+                            debug!("Saved window state");
+                        };
+                    }
+                }
+                _ => {}
+            };
         });
 }
 
@@ -2079,6 +2098,12 @@ fn create_window(handle: &AppHandle, config: CreateWindowConfig) -> WebviewWindo
             _ => {}
         }
     });
+
+    if let Err(e) = win.restore_state(StateFlags::all()) {
+        warn!("Failed to restore window state {e:?}");
+    } else {
+        debug!("Restored window state");
+    }
 
     win
 }
