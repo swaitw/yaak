@@ -37,16 +37,17 @@ use yaak_plugins::manager::PluginManager;
 
 pub async fn send_http_request<R: Runtime>(
     window: &WebviewWindow<R>,
-    request: &HttpRequest,
+    unrendered_request: &HttpRequest,
     og_response: &HttpResponse,
     environment: Option<Environment>,
     cookie_jar: Option<CookieJar>,
     cancelled_rx: &mut Receiver<bool>,
 ) -> Result<HttpResponse, String> {
     let plugin_manager = window.state::<PluginManager>();
-    let workspace =
-        get_workspace(window, &request.workspace_id).await.expect("Failed to get Workspace");
-    let base_environment = get_base_environment(window, &request.workspace_id)
+    let workspace = get_workspace(window, &unrendered_request.workspace_id)
+        .await
+        .expect("Failed to get Workspace");
+    let base_environment = get_base_environment(window, &unrendered_request.workspace_id)
         .await
         .expect("Failed to get base environment");
     let settings = get_or_create_settings(window).await;
@@ -59,10 +60,11 @@ pub async fn send_http_request<R: Runtime>(
     let response_id = og_response.id.clone();
     let response = Arc::new(Mutex::new(og_response.clone()));
 
-    let rendered_request =
-        render_http_request(&request, &base_environment, environment.as_ref(), &cb).await;
+    let request =
+        render_http_request(&unrendered_request, &base_environment, environment.as_ref(), &cb)
+            .await;
 
-    let mut url_string = rendered_request.url;
+    let mut url_string = request.url;
 
     url_string = ensure_proto(&url_string);
     if !url_string.starts_with("http://") && !url_string.starts_with("https://") {
@@ -155,7 +157,7 @@ pub async fn send_http_request<R: Runtime>(
 
     // Render query parameters
     let mut query_params = Vec::new();
-    for p in rendered_request.url_parameters {
+    for p in request.url_parameters.clone() {
         if !p.enabled || p.name.is_empty() {
             continue;
         }
@@ -186,7 +188,7 @@ pub async fn send_http_request<R: Runtime>(
         }
     };
 
-    let m = Method::from_bytes(rendered_request.method.to_uppercase().as_bytes())
+    let m = Method::from_bytes(request.method.to_uppercase().as_bytes())
         .expect("Failed to create method");
     let mut request_builder = client.request(m, url).query(&query_params);
 
@@ -209,7 +211,7 @@ pub async fn send_http_request<R: Runtime>(
     //     );
     // }
 
-    for h in rendered_request.headers {
+    for h in request.headers.clone() {
         if h.name.is_empty() && h.value.is_empty() {
             continue;
         }
@@ -236,8 +238,8 @@ pub async fn send_http_request<R: Runtime>(
         headers.insert(header_name, header_value);
     }
 
-    let request_body = rendered_request.body;
-    if let Some(body_type) = &rendered_request.body_type {
+    let request_body = request.body.clone();
+    if let Some(body_type) = &request.body_type {
         if body_type == "graphql" {
             let query = get_str_h(&request_body, "query");
             let variables = get_str_h(&request_body, "variables");

@@ -39,6 +39,8 @@ export function HttpAuthenticationEditor({ request }: Props) {
 
   return (
     <DynamicForm
+      autocompleteVariables
+      useTemplating
       stateKey={`auth.${request.id}.${request.authenticationType}`}
       config={auth.config}
       data={request.authentication}

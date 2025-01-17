@@ -31,17 +31,19 @@ export function DynamicForm<T extends Record<string, string | boolean>>({
   data,
   onChange,
   useTemplating,
+  autocompleteVariables,
   stateKey,
 }: {
   config: FormInput[];
   onChange: (value: T) => void;
   data: T;
   useTemplating?: boolean;
+  autocompleteVariables?: boolean;
   stateKey: string;
 }) {
   const setDataAttr = useCallback(
     (name: string, value: string | boolean | null) => {
-      onChange({ ...data, [name]: value == null ? '__NULL__' : value });
+      onChange({ ...data, [name]: value == DYNAMIC_FORM_NULL_ARG ? undefined : value });
     },
     [data, onChange],
   );
@@ -66,6 +68,7 @@ export function DynamicForm<T extends Record<string, string | boolean>>({
                 stateKey={stateKey}
                 arg={a}
                 useTemplating={useTemplating || false}
+                autocompleteVariables={autocompleteVariables || false}
                 onChange={(v) => setDataAttr(a.name, v)}
                 value={data[a.name] ? String(data[a.name]) : DYNAMIC_FORM_NULL_ARG}
               />
@@ -77,6 +80,7 @@ export function DynamicForm<T extends Record<string, string | boolean>>({
                 stateKey={stateKey}
                 arg={a}
                 useTemplating={useTemplating || false}
+                autocompleteVariables={autocompleteVariables || false}
                 onChange={(v) => setDataAttr(a.name, v)}
                 value={data[a.name] ? String(data[a.name]) : DYNAMIC_FORM_NULL_ARG}
               />
@@ -119,12 +123,14 @@ function TextArg({
   onChange,
   value,
   useTemplating,
+  autocompleteVariables,
   stateKey,
 }: {
   arg: FormInputText;
   value: string;
   onChange: (v: string) => void;
   useTemplating: boolean;
+  autocompleteVariables: boolean;
   stateKey: string;
 }) {
   const handleChange = useCallback(
@@ -145,6 +151,7 @@ function TextArg({
       hideLabel={arg.label == null}
       placeholder={arg.placeholder ?? arg.defaultValue ?? ''}
       useTemplating={useTemplating}
+      autocompleteVariables={autocompleteVariables}
       stateKey={stateKey}
       forceUpdateKey={stateKey}
     />
@@ -156,12 +163,14 @@ function EditorArg({
   onChange,
   value,
   useTemplating,
+  autocompleteVariables,
   stateKey,
 }: {
   arg: FormInputEditor;
   value: string;
   onChange: (v: string) => void;
   useTemplating: boolean;
+  autocompleteVariables: boolean;
   stateKey: string;
 }) {
   const handleChange = useCallback(
@@ -196,6 +205,7 @@ function EditorArg({
         defaultValue={value === DYNAMIC_FORM_NULL_ARG ? arg.defaultValue : value}
         placeholder={arg.placeholder ?? arg.defaultValue ?? ''}
         useTemplating={useTemplating}
+        autocompleteVariables={autocompleteVariables}
         stateKey={stateKey}
         forceUpdateKey={stateKey}
         hideGutter
