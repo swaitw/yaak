@@ -58,7 +58,9 @@ export function DynamicForm<T extends Record<string, string | boolean>>({
                 key={i + stateKey}
                 arg={a}
                 onChange={(v) => setDataAttr(a.name, v)}
-                value={data[a.name] ? String(data[a.name]) : DYNAMIC_FORM_NULL_ARG}
+                value={
+                  data[a.name] ? String(data[a.name]) : (a.defaultValue ?? DYNAMIC_FORM_NULL_ARG)
+                }
               />
             );
           case 'text':
@@ -70,7 +72,7 @@ export function DynamicForm<T extends Record<string, string | boolean>>({
                 useTemplating={useTemplating || false}
                 autocompleteVariables={autocompleteVariables || false}
                 onChange={(v) => setDataAttr(a.name, v)}
-                value={data[a.name] ? String(data[a.name]) : DYNAMIC_FORM_NULL_ARG}
+                value={data[a.name] ? String(data[a.name]) : (a.defaultValue ?? '')}
               />
             );
           case 'editor':
@@ -82,7 +84,7 @@ export function DynamicForm<T extends Record<string, string | boolean>>({
                 useTemplating={useTemplating || false}
                 autocompleteVariables={autocompleteVariables || false}
                 onChange={(v) => setDataAttr(a.name, v)}
-                value={data[a.name] ? String(data[a.name]) : DYNAMIC_FORM_NULL_ARG}
+                value={data[a.name] ? String(data[a.name]) : (a.defaultValue ?? '')}
               />
             );
           case 'checkbox':
@@ -100,7 +102,7 @@ export function DynamicForm<T extends Record<string, string | boolean>>({
                 key={i + stateKey}
                 arg={a}
                 onChange={(v) => setDataAttr(a.name, v)}
-                value={data[a.name] ? String(data[a.name]) : '__ERROR__'}
+                value={data[a.name] ? String(data[a.name]) : DYNAMIC_FORM_NULL_ARG}
               />
             );
           case 'file':
@@ -109,7 +111,7 @@ export function DynamicForm<T extends Record<string, string | boolean>>({
                 key={i + stateKey}
                 arg={a}
                 onChange={(v) => setDataAttr(a.name, v)}
-                filePath={data[a.name] ? String(data[a.name]) : '__ERROR__'}
+                filePath={data[a.name] ? String(data[a.name]) : DYNAMIC_FORM_NULL_ARG}
               />
             );
         }
@@ -233,7 +235,7 @@ function SelectArg({
       options={[
         ...arg.options.map((a) => ({
           label: a.name,
-          value: a.value === arg.defaultValue ? DYNAMIC_FORM_NULL_ARG : a.value,
+          value: a.value,
         })),
       ]}
     />
