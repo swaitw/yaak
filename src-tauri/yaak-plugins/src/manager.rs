@@ -1,9 +1,10 @@
 use crate::error::Error::{ClientNotInitializedErr, PluginErr, PluginNotFoundErr, UnknownEventErr};
 use crate::error::Result;
 use crate::events::{
-    BootRequest, CallHttpRequestActionRequest, CallTemplateFunctionArgs,
-    CallTemplateFunctionRequest, CallTemplateFunctionResponse, FilterRequest, FilterResponse,
-    GetHttpRequestActionsRequest, GetHttpRequestActionsResponse, GetTemplateFunctionsResponse,
+    BootRequest, CallHttpAuthenticationRequest, CallHttpAuthenticationResponse,
+    CallHttpRequestActionRequest, CallTemplateFunctionArgs, CallTemplateFunctionRequest,
+    CallTemplateFunctionResponse, EmptyPayload, FilterRequest, FilterResponse,
+    GetHttpAuthenticationResponse, GetHttpRequestActionsResponse, GetTemplateFunctionsResponse,
     ImportRequest, ImportResponse, InternalEvent, InternalEventPayload, RenderPurpose,
     WindowContext,
 };
@@ -402,9 +403,7 @@ impl PluginManager {
         let reply_events = self
             .send_and_wait(
                 WindowContext::from_window(window),
-                &InternalEventPayload::GetHttpRequestActionsRequest(
-                    GetHttpRequestActionsRequest {},
-                ),
+                &InternalEventPayload::GetHttpRequestActionsRequest(EmptyPayload {}),
             )
             .await?;
 
@@ -458,6 +457,54 @@ impl PluginManager {
         );
         plugin.send(&event).await?;
         Ok(())
+    }
+
+    pub async fn get_http_authentication<R: Runtime>(
+        &self,
+        window: &WebviewWindow<R>,
+    ) -> Result<Vec<GetHttpAuthenticationResponse>> {
+        let window_context = WindowContext::from_window(window);
+        let reply_events = self
+            .send_and_wait(
+                window_context,
+                &InternalEventPayload::GetHttpAuthenticationRequest(EmptyPayload {}),
+            )
+            .await?;
+
+        let mut results = Vec::new();
+        for event in reply_events {
+            if let InternalEventPayload::GetHttpAuthenticationResponse(resp) = event.payload {
+                results.push(resp.clone());
+            }
+        }
+
+        Ok(results)
+    }
+
+    pub async fn call_http_authentication<R: Runtime>(
+        &self,
+        window: &WebviewWindow<R>,
+        plugin_name: &str,
+        req: CallHttpAuthenticationRequest,
+    ) -> Result<CallHttpAuthenticationResponse> {
+        let plugin = self
+            .get_plugin_by_name(plugin_name)
+            .await
+            .ok_or(PluginNotFoundErr(plugin_name.to_string()))?;
+        let event = self
+            .send_to_plugin_and_wait(
+                WindowContext::from_window(window),
+                &plugin,
+                &InternalEventPayload::CallHttpAuthenticationRequest(req),
+            )
+            .await?;
+        match event.payload {
+            InternalEventPayload::CallHttpAuthenticationResponse(resp) => Ok(resp),
+            InternalEventPayload::EmptyResponse(_) => {
+                Err(PluginErr("Auth plugin returned empty".to_string()))
+            }
+            e => Err(PluginErr(format!("Auth plugin returned invalid event {:?}", e))),
+        }
     }
 
     pub async fn call_template_function(
@@ -552,7 +599,7 @@ impl PluginManager {
 
         match event.payload {
             InternalEventPayload::FilterResponse(resp) => Ok(resp),
-            InternalEventPayload::EmptyResponse => {
+            InternalEventPayload::EmptyResponse(_) => {
                 Err(PluginErr("Filter returned empty".to_string()))
             }
             e => Err(PluginErr(format!("Export returned invalid event {:?}", e))),

@@ -8,6 +8,7 @@ import { activeRequestIdAtom } from '../hooks/useActiveRequestId';
 import { useCancelHttpResponse } from '../hooks/useCancelHttpResponse';
 import { useContentTypeFromHeaders } from '../hooks/useContentTypeFromHeaders';
 import { grpcRequestsAtom } from '../hooks/useGrpcRequests';
+import { useHttpAuthentication } from '../hooks/useHttpAuthentication';
 import { httpRequestsAtom } from '../hooks/useHttpRequests';
 import { useImportCurl } from '../hooks/useImportCurl';
 import { useImportQuerystring } from '../hooks/useImportQuerystring';
@@ -23,9 +24,6 @@ import { fallbackRequestName } from '../lib/fallbackRequestName';
 import { tryFormatJson } from '../lib/formatters';
 import { generateId } from '../lib/generateId';
 import {
-  AUTH_TYPE_BASIC,
-  AUTH_TYPE_BEARER,
-  AUTH_TYPE_NONE,
   BODY_TYPE_BINARY,
   BODY_TYPE_FORM_MULTIPART,
   BODY_TYPE_FORM_URLENCODED,
@@ -36,8 +34,6 @@ import {
   BODY_TYPE_XML,
 } from '../lib/model_util';
 import { showToast } from '../lib/toast';
-import { BasicAuth } from './BasicAuth';
-import { BearerAuth } from './BearerAuth';
 import { BinaryFileEditor } from './BinaryFileEditor';
 import { CountBadge } from './core/CountBadge';
 import { Editor } from './core/Editor/Editor';
@@ -55,6 +51,7 @@ import { FormMultipartEditor } from './FormMultipartEditor';
 import { FormUrlencodedEditor } from './FormUrlencodedEditor';
 import { GraphQLEditor } from './GraphQLEditor';
 import { HeadersEditor } from './HeadersEditor';
+import { HttpAuthenticationEditor } from './HttpAuthenticationEditor';
 import { MarkdownEditor } from './MarkdownEditor';
 import { UrlBar } from './UrlBar';
 import { UrlParametersEditor } from './UrlParameterEditor';
@@ -97,6 +94,7 @@ export const RequestPane = memo(function RequestPane({
   const { updateKey: forceUpdateKey } = useRequestUpdateKey(activeRequest.id ?? null);
   const [{ urlKey }] = useRequestEditor();
   const contentType = useContentTypeFromHeaders(activeRequest.headers);
+  const authentication = useHttpAuthentication();
 
   const handleContentTypeChange = useCallback(
     async (contentType: string | null) => {
@@ -236,21 +234,18 @@ export const RequestPane = memo(function RequestPane({
         options: {
           value: activeRequest.authenticationType,
           items: [
-            { label: 'Basic Auth', shortLabel: 'Basic', value: AUTH_TYPE_BASIC },
-            { label: 'Bearer Token', shortLabel: 'Bearer', value: AUTH_TYPE_BEARER },
+            ...authentication.map((a) => ({
+              label: a.name,
+              value: a.pluginName,
+            })),
             { type: 'separator' },
-            { label: 'No Authentication', shortLabel: 'Auth', value: AUTH_TYPE_NONE },
+            { label: 'No Authentication', shortLabel: 'Auth', value: null },
           ],
           onChange: async (authenticationType) => {
             let authentication: HttpRequest['authentication'] = activeRequest.authentication;
-            if (authenticationType === AUTH_TYPE_BASIC) {
+            if (activeRequest.authenticationType !== authenticationType) {
               authentication = {
-                username: authentication.username ?? '',
-                password: authentication.password ?? '',
-              };
-            } else if (authenticationType === AUTH_TYPE_BEARER) {
-              authentication = {
-                token: authentication.token ?? '',
+                // Reset auth if changing types
               };
             }
             updateRequest({
@@ -272,6 +267,7 @@ export const RequestPane = memo(function RequestPane({
       activeRequest.headers,
       activeRequest.method,
       activeRequestId,
+      authentication,
       handleContentTypeChange,
       numParams,
       updateRequest,
@@ -384,15 +380,7 @@ export const RequestPane = memo(function RequestPane({
             tabListClassName="mt-2 !mb-1.5"
           >
             <TabContent value={TAB_AUTH}>
-              {activeRequest.authenticationType === AUTH_TYPE_BASIC ? (
-                <BasicAuth key={forceUpdateKey} request={activeRequest} />
-              ) : activeRequest.authenticationType === AUTH_TYPE_BEARER ? (
-                <BearerAuth key={forceUpdateKey} request={activeRequest} />
-              ) : (
-                <EmptyStateText>
-                  No Authentication {activeRequest.authenticationType}
-                </EmptyStateText>
-              )}
+              <HttpAuthenticationEditor request={activeRequest} />
             </TabContent>
             <TabContent value={TAB_HEADERS}>
               <HeadersEditor

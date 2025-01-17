@@ -18,7 +18,7 @@ import type { HttpRequestActionPlugin } from '@yaakapp/api/lib/plugins/HttpReque
 import type { TemplateFunctionPlugin } from '@yaakapp/api/lib/plugins/TemplateFunctionPlugin';
 import interceptStdout from 'intercept-stdout';
 import * as console from 'node:console';
-import type { Stats} from 'node:fs';
+import type { Stats } from 'node:fs';
 import { readFileSync, statSync, watch } from 'node:fs';
 import path from 'node:path';
 import * as util from 'node:util';
@@ -301,6 +301,33 @@ async function initialize() {
         };
         sendPayload(windowContext, replyPayload, replyId);
         return;
+      }
+
+      if (payload.type === 'get_http_authentication_request' && mod.plugin?.authentication) {
+        const replyPayload: InternalEventPayload = {
+          type: 'get_http_authentication_response',
+          name: mod.plugin.authentication.name,
+          pluginName: pkg.name,
+          config: mod.plugin.authentication.config,
+        };
+        sendPayload(windowContext, replyPayload, replyId);
+        return;
+      }
+
+      if (payload.type === 'call_http_authentication_request' && mod.plugin?.authentication) {
+        const auth = mod.plugin.authentication;
+        if (typeof auth?.onApply === 'function') {
+          const result = await auth.onApply(ctx, payload);
+          sendPayload(
+            windowContext,
+            {
+              ...result,
+              type: 'call_http_authentication_response',
+            },
+            replyId,
+          );
+          return;
+        }
       }
 
       if (

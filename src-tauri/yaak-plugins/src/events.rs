@@ -39,8 +39,8 @@ pub enum InternalEventPayload {
     BootRequest(BootRequest),
     BootResponse(BootResponse),
 
-    ReloadRequest,
-    ReloadResponse,
+    ReloadRequest(EmptyPayload),
+    ReloadResponse(EmptyPayload),
 
     TerminateRequest,
     TerminateResponse,
@@ -57,14 +57,21 @@ pub enum InternalEventPayload {
     SendHttpRequestRequest(SendHttpRequestRequest),
     SendHttpRequestResponse(SendHttpRequestResponse),
 
-    GetHttpRequestActionsRequest(GetHttpRequestActionsRequest),
+    // Request Actions
+    GetHttpRequestActionsRequest(EmptyPayload),
     GetHttpRequestActionsResponse(GetHttpRequestActionsResponse),
     CallHttpRequestActionRequest(CallHttpRequestActionRequest),
 
+    // Template Functions
     GetTemplateFunctionsRequest,
     GetTemplateFunctionsResponse(GetTemplateFunctionsResponse),
     CallTemplateFunctionRequest(CallTemplateFunctionRequest),
     CallTemplateFunctionResponse(CallTemplateFunctionResponse),
+
+    GetHttpAuthenticationRequest(EmptyPayload),
+    GetHttpAuthenticationResponse(GetHttpAuthenticationResponse),
+    CallHttpAuthenticationRequest(CallHttpAuthenticationRequest),
+    CallHttpAuthenticationResponse(CallHttpAuthenticationResponse),
 
     CopyTextRequest(CopyTextRequest),
 
@@ -87,8 +94,13 @@ pub enum InternalEventPayload {
 
     /// Returned when a plugin doesn't get run, just so the server
     /// has something to listen for
-    EmptyResponse,
+    EmptyResponse(EmptyPayload),
 }
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default)]
+#[ts(export, type = "{}", export_to = "events.ts")]
+pub struct EmptyPayload {}
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
@@ -284,6 +296,41 @@ pub enum Icon {
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export, export_to = "events.ts")]
+pub struct GetHttpAuthenticationResponse {
+    pub name: String,
+    pub plugin_name: String,
+    pub config: Vec<FormInput>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "events.ts")]
+pub struct CallHttpAuthenticationRequest {
+    pub config: serde_json::Map<String, serde_json::Value>,
+    pub method: String,
+    pub url: String,
+    pub headers: Vec<HttpHeader>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "events.ts")]
+pub struct HttpHeader {
+    pub name: String,
+    pub value: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "events.ts")]
+pub struct CallHttpAuthenticationResponse {
+    pub url: String,
+    pub headers: Vec<HttpHeader>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "events.ts")]
 pub struct GetTemplateFunctionsResponse {
     pub functions: Vec<TemplateFunction>,
     pub plugin_ref_id: String,
@@ -301,25 +348,24 @@ pub struct TemplateFunction {
     /// tags when changing the `name` property
     #[ts(optional)]
     pub aliases: Option<Vec<String>>,
-    pub args: Vec<TemplateFunctionArg>,
+    pub args: Vec<FormInput>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "snake_case", tag = "type")]
 #[ts(export, export_to = "events.ts")]
-pub enum TemplateFunctionArg {
-    Text(TemplateFunctionTextArg),
-    Select(TemplateFunctionSelectArg),
-    Checkbox(TemplateFunctionCheckboxArg),
-    HttpRequest(TemplateFunctionHttpRequestArg),
-    File(TemplateFunctionFileArg),
+pub enum FormInput {
+    Text(FormInputText),
+    Select(FormInputSelect),
+    Checkbox(FormInputCheckbox),
+    File(FormInputFile),
+    HttpRequest(FormInputHttpRequest),
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export, export_to = "events.ts")]
-pub struct TemplateFunctionBaseArg {
-    /// The name of the argument. Should be `camelCase` format
+pub struct FormInputBase {
     pub name: String,
 
     /// Whether the user must fill in the argument
@@ -338,29 +384,29 @@ pub struct TemplateFunctionBaseArg {
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export, export_to = "events.ts")]
-pub struct TemplateFunctionTextArg {
+pub struct FormInputText {
     #[serde(flatten)]
-    pub base: TemplateFunctionBaseArg,
+    pub base: FormInputBase,
 
     /// Placeholder for the text input
-    #[ts(optional)]
+    #[ts(optional = nullable)]
     pub placeholder: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export, export_to = "events.ts")]
-pub struct TemplateFunctionHttpRequestArg {
+pub struct FormInputHttpRequest {
     #[serde(flatten)]
-    pub base: TemplateFunctionBaseArg,
+    pub base: FormInputBase,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export, export_to = "events.ts")]
-pub struct TemplateFunctionFileArg {
+pub struct FormInputFile {
     #[serde(flatten)]
-    pub base: TemplateFunctionBaseArg,
+    pub base: FormInputBase,
 
     /// The title of the file selection window
     pub title: String,
@@ -379,13 +425,13 @@ pub struct TemplateFunctionFileArg {
 
     // Specify to only allow selection of certain file extensions
     #[ts(optional)]
-    pub filters: Option<Vec<OpenFileFilter>>,
+    pub filters: Option<Vec<FileFilter>>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export, export_to = "events.ts")]
-pub struct OpenFileFilter {
+pub struct FileFilter {
     pub name: String,
     /// File extensions to require
     pub extensions: Vec<String>,
@@ -394,27 +440,27 @@ pub struct OpenFileFilter {
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export, export_to = "events.ts")]
-pub struct TemplateFunctionSelectArg {
+pub struct FormInputSelect {
     #[serde(flatten)]
-    pub base: TemplateFunctionBaseArg,
+    pub base: FormInputBase,
 
     /// The options that will be available in the select input
-    pub options: Vec<TemplateFunctionSelectOption>,
+    pub options: Vec<FormInputSelectOption>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export, export_to = "events.ts")]
-pub struct TemplateFunctionCheckboxArg {
+pub struct FormInputCheckbox {
     #[serde(flatten)]
-    pub base: TemplateFunctionBaseArg,
+    pub base: FormInputBase,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export, export_to = "events.ts")]
-pub struct TemplateFunctionSelectOption {
-    pub label: String,
+pub struct FormInputSelectOption {
+    pub name: String,
     pub value: String,
 }
 

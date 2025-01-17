@@ -26,10 +26,7 @@ import { useActiveEnvironmentVariables } from '../../../hooks/useActiveEnvironme
 import { parseTemplate } from '../../../hooks/useParseTemplate';
 import { useRequestEditor } from '../../../hooks/useRequestEditor';
 import { useSettings } from '../../../hooks/useSettings';
-import {
-  useTemplateFunctions,
-  useTwigCompletionOptions,
-} from '../../../hooks/useTemplateFunctions';
+import { useTemplateFunctionCompletionOptions } from '../../../hooks/useTemplateFunctions';
 import { showDialog } from '../../../lib/dialog';
 import { TemplateFunctionDialog } from '../../TemplateFunctionDialog';
 import { TemplateVariableDialog } from '../../TemplateVariableDialog';
@@ -93,6 +90,10 @@ const stateFields = { history: historyField, folds: foldState };
 const emptyVariables: EnvironmentVariable[] = [];
 const emptyExtension: Extension = [];
 
+// NOTE: For some reason, the cursor doesn't appear if the field is empty and there is no
+//  placeholder. So we set it to a space to force it to show.
+const emptyPlaceholder = ' ';
+
 export const Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
   {
     readOnly,
@@ -126,7 +127,6 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
 ) {
   const settings = useSettings();
 
-  const templateFunctions = useTemplateFunctions();
   const allEnvironmentVariables = useActiveEnvironmentVariables();
   const environmentVariables = autocompleteVariables ? allEnvironmentVariables : emptyVariables;
 
@@ -178,7 +178,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
   useEffect(
     function configurePlaceholder() {
       if (cm.current === null) return;
-      const ext = placeholderExt(placeholderElFromText(placeholder ?? ''));
+      const ext = placeholderExt(placeholderElFromText(placeholder || emptyPlaceholder));
       const effect = placeholderCompartment.current.reconfigure(ext);
       cm.current?.view.dispatch({ effects: effect });
     },
@@ -300,7 +300,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
     [focusParamValue],
   );
 
-  const completionOptions = useTwigCompletionOptions(onClickFunction);
+  const completionOptions = useTemplateFunctionCompletionOptions(onClickFunction);
 
   // Update the language extension when the language changes
   useEffect(() => {
@@ -322,7 +322,6 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
     autocomplete,
     useTemplating,
     environmentVariables,
-    templateFunctions,
     onClickFunction,
     onClickVariable,
     onClickMissingVariable,
@@ -355,7 +354,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
         const extensions = [
           languageCompartment.of(langExt),
           placeholderCompartment.current.of(
-            placeholderExt(placeholderElFromText(placeholder ?? '')),
+            placeholderExt(placeholderElFromText(placeholder || emptyPlaceholder)),
           ),
           wrapLinesCompartment.current.of(wrapLines ? EditorView.lineWrapping : []),
           keymapCompartment.current.of(
@@ -601,13 +600,16 @@ const placeholderElFromText = (text: string) => {
 
 function saveCachedEditorState(stateKey: string | null, state: EditorState | null) {
   if (!stateKey || state == null) return;
-  sessionStorage.setItem(stateKey, JSON.stringify(state.toJSON(stateFields)));
+  sessionStorage.setItem(
+    computeFullStateKey(stateKey),
+    JSON.stringify(state.toJSON(stateFields)),
+  );
 }
 
 function getCachedEditorState(doc: string, stateKey: string | null) {
   if (stateKey == null) return;
 
-  const stateStr = sessionStorage.getItem(stateKey);
+  const stateStr = sessionStorage.getItem(computeFullStateKey(stateKey));
   if (stateStr == null) return null;
 
   try {
@@ -620,4 +622,8 @@ function getCachedEditorState(doc: string, stateKey: string | null) {
   }
 
   return null;
+}
+
+function computeFullStateKey(stateKey: string): string {
+  return `editor.${stateKey}`;
 }
