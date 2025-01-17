@@ -2,19 +2,24 @@ import type { Folder, HttpRequest } from '@yaakapp-internal/models';
 import type {
   FormInput,
   FormInputCheckbox,
+  FormInputEditor,
   FormInputFile,
   FormInputHttpRequest,
   FormInputSelect,
   FormInputText,
 } from '@yaakapp-internal/plugins';
+import classNames from 'classnames';
 import { useCallback } from 'react';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useFolders } from '../hooks/useFolders';
 import { useHttpRequests } from '../hooks/useHttpRequests';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import { Checkbox } from './core/Checkbox';
+import { Editor } from './core/Editor/Editor';
 import { Input } from './core/Input';
+import { Label } from './core/Label';
 import { Select } from './core/Select';
+import { VStack } from './core/Stacks';
 import { SelectFile } from './SelectFile';
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -41,7 +46,7 @@ export function DynamicForm<T extends Record<string, string | boolean>>({
   );
 
   return (
-    <div>
+    <VStack space={3}>
       {config.map((a, i) => {
         switch (a.type) {
           case 'select':
@@ -50,12 +55,23 @@ export function DynamicForm<T extends Record<string, string | boolean>>({
                 key={i + stateKey}
                 arg={a}
                 onChange={(v) => setDataAttr(a.name, v)}
-                value={data[a.name] ? String(data[a.name]) : '__ERROR__'}
+                value={data[a.name] ? String(data[a.name]) : DYNAMIC_FORM_NULL_ARG}
               />
             );
           case 'text':
             return (
               <TextArg
+                key={i}
+                stateKey={stateKey}
+                arg={a}
+                useTemplating={useTemplating || false}
+                onChange={(v) => setDataAttr(a.name, v)}
+                value={data[a.name] ? String(data[a.name]) : ''}
+              />
+            );
+          case 'editor':
+            return (
+              <EditorArg
                 key={i}
                 stateKey={stateKey}
                 arg={a}
@@ -93,7 +109,7 @@ export function DynamicForm<T extends Record<string, string | boolean>>({
             );
         }
       })}
-    </div>
+    </VStack>
   );
 }
 
@@ -123,10 +139,11 @@ function TextArg({
       onChange={handleChange}
       defaultValue={value === DYNAMIC_FORM_NULL_ARG ? '' : value}
       require={!arg.optional}
+      type={arg.password ? 'password' : 'text'}
       label={
         <>
           {arg.label ?? arg.name}
-          {arg.optional && <span> (optional)</span>}
+          {arg.optional && <span className="text-xs text-text-subtlest"> (optional)</span>}
         </>
       }
       hideLabel={arg.label == null}
@@ -135,6 +152,50 @@ function TextArg({
       stateKey={stateKey}
       forceUpdateKey={stateKey}
     />
+  );
+}
+
+function EditorArg({
+  arg,
+  onChange,
+  value,
+  useTemplating,
+  stateKey,
+}: {
+  arg: FormInputEditor;
+  value: string;
+  onChange: (v: string) => void;
+  useTemplating: boolean;
+  stateKey: string;
+}) {
+  const handleChange = useCallback(
+    (value: string) => {
+      onChange(value === '' ? DYNAMIC_FORM_NULL_ARG : value);
+    },
+    [onChange],
+  );
+
+  const id = `input-${arg.name}`;
+
+  return (
+    <div className="w-full grid grid-rows-[auto_minmax(0,1fr)]">
+      <Label htmlFor={id}>{arg.label}</Label>
+      <Editor
+        id={id}
+        className={classNames(
+          'border border-border rounded-md overflow-hidden px-2 py-1.5',
+          'focus-within:border-border-focus',
+        )}
+        language={arg.language}
+        onChange={handleChange}
+        heightMode="auto"
+        defaultValue={value === DYNAMIC_FORM_NULL_ARG ? '' : value}
+        placeholder={arg.placeholder ?? arg.defaultValue ?? ''}
+        useTemplating={useTemplating}
+        stateKey={stateKey}
+        forceUpdateKey={stateKey}
+      />
+    </div>
   );
 }
 
@@ -155,7 +216,7 @@ function SelectArg({
       value={value}
       options={[
         ...arg.options.map((a) => ({
-          label: a.name + (arg.defaultValue === a.value ? ' (default)' : ''),
+          label: a.name,
           value: a.value === arg.defaultValue ? DYNAMIC_FORM_NULL_ARG : a.value,
         })),
       ]}

@@ -4,6 +4,7 @@ import { useAtomValue } from 'jotai';
 import { atom, useSetAtom } from 'jotai/index';
 import { useState } from 'react';
 import { invokeCmd } from '../lib/tauri';
+import { showErrorToast } from '../lib/toast';
 
 const httpAuthenticationAtom = atom<GetHttpAuthenticationResponse[]>([]);
 const orderedHttpAuthenticationAtom = atom((get) =>
@@ -27,12 +28,16 @@ export function useSubscribeHttpAuthentication() {
     refetchInterval: numResults > 0 ? Infinity : 1000,
     refetchOnMount: true,
     queryFn: async () => {
-      const result = await invokeCmd<GetHttpAuthenticationResponse[]>(
-        'cmd_get_http_authentication',
-      );
-      setNumResults(result.length);
-      setAtom(result);
-      return result;
+      try {
+        const result = await invokeCmd<GetHttpAuthenticationResponse[]>(
+          'cmd_get_http_authentication',
+        );
+        setNumResults(result.length);
+        setAtom(result);
+        return result;
+      } catch (err) {
+        showErrorToast('http-authentication-error', err);
+      }
     },
   });
 }

@@ -46,9 +46,10 @@ impl TemplateCallback for PluginTemplateCallback {
         let mut args_with_defaults = args.clone();
 
         // Fill in default values for all args
-        for a_def in function.args {
-            let base = match a_def {
+        for arg in function.args {
+            let base = match arg {
                 FormInput::Text(a) => a.base,
+                FormInput::Editor(a) => a.base,
                 FormInput::Select(a) => a.base,
                 FormInput::Checkbox(a) => a.base,
                 FormInput::File(a) => a.base,

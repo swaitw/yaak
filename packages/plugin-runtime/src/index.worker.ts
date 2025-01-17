@@ -304,11 +304,13 @@ async function initialize() {
       }
 
       if (payload.type === 'get_http_authentication_request' && mod.plugin?.authentication) {
+        const auth = mod.plugin.authentication;
         const replyPayload: InternalEventPayload = {
+          ...auth,
           type: 'get_http_authentication_response',
-          name: mod.plugin.authentication.name,
-          pluginName: pkg.name,
-          config: mod.plugin.authentication.config,
+
+          // Remove unneeded attrs
+          onApply: undefined,
         };
         sendPayload(windowContext, replyPayload, replyId);
         return;

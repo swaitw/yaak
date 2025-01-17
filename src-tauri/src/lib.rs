@@ -235,19 +235,10 @@ async fn cmd_grpc_go<R: Runtime>(
         metadata.insert(h.name, h.value);
     }
 
-    // Map legacy auth name values from before they were plugins
-    let auth_plugin_name = match req.authentication_type.clone() {
-        Some(s) if s == "basic" => Some("@yaakapp/auth-basic".to_string()),
-        Some(s) if s == "bearer" => Some("@yaakapp/auth-bearer".to_string()),
-        _ => req.authentication_type.to_owned(),
-    };
-    if let Some(plugin_name) = auth_plugin_name {
+    if let Some(auth_name) = req.authentication_type.clone() {
+        let auth = req.authentication.clone();
         let plugin_req = CallHttpAuthenticationRequest {
-            config: serde_json::to_value(&req.authentication)
-                .unwrap()
-                .as_object()
-                .unwrap()
-                .to_owned(),
+            config: serde_json::to_value(&auth).unwrap().as_object().unwrap().to_owned(),
             method: "POST".to_string(),
             url: req.url.clone(),
             headers: metadata
@@ -259,7 +250,7 @@ async fn cmd_grpc_go<R: Runtime>(
                 .collect(),
         };
         let plugin_result = plugin_manager
-            .call_http_authentication(&window, &plugin_name, plugin_req)
+            .call_http_authentication(&window, &auth_name, plugin_req)
             .await
             .map_err(|e| e.to_string())?;
 
@@ -980,7 +971,9 @@ async fn cmd_get_http_authentication<R: Runtime>(
     window: WebviewWindow<R>,
     plugin_manager: State<'_, PluginManager>,
 ) -> Result<Vec<GetHttpAuthenticationResponse>, String> {
-    plugin_manager.get_http_authentication(&window).await.map_err(|e| e.to_string())
+    let results =
+        plugin_manager.get_http_authentication(&window).await.map_err(|e| e.to_string())?;
+    Ok(results.into_iter().map(|(_, a)| a).collect())
 }
 
 #[tauri::command]

@@ -235,8 +235,9 @@ export const RequestPane = memo(function RequestPane({
           value: activeRequest.authenticationType,
           items: [
             ...authentication.map((a) => ({
-              label: a.name,
-              value: a.pluginName,
+              label: a.label || 'UNKNOWN',
+              shortLabel: a.shortLabel,
+              value: a.name,
             })),
             { type: 'separator' },
             { label: 'No Authentication', shortLabel: 'Auth', value: null },

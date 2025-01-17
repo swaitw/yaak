@@ -298,7 +298,8 @@ pub enum Icon {
 #[ts(export, export_to = "events.ts")]
 pub struct GetHttpAuthenticationResponse {
     pub name: String,
-    pub plugin_name: String,
+    pub label: String,
+    pub short_label: String,
     pub config: Vec<FormInput>,
 }
 
@@ -356,6 +357,7 @@ pub struct TemplateFunction {
 #[ts(export, export_to = "events.ts")]
 pub enum FormInput {
     Text(FormInputText),
+    Editor(FormInputEditor),
     Select(FormInputSelect),
     Checkbox(FormInputCheckbox),
     File(FormInputFile),
@@ -391,6 +393,43 @@ pub struct FormInputText {
     /// Placeholder for the text input
     #[ts(optional = nullable)]
     pub placeholder: Option<String>,
+
+    /// Placeholder for the text input
+    #[ts(optional)]
+    pub password: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "snake_case")]
+#[ts(export, export_to = "events.ts")]
+pub enum EditorLanguage {
+    Text,
+    Javascript,
+    Json,
+    Html,
+    Xml,
+    Graphql,
+    Markdown,
+}
+
+impl Default for EditorLanguage {
+    fn default() -> Self {
+        Self::Text
+    }
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "events.ts")]
+pub struct FormInputEditor {
+    #[serde(flatten)]
+    pub base: FormInputBase,
+
+    /// Placeholder for the text input
+    #[ts(optional = nullable)]
+    pub placeholder: Option<String>,
+
+    pub language: EditorLanguage,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]

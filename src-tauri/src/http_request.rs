@@ -369,14 +369,8 @@ pub async fn send_http_request<R: Runtime>(
     };
 
     // Apply authentication
-    
-    // Map legacy auth name values from before they were plugins
-    let auth_plugin_name = match request.authentication_type.clone() {
-        Some(s) if s == "basic" => Some("@yaakapp/auth-basic".to_string()),
-        Some(s) if s == "bearer" => Some("@yaakapp/auth-bearer".to_string()),
-        _ => request.authentication_type.to_owned(),
-    };
-    if let Some(plugin_name) = auth_plugin_name {
+
+    if let Some(auth_name) = request.authentication_type.to_owned() {
         let req = CallHttpAuthenticationRequest {
             config: serde_json::to_value(&request.authentication)
                 .unwrap()
@@ -395,13 +389,13 @@ pub async fn send_http_request<R: Runtime>(
                 .collect(),
         };
         let plugin_result =
-            match plugin_manager.call_http_authentication(window, &plugin_name, req).await {
+            match plugin_manager.call_http_authentication(window, &auth_name, req).await {
                 Ok(r) => r,
                 Err(e) => {
                     return Ok(response_err(&*response.lock().await, e.to_string(), window).await);
                 }
             };
-        
+
         {
             let url = sendable_req.url_mut();
             *url = Url::parse(&plugin_result.url).unwrap();

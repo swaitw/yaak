@@ -1,9 +1,11 @@
-use crate::error::Error::{ClientNotInitializedErr, PluginErr, PluginNotFoundErr, UnknownEventErr};
+use crate::error::Error::{
+    AuthPluginNotFound, ClientNotInitializedErr, PluginErr, PluginNotFoundErr, UnknownEventErr,
+};
 use crate::error::Result;
 use crate::events::{
     BootRequest, CallHttpAuthenticationRequest, CallHttpAuthenticationResponse,
     CallHttpRequestActionRequest, CallTemplateFunctionArgs, CallTemplateFunctionRequest,
-    CallTemplateFunctionResponse, EmptyPayload, FilterRequest, FilterResponse,
+    CallTemplateFunctionResponse, EmptyPayload, FilterRequest, FilterResponse, FormInput,
     GetHttpAuthenticationResponse, GetHttpRequestActionsResponse, GetTemplateFunctionsResponse,
     ImportRequest, ImportResponse, InternalEvent, InternalEventPayload, RenderPurpose,
     WindowContext,
@@ -462,7 +464,7 @@ impl PluginManager {
     pub async fn get_http_authentication<R: Runtime>(
         &self,
         window: &WebviewWindow<R>,
-    ) -> Result<Vec<GetHttpAuthenticationResponse>> {
+    ) -> Result<Vec<(PluginHandle, GetHttpAuthenticationResponse)>> {
         let window_context = WindowContext::from_window(window);
         let reply_events = self
             .send_and_wait(
@@ -474,7 +476,11 @@ impl PluginManager {
         let mut results = Vec::new();
         for event in reply_events {
             if let InternalEventPayload::GetHttpAuthenticationResponse(resp) = event.payload {
-                results.push(resp.clone());
+                let plugin = self
+                    .get_plugin_by_ref_id(&event.plugin_ref_id)
+                    .await
+                    .ok_or(PluginNotFoundErr(event.plugin_ref_id))?;
+                results.push((plugin, resp.clone()));
             }
         }
 
@@ -484,13 +490,37 @@ impl PluginManager {
     pub async fn call_http_authentication<R: Runtime>(
         &self,
         window: &WebviewWindow<R>,
-        plugin_name: &str,
+        auth_name: &str,
         req: CallHttpAuthenticationRequest,
     ) -> Result<CallHttpAuthenticationResponse> {
-        let plugin = self
-            .get_plugin_by_name(plugin_name)
-            .await
-            .ok_or(PluginNotFoundErr(plugin_name.to_string()))?;
+        let handlers = self.get_http_authentication(window).await?;
+        let (plugin, authentication) = handlers
+            .iter()
+            .find(|(_, a)| a.name == auth_name)
+            .ok_or(AuthPluginNotFound(auth_name.to_string()))?;
+
+        // Clone for mutability
+        let mut req = req.clone();
+
+        // Fill in default values 
+        for arg in authentication.config.clone() {
+            let base = match arg {
+                FormInput::Text(a) => a.base,
+                FormInput::Editor(a) => a.base,
+                FormInput::Select(a) => a.base,
+                FormInput::Checkbox(a) => a.base,
+                FormInput::File(a) => a.base,
+                FormInput::HttpRequest(a) => a.base,
+            };
+            if let None = req.config.get(base.name.as_str()) {
+                let default = match base.default_value {
+                    None => serde_json::Value::Null,
+                    Some(s) => serde_json::Value::String(s),
+                };
+                req.config.insert(base.name, default);
+            }
+        }
+
         let event = self
             .send_to_plugin_and_wait(
                 WindowContext::from_window(window),

@@ -29,6 +29,8 @@ export type Color = "custom" | "default" | "primary" | "secondary" | "info" | "s
 
 export type CopyTextRequest = { text: string, };
 
+export type EditorLanguage = "text" | "javascript" | "json" | "html" | "xml" | "graphql" | "markdown";
+
 export type EmptyPayload = {};
 
 export type ExportHttpRequestRequest = { httpRequest: HttpRequest, };
@@ -49,7 +51,7 @@ export type FindHttpResponsesRequest = { requestId: string, limit?: number, };
 
 export type FindHttpResponsesResponse = { httpResponses: Array<HttpResponse>, };
 
-export type FormInput = { "type": "text" } & FormInputText | { "type": "select" } & FormInputSelect | { "type": "checkbox" } & FormInputCheckbox | { "type": "file" } & FormInputFile | { "type": "http_request" } & FormInputHttpRequest;
+export type FormInput = { "type": "text" } & FormInputText | { "type": "editor" } & FormInputEditor | { "type": "select" } & FormInputSelect | { "type": "checkbox" } & FormInputCheckbox | { "type": "file" } & FormInputFile | { "type": "http_request" } & FormInputHttpRequest;
 
 export type FormInputBase = { name: string, 
 /**
@@ -66,6 +68,24 @@ label?: string,
 defaultValue?: string, };
 
 export type FormInputCheckbox = { name: string, 
+/**
+ * Whether the user must fill in the argument
+ */
+optional?: boolean, 
+/**
+ * The label of the input
+ */
+label?: string, 
+/**
+ * The default value
+ */
+defaultValue?: string, };
+
+export type FormInputEditor = { 
+/**
+ * Placeholder for the text input
+ */
+placeholder?: string | null, language: EditorLanguage, name: string, 
 /**
  * Whether the user must fill in the argument
  */
@@ -139,7 +159,11 @@ export type FormInputText = {
 /**
  * Placeholder for the text input
  */
-placeholder?: string | null, name: string, 
+placeholder?: string | null, 
+/**
+ * Placeholder for the text input
+ */
+password?: boolean, name: string, 
 /**
  * Whether the user must fill in the argument
  */
@@ -153,7 +177,7 @@ label?: string,
  */
 defaultValue?: string, };
 
-export type GetHttpAuthenticationResponse = { name: string, pluginName: string, config: Array<FormInput>, };
+export type GetHttpAuthenticationResponse = { name: string, label: string, shortLabel: string, config: Array<FormInput>, };
 
 export type GetHttpRequestActionsRequest = Record<string, never>;
 

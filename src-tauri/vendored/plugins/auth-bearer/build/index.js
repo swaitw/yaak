@@ -25,12 +25,15 @@ __export(src_exports, {
 module.exports = __toCommonJS(src_exports);
 var plugin = {
   authentication: {
-    name: "Bearer",
+    name: "bearer",
+    label: "Bearer Token",
+    shortLabel: "Bearer",
     config: [{
       type: "text",
       name: "token",
       label: "Token",
-      optional: true
+      optional: true,
+      password: true
     }],
     async onApply(_ctx, args) {
       const { token } = args.config;

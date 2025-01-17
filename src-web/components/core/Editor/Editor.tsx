@@ -7,7 +7,7 @@ import { emacs } from '@replit/codemirror-emacs';
 import { vim } from '@replit/codemirror-vim';
 import { vscodeKeymap } from '@replit/codemirror-vscode-keymap';
 import type { EditorKeymap, EnvironmentVariable } from '@yaakapp-internal/models';
-import type { TemplateFunction } from '@yaakapp-internal/plugins';
+import type { EditorLanguage, TemplateFunction } from '@yaakapp-internal/plugins';
 import classNames from 'classnames';
 import { EditorView } from 'codemirror';
 import type { MutableRefObject, ReactNode } from 'react';
@@ -51,16 +51,7 @@ export interface EditorProps {
   type?: 'text' | 'password';
   className?: string;
   heightMode?: 'auto' | 'full';
-  language?:
-    | 'javascript'
-    | 'json'
-    | 'html'
-    | 'xml'
-    | 'graphql'
-    | 'url'
-    | 'pairs'
-    | 'text'
-    | 'markdown';
+  language?: EditorLanguage | 'pairs';
   forceUpdateKey?: string | number;
   autoFocus?: boolean;
   autoSelect?: boolean;
@@ -89,10 +80,6 @@ const stateFields = { history: historyField, folds: foldState };
 
 const emptyVariables: EnvironmentVariable[] = [];
 const emptyExtension: Extension = [];
-
-// NOTE: For some reason, the cursor doesn't appear if the field is empty and there is no
-//  placeholder. So we set it to a space to force it to show.
-const emptyPlaceholder = ' ';
 
 export const Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
   {
@@ -178,11 +165,11 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
   useEffect(
     function configurePlaceholder() {
       if (cm.current === null) return;
-      const ext = placeholderExt(placeholderElFromText(placeholder || emptyPlaceholder));
+      const ext = placeholderExt(placeholderElFromText(placeholder ?? '', type));
       const effect = placeholderCompartment.current.reconfigure(ext);
       cm.current?.view.dispatch({ effects: effect });
     },
-    [placeholder],
+    [placeholder, type],
   );
 
   // Update vim
@@ -354,7 +341,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
         const extensions = [
           languageCompartment.of(langExt),
           placeholderCompartment.current.of(
-            placeholderExt(placeholderElFromText(placeholder || emptyPlaceholder)),
+            placeholderExt(placeholderElFromText(placeholder ?? '', type)),
           ),
           wrapLinesCompartment.current.of(wrapLines ? EditorView.lineWrapping : []),
           keymapCompartment.current.of(
@@ -592,18 +579,21 @@ function getExtensions({
   ];
 }
 
-const placeholderElFromText = (text: string) => {
+const placeholderElFromText = (text: string, type: EditorProps['type']) => {
   const el = document.createElement('div');
-  el.innerHTML = text.replaceAll('\n', '<br/>');
+  if (type === 'password') {
+    // Will be obscured (dots) so just needs to be something to take up space
+    el.innerHTML = 'aaaaaaaaaa';
+    el.setAttribute('aria-hidden', 'true');
+  } else {
+    el.innerHTML = text ? text.replaceAll('\n', '<br/>') : ' ';
+  }
   return el;
 };
 
 function saveCachedEditorState(stateKey: string | null, state: EditorState | null) {
   if (!stateKey || state == null) return;
-  sessionStorage.setItem(
-    computeFullStateKey(stateKey),
-    JSON.stringify(state.toJSON(stateFields)),
-  );
+  sessionStorage.setItem(computeFullStateKey(stateKey), JSON.stringify(state.toJSON(stateFields)));
 }
 
 function getCachedEditorState(doc: string, stateKey: string | null) {

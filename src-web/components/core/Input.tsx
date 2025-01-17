@@ -3,6 +3,7 @@ import type { EditorView } from 'codemirror';
 import type { ReactNode } from 'react';
 import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useStateWithDeps } from '../../hooks/useStateWithDeps';
+import { generateId } from '../../lib/generateId';
 import type { EditorProps } from './Editor/Editor';
 import { Editor } from './Editor/Editor';
 import { IconButton } from './IconButton';
@@ -94,7 +95,7 @@ export const Input = forwardRef<EditorView, InputProps>(function Input(
     onBlur?.();
   }, [onBlur]);
 
-  const id = `input-${label}`;
+  const id = useRef(`input-${generateId()}`);
   const editorClassName = classNames(
     className,
     '!bg-transparent min-w-0 h-auto w-full focus:outline-none placeholder:text-placeholder',
@@ -140,7 +141,7 @@ export const Input = forwardRef<EditorView, InputProps>(function Input(
         labelPosition === 'top' && 'flex-row gap-0.5',
       )}
     >
-      <Label htmlFor={id} className={classNames(labelClassName, hideLabel && 'sr-only')}>
+      <Label htmlFor={id.current} className={classNames(labelClassName, hideLabel && 'sr-only')}>
         {label}
       </Label>
       <HStack
@@ -168,7 +169,7 @@ export const Input = forwardRef<EditorView, InputProps>(function Input(
         >
           <Editor
             ref={editorRef}
-            id={id}
+            id={id.current}
             singleLine
             stateKey={stateKey}
             wrapLines={wrapLines}

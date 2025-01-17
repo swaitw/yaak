@@ -25,6 +25,9 @@ pub enum Error {
 
     #[error("Plugin not found: {0}")]
     PluginNotFoundErr(String),
+    
+    #[error("Auth plugin not found: {0}")]
+    AuthPluginNotFound(String),
 
     #[error("Plugin error: {0}")]
     PluginErr(String),

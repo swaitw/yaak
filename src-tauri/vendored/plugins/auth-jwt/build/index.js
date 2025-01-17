@@ -3793,17 +3793,57 @@ __export(src_exports, {
 });
 module.exports = __toCommonJS(src_exports);
 var import_jsonwebtoken = __toESM(require_jsonwebtoken());
+var algorithms = [
+  "HS256",
+  "HS384",
+  "HS512",
+  "RS256",
+  "RS384",
+  "RS512",
+  "PS256",
+  "PS384",
+  "PS512",
+  "ES256",
+  "ES384",
+  "ES512"
+];
+var defaultAlgorithm = algorithms[0];
 var plugin = {
   authentication: {
-    name: "JWT",
-    config: [{
-      type: "text",
-      name: "foo",
-      label: "Foo",
-      optional: true
-    }],
+    name: "jwt",
+    label: "JWT Bearer",
+    shortLabel: "JWT",
+    config: [
+      {
+        type: "select",
+        name: "algorithm",
+        label: "Algorithm",
+        defaultValue: defaultAlgorithm,
+        options: algorithms.map((value) => ({ name: value, value }))
+      },
+      {
+        type: "text",
+        name: "secret",
+        label: "Secret",
+        optional: true
+      },
+      {
+        type: "checkbox",
+        name: "secretBase64",
+        label: "Secret Base64 Encoded"
+      },
+      {
+        type: "editor",
+        name: "payload",
+        label: "Payload",
+        language: "json",
+        optional: true
+      }
+    ],
     async onApply(_ctx, args) {
-      const token = import_jsonwebtoken.default.sign({ foo: "bar" }, null);
+      const { algorithm, secret: _secret, secretBase64, payload } = args.config;
+      const secret = secretBase64 ? Buffer.from(`${_secret}`, "base64") : `${_secret}`;
+      const token = import_jsonwebtoken.default.sign(`${payload}`, secret, { algorithm });
       return {
         url: args.url,
         headers: [{ name: "Authorization", value: `Bearer ${token}` }]
