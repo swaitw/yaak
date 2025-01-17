@@ -34,10 +34,11 @@ export const plugin: PluginDefinition = {
           options: algorithms.map(value => ({ name: value === 'none' ? 'None' : value, value })),
         },
         {
-          type: 'text',
+          type: 'editor',
           name: 'secret',
           label: 'Secret or Private Key',
           optional: true,
+          hideGutter: true,
         },
         {
           type: 'checkbox',
