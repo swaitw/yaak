@@ -30,7 +30,9 @@ use yaak_models::queries::{
     get_base_environment, get_http_response, get_or_create_settings, get_workspace,
     update_response_if_id, upsert_cookie_jar, UpdateSource,
 };
-use yaak_plugins::events::{CallHttpAuthenticationRequest, HttpHeader, RenderPurpose, WindowContext};
+use yaak_plugins::events::{
+    CallHttpAuthenticationRequest, HttpHeader, RenderPurpose, WindowContext,
+};
 use yaak_plugins::manager::PluginManager;
 
 pub async fn send_http_request<R: Runtime>(
@@ -388,28 +390,21 @@ pub async fn send_http_request<R: Runtime>(
                 })
                 .collect(),
         };
-        let plugin_result =
-            match plugin_manager.call_http_authentication(window, &auth_name, req).await {
-                Ok(r) => r,
-                Err(e) => {
-                    return Ok(response_err(&*response.lock().await, e.to_string(), window).await);
-                }
-            };
-
-        {
-            let url = sendable_req.url_mut();
-            *url = Url::parse(&plugin_result.url).unwrap();
-        }
-
-        {
-            let headers = sendable_req.headers_mut();
-            for header in plugin_result.headers {
-                headers.insert(
-                    HeaderName::from_str(&header.name).unwrap(),
-                    HeaderValue::from_str(&header.value).unwrap(),
-                );
+        let auth_result = plugin_manager.call_http_authentication(window, &auth_name, req).await;
+        let plugin_result = match auth_result {
+            Ok(r) => r,
+            Err(e) => {
+                return Ok(response_err(&*response.lock().await, e.to_string(), window).await);
             }
         };
+
+        let headers = sendable_req.headers_mut();
+        for header in plugin_result.set_headers {
+            headers.insert(
+                HeaderName::from_str(&header.name).unwrap(),
+                HeaderValue::from_str(&header.value).unwrap(),
+            );
+        }
     }
 
     let (resp_tx, resp_rx) = oneshot::channel::<Result<Response, reqwest::Error>>();

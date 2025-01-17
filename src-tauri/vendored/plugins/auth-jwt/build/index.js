@@ -3844,10 +3844,8 @@ var plugin = {
       const { algorithm, secret: _secret, secretBase64, payload } = args.config;
       const secret = secretBase64 ? Buffer.from(`${_secret}`, "base64") : `${_secret}`;
       const token = import_jsonwebtoken.default.sign(`${payload}`, secret, { algorithm });
-      return {
-        url: args.url,
-        headers: [{ name: "Authorization", value: `Bearer ${token}` }]
-      };
+      const value = `Bearer ${token}`;
+      return { setHeaders: [{ name: "Authorization", value }] };
     }
   }
 };

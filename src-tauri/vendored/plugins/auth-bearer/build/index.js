@@ -37,13 +37,8 @@ var plugin = {
     }],
     async onApply(_ctx, args) {
       const { token } = args.config;
-      return {
-        url: args.url,
-        headers: [{
-          name: "Authorization",
-          value: `Bearer ${token}`.trim()
-        }]
-      };
+      const value = `Bearer ${token}`.trim();
+      return { setHeaders: [{ name: "Authorization", value }] };
     }
   }
 };

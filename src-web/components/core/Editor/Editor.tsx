@@ -51,7 +51,7 @@ export interface EditorProps {
   type?: 'text' | 'password';
   className?: string;
   heightMode?: 'auto' | 'full';
-  language?: EditorLanguage | 'pairs';
+  language?: EditorLanguage | 'pairs' | 'url';
   forceUpdateKey?: string | number;
   autoFocus?: boolean;
   autoSelect?: boolean;

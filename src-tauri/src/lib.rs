@@ -209,7 +209,7 @@ async fn cmd_grpc_go<R: Runtime>(
         .ok_or("Failed to find GRPC request")?;
     let base_environment =
         get_base_environment(&window, &req.workspace_id).await.map_err(|e| e.to_string())?;
-    let mut req = render_grpc_request(
+    let req = render_grpc_request(
         &req,
         &base_environment,
         environment.as_ref(),
@@ -253,9 +253,7 @@ async fn cmd_grpc_go<R: Runtime>(
             .call_http_authentication(&window, &auth_name, plugin_req)
             .await
             .map_err(|e| e.to_string())?;
-
-        req.url = plugin_result.url;
-        for header in plugin_result.headers {
+        for header in plugin_result.set_headers {
             metadata.insert(header.name, header.value);
         }
     }

@@ -13,7 +13,12 @@ export type BootResponse = { name: string, version: string, capabilities: Array<
 
 export type CallHttpAuthenticationRequest = { config: { [key in string]?: JsonValue }, method: string, url: string, headers: Array<HttpHeader>, };
 
-export type CallHttpAuthenticationResponse = { url: string, headers: Array<HttpHeader>, };
+export type CallHttpAuthenticationResponse = { 
+/**
+ * HTTP headers to add to the request. Existing headers will be replaced, while
+ * new headers will be added.
+ */
+setHeaders: Array<HttpHeader>, };
 
 export type CallHttpRequestActionArgs = { httpRequest: HttpRequest, };
 
@@ -217,7 +222,7 @@ cancelText?: string,
 /**
  * Require the user to enter a non-empty value
  */
-require?: boolean, };
+required?: boolean, };
 
 export type PromptTextResponse = { value: string | null, };
 

@@ -2,7 +2,7 @@
 
 export type Environment = { model: "environment", id: string, workspaceId: string, environmentId: string | null, createdAt: string, updatedAt: string, name: string, variables: Array<EnvironmentVariable>, };
 
-export type EnvironmentVariable = { enabled?: boolean, name: string, value: string, id: string, };
+export type EnvironmentVariable = { enabled?: boolean, name: string, value: string, id?: string, };
 
 export type Folder = { model: "folder", id: string, createdAt: string, updatedAt: string, workspaceId: string, folderId: string | null, name: string, description: string, sortPriority: number, };
 

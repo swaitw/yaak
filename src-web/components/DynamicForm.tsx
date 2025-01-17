@@ -138,14 +138,9 @@ function TextArg({
       name={arg.name}
       onChange={handleChange}
       defaultValue={value === DYNAMIC_FORM_NULL_ARG ? '' : value}
-      require={!arg.optional}
+      required={!arg.optional}
       type={arg.password ? 'password' : 'text'}
-      label={
-        <>
-          {arg.label ?? arg.name}
-          {arg.optional && <span className="text-xs text-text-subtlest"> (optional)</span>}
-        </>
-      }
+      label={arg.label ?? arg.name}
       hideLabel={arg.label == null}
       placeholder={arg.placeholder ?? arg.defaultValue ?? ''}
       useTemplating={useTemplating}
@@ -179,7 +174,9 @@ function EditorArg({
 
   return (
     <div className="w-full grid grid-rows-[auto_minmax(0,1fr)]">
-      <Label htmlFor={id}>{arg.label}</Label>
+      <Label htmlFor={id} optional={arg.optional}>
+        {arg.label}
+      </Label>
       <Editor
         id={id}
         className={classNames(

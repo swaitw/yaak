@@ -383,7 +383,8 @@ pub struct EnvironmentVariable {
     pub enabled: bool,
     pub name: String,
     pub value: String,
-    pub id: String,
+    #[ts(optional, as = "Option<String>")]
+    pub id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]

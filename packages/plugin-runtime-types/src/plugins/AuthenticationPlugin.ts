@@ -1,4 +1,8 @@
-import {CallHttpAuthenticationRequest, CallHttpAuthenticationResponse, GetHttpAuthenticationResponse} from '..';
+import {
+  CallHttpAuthenticationRequest,
+  CallHttpAuthenticationResponse,
+  GetHttpAuthenticationResponse,
+} from '..';
 import type { Context } from './Context';
 
 export type AuthenticationPlugin = Omit<GetHttpAuthenticationResponse, 'pluginName'> & {

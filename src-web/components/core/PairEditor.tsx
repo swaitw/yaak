@@ -466,7 +466,7 @@ function PairEditorRow({
             wrapLines={false}
             readOnly={pair.readOnlyName}
             size="sm"
-            require={!isLast && !!pair.enabled && !!pair.value}
+            required={!isLast && !!pair.enabled && !!pair.value}
             validate={nameValidate}
             forceUpdateKey={forceUpdateKey}
             containerClassName={classNames(isLast && 'border-dashed')}
@@ -577,7 +577,6 @@ function FileActionsDropdown({
         onSelect: async () => {
           const contentType = await showPrompt({
             id: 'content-type',
-            require: false,
             title: 'Override Content-Type',
             label: 'Content-Type',
             placeholder: 'text/plain',

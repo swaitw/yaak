@@ -8824,8 +8824,8 @@ var behaviorArg = {
   label: "Sending Behavior",
   defaultValue: "smart",
   options: [
-    { label: "When no responses", value: "smart" },
-    { label: "Always", value: "always" }
+    { name: "When no responses", value: "smart" },
+    { name: "Always", value: "always" }
   ]
 };
 var requestArg = {
