@@ -13,6 +13,7 @@ import { useCallback } from 'react';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useFolders } from '../hooks/useFolders';
 import { useHttpRequests } from '../hooks/useHttpRequests';
+import { capitalize } from '../lib/capitalize';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import { Checkbox } from './core/Checkbox';
 import { Editor } from './core/Editor/Editor';
@@ -46,7 +47,7 @@ export function DynamicForm<T extends Record<string, string | boolean>>({
   );
 
   return (
-    <VStack space={3}>
+    <VStack space={3} className="h-full overflow-auto">
       {config.map((a, i) => {
         switch (a.type) {
           case 'select':
@@ -66,7 +67,7 @@ export function DynamicForm<T extends Record<string, string | boolean>>({
                 arg={a}
                 useTemplating={useTemplating || false}
                 onChange={(v) => setDataAttr(a.name, v)}
-                value={data[a.name] ? String(data[a.name]) : ''}
+                value={data[a.name] ? String(data[a.name]) : DYNAMIC_FORM_NULL_ARG}
               />
             );
           case 'editor':
@@ -77,7 +78,7 @@ export function DynamicForm<T extends Record<string, string | boolean>>({
                 arg={a}
                 useTemplating={useTemplating || false}
                 onChange={(v) => setDataAttr(a.name, v)}
-                value={data[a.name] ? String(data[a.name]) : ''}
+                value={data[a.name] ? String(data[a.name]) : DYNAMIC_FORM_NULL_ARG}
               />
             );
           case 'checkbox':
@@ -137,7 +138,7 @@ function TextArg({
     <Input
       name={arg.name}
       onChange={handleChange}
-      defaultValue={value === DYNAMIC_FORM_NULL_ARG ? '' : value}
+      defaultValue={value === DYNAMIC_FORM_NULL_ARG ? arg.defaultValue : value}
       required={!arg.optional}
       type={arg.password ? 'password' : 'text'}
       label={arg.label ?? arg.name}
@@ -173,8 +174,13 @@ function EditorArg({
   const id = `input-${arg.name}`;
 
   return (
-    <div className="w-full grid grid-rows-[auto_minmax(0,1fr)]">
-      <Label htmlFor={id} optional={arg.optional}>
+    <div className=" w-full grid grid-cols-1 grid-rows-[auto_minmax(0,1fr)]">
+      <Label
+        htmlFor={id}
+        optional={arg.optional}
+        visuallyHidden={arg.hideLabel}
+        otherTags={arg.language ? [capitalize(arg.language)] : undefined}
+      >
         {arg.label}
       </Label>
       <Editor
@@ -182,15 +188,17 @@ function EditorArg({
         className={classNames(
           'border border-border rounded-md overflow-hidden px-2 py-1.5',
           'focus-within:border-border-focus',
+          'max-h-[15rem]', // So it doesn't take up too much space
         )}
         language={arg.language}
         onChange={handleChange}
         heightMode="auto"
-        defaultValue={value === DYNAMIC_FORM_NULL_ARG ? '' : value}
+        defaultValue={value === DYNAMIC_FORM_NULL_ARG ? arg.defaultValue : value}
         placeholder={arg.placeholder ?? arg.defaultValue ?? ''}
         useTemplating={useTemplating}
         stateKey={stateKey}
         forceUpdateKey={stateKey}
+        hideGutter
       />
     </div>
   );
@@ -210,6 +218,7 @@ function SelectArg({
       label={arg.label ?? arg.name}
       name={arg.name}
       onChange={onChange}
+      hideLabel={arg.hideLabel}
       value={value}
       options={[
         ...arg.options.map((a) => ({

@@ -44,6 +44,7 @@ export type InputProps = Pick<
   validate?: boolean | ((v: string) => boolean);
   required?: boolean;
   wrapLines?: boolean;
+  multiLine?: boolean;
   stateKey: EditorProps['stateKey'];
 };
 
@@ -73,6 +74,7 @@ export const Input = forwardRef<EditorView, InputProps>(function Input(
     validate,
     readOnly,
     stateKey,
+    multiLine,
     ...props
   }: InputProps,
   ref,
@@ -144,7 +146,8 @@ export const Input = forwardRef<EditorView, InputProps>(function Input(
       <Label
         htmlFor={id.current}
         optional={!required}
-        className={classNames(labelClassName, hideLabel && 'sr-only')}
+        visuallyHidden={hideLabel}
+        className={classNames(labelClassName)}
       >
         {label}
       </Label>
@@ -174,9 +177,11 @@ export const Input = forwardRef<EditorView, InputProps>(function Input(
           <Editor
             ref={editorRef}
             id={id.current}
-            singleLine
+            hideGutter
+            singleLine={!multiLine}
             stateKey={stateKey}
             wrapLines={wrapLines}
+            heightMode="auto"
             onKeyDown={handleKeyDown}
             type={type === 'password' && !obscured ? 'text' : type}
             defaultValue={defaultValue}
@@ -185,7 +190,7 @@ export const Input = forwardRef<EditorView, InputProps>(function Input(
             onChange={handleChange}
             onPaste={onPaste}
             onPasteOverwrite={onPasteOverwrite}
-            className={editorClassName}
+            className={classNames(editorClassName, multiLine && 'py-1.5')}
             onFocus={handleFocus}
             onBlur={handleBlur}
             readOnly={readOnly}

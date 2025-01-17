@@ -98,7 +98,12 @@ export function PlainInput({
         labelPosition === 'top' && 'flex-row gap-0.5',
       )}
     >
-      <Label htmlFor={id} className={classNames(labelClassName, 'flex-shrink-0', hideLabel && 'sr-only')}>
+      <Label
+        htmlFor={id}
+        className={labelClassName}
+        visuallyHidden={hideLabel}
+        optional={!required}
+      >
         {label}
       </Label>
       <HStack

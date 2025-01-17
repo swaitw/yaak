@@ -379,6 +379,10 @@ pub struct FormInputBase {
     #[ts(optional)]
     pub label: Option<String>,
 
+    /// Visually hide the label of the input
+    #[ts(optional)]
+    pub hide_label: Option<bool>,
+
     /// The default value
     #[ts(optional)]
     pub default_value: Option<String>,
@@ -430,7 +434,13 @@ pub struct FormInputEditor {
     #[ts(optional = nullable)]
     pub placeholder: Option<String>,
 
-    pub language: EditorLanguage,
+    /// Don't show the editor gutter (line numbers, folds, etc.)
+    #[ts(optional)]
+    pub hide_gutter: Option<bool>,
+
+    /// Language for syntax highlighting
+    #[ts(optional)]
+    pub language: Option<EditorLanguage>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
