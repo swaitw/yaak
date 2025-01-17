@@ -29,32 +29,34 @@ export const plugin: PluginDefinition = {
           type: 'select',
           name: 'algorithm',
           label: 'Algorithm',
+          hideLabel: true,
           defaultValue: defaultAlgorithm,
           options: algorithms.map(value => ({ name: value === 'none' ? 'None' : value, value })),
         },
         {
           type: 'text',
           name: 'secret',
-          label: 'Secret',
+          label: 'Secret or Private Key',
           optional: true,
         },
         {
           type: 'checkbox',
           name: 'secretBase64',
-          label: 'Secret Base64 Encoded',
+          label: 'Secret is base64 encoded',
         },
         {
           type: 'editor',
           name: 'payload',
           label: 'Payload',
           language: 'json',
-          optional: true,
+          defaultValue: '{\n  "foo": "bar"\n}',
+          placeholder: '{ }',
         },
       ],
       async onApply(_ctx, args) {
         const { algorithm, secret: _secret, secretBase64, payload } = args.config;
         const secret = secretBase64 ? Buffer.from(`${_secret}`, 'base64') : `${_secret}`;
-        const token = secret ? jwt.sign(`${payload}`, secret, { algorithm: algorithm as any }) : jwt.sign(`${payload}`, null);
+        const token = jwt.sign(`${payload}`, secret, { algorithm: algorithm as any });
         const value = `Bearer ${token}`;
         return { setHeaders: [{ name: 'Authorization', value }] };
       }
