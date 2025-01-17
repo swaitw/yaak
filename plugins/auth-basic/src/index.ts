@@ -2,7 +2,9 @@ import { PluginDefinition } from '@yaakapp/api';
 
 export const plugin: PluginDefinition = {
   authentication: {
-    name: 'Basic',
+    name: 'basic',
+    label: 'Basic Auth',
+    shortLabel: 'Basic',
     config: [{
       type: 'text',
       name: 'username',
@@ -13,6 +15,7 @@ export const plugin: PluginDefinition = {
       name: 'password',
       label: 'Password',
       optional: true,
+      password: true,
     }],
     async onApply(_ctx: any, args: any): Promise<any> {
       const { username, password } = args.config;
