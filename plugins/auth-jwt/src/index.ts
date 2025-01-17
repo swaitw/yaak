@@ -14,7 +14,8 @@ const algorithms = [
   'ES256',
   'ES384',
   'ES512',
-];
+  'none',
+] as const;
 
 const defaultAlgorithm = algorithms[0];
 
@@ -29,7 +30,7 @@ export const plugin: PluginDefinition = {
           name: 'algorithm',
           label: 'Algorithm',
           defaultValue: defaultAlgorithm,
-          options: algorithms.map(value => ({ name: value, value })),
+          options: algorithms.map(value => ({ name: value === 'none' ? 'None' : value, value })),
         },
         {
           type: 'text',
@@ -53,11 +54,9 @@ export const plugin: PluginDefinition = {
       async onApply(_ctx, args) {
         const { algorithm, secret: _secret, secretBase64, payload } = args.config;
         const secret = secretBase64 ? Buffer.from(`${_secret}`, 'base64') : `${_secret}`;
-        const token = jwt.sign(`${payload}`, secret, { algorithm: algorithm as any });
-        return {
-          url: args.url,
-          headers: [{ name: 'Authorization', value: `Bearer ${token}` }],
-        };
+        const token = secret ? jwt.sign(`${payload}`, secret, { algorithm: algorithm as any }) : jwt.sign(`${payload}`, null);
+        const value = `Bearer ${token}`;
+        return { setHeaders: [{ name: 'Authorization', value }] };
       }
       ,
     },

@@ -2,27 +2,27 @@ import { DOMParser } from '@xmldom/xmldom';
 import {
   CallTemplateFunctionArgs,
   Context,
+  FormInput,
   HttpResponse,
   PluginDefinition,
   RenderPurpose,
-  TemplateFunctionArg,
 } from '@yaakapp/api';
 import { JSONPath } from 'jsonpath-plus';
 import { readFileSync } from 'node:fs';
 import xpath from 'xpath';
 
-const behaviorArg: TemplateFunctionArg = {
+const behaviorArg: FormInput = {
   type: 'select',
   name: 'behavior',
   label: 'Sending Behavior',
   defaultValue: 'smart',
   options: [
-    { label: 'When no responses', value: 'smart' },
-    { label: 'Always', value: 'always' },
+    { name: 'When no responses', value: 'smart' },
+    { name: 'Always', value: 'always' },
   ],
 };
 
-const requestArg: TemplateFunctionArg =
+const requestArg: FormInput =
   {
     type: 'http_request',
     name: 'request',

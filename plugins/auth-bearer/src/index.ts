@@ -12,15 +12,10 @@ export const plugin: PluginDefinition = {
       optional: true,
       password: true,
     }],
-    async onApply(_ctx: any, args: any): Promise<any> {
+    async onApply(_ctx, args) {
       const { token } = args.config;
-      return {
-        url: args.url,
-        headers: [{
-          name: 'Authorization',
-          value: `Bearer ${token}`.trim(),
-        }],
-      };
+      const value = `Bearer ${token}`.trim();
+      return { setHeaders: [{ name: 'Authorization', value }] };
     },
   },
 };

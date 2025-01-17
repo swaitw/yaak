@@ -17,15 +17,10 @@ export const plugin: PluginDefinition = {
       optional: true,
       password: true,
     }],
-    async onApply(_ctx: any, args: any): Promise<any> {
+    async onApply(_ctx, args) {
       const { username, password } = args.config;
-      return {
-        url: args.url,
-        headers: [{
-          name: 'Authorization',
-          value: 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64'),
-        }],
-      };
+      const value = 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64');
+      return { setHeaders: [{ name: 'Authorization', value }] };
     },
   },
 };
