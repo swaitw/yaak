@@ -42,8 +42,9 @@ export type InputProps = Pick<
   className?: string;
   placeholder?: string;
   validate?: boolean | ((v: string) => boolean);
-  require?: boolean;
+  required?: boolean;
   wrapLines?: boolean;
+  multiLine?: boolean;
   stateKey: EditorProps['stateKey'];
 };
 
@@ -65,7 +66,7 @@ export const Input = forwardRef<EditorView, InputProps>(function Input(
     onPaste,
     onPasteOverwrite,
     placeholder,
-    require,
+    required,
     rightSlot,
     wrapLines,
     size = 'md',
@@ -73,6 +74,7 @@ export const Input = forwardRef<EditorView, InputProps>(function Input(
     validate,
     readOnly,
     stateKey,
+    multiLine,
     ...props
   }: InputProps,
   ref,
@@ -102,11 +104,11 @@ export const Input = forwardRef<EditorView, InputProps>(function Input(
   );
 
   const isValid = useMemo(() => {
-    if (require && !validateRequire(currentValue)) return false;
+    if (required && !validateRequire(currentValue)) return false;
     if (typeof validate === 'boolean') return validate;
     if (typeof validate === 'function' && !validate(currentValue)) return false;
     return true;
-  }, [require, currentValue, validate]);
+  }, [required, currentValue, validate]);
 
   const handleChange = useCallback(
     (value: string) => {
@@ -141,7 +143,12 @@ export const Input = forwardRef<EditorView, InputProps>(function Input(
         labelPosition === 'top' && 'flex-row gap-0.5',
       )}
     >
-      <Label htmlFor={id.current} className={classNames(labelClassName, hideLabel && 'sr-only')}>
+      <Label
+        htmlFor={id.current}
+        optional={!required}
+        visuallyHidden={hideLabel}
+        className={classNames(labelClassName)}
+      >
         {label}
       </Label>
       <HStack
@@ -170,9 +177,11 @@ export const Input = forwardRef<EditorView, InputProps>(function Input(
           <Editor
             ref={editorRef}
             id={id.current}
-            singleLine
+            hideGutter
+            singleLine={!multiLine}
             stateKey={stateKey}
             wrapLines={wrapLines}
+            heightMode="auto"
             onKeyDown={handleKeyDown}
             type={type === 'password' && !obscured ? 'text' : type}
             defaultValue={defaultValue}
@@ -181,7 +190,7 @@ export const Input = forwardRef<EditorView, InputProps>(function Input(
             onChange={handleChange}
             onPaste={onPaste}
             onPasteOverwrite={onPasteOverwrite}
-            className={editorClassName}
+            className={classNames(editorClassName, multiLine && 'py-1.5')}
             onFocus={handleFocus}
             onBlur={handleBlur}
             readOnly={readOnly}

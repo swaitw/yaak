@@ -5,6 +5,7 @@ import { useOsInfo } from '../../hooks/useOsInfo';
 import { trackEvent } from '../../lib/analytics';
 import type { ButtonProps } from './Button';
 import { Button } from './Button';
+import { Label } from './Label';
 import type { RadioDropdownItem } from './RadioDropdown';
 import { RadioDropdown } from './RadioDropdown';
 import { HStack } from './Stacks';
@@ -61,16 +62,9 @@ export function Select<T extends string>({
         labelPosition === 'top' && 'flex-row gap-0.5',
       )}
     >
-      <label
-        htmlFor={id}
-        className={classNames(
-          labelClassName,
-          'text-text-subtle whitespace-nowrap',
-          hideLabel && 'sr-only',
-        )}
-      >
+      <Label htmlFor={id} visuallyHidden={hideLabel} className={labelClassName}>
         {label}
-      </label>
+      </Label>
       {osInfo?.osType === 'macos' ? (
         <HStack
           space={2}

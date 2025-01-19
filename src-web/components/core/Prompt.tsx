@@ -17,7 +17,7 @@ export function Prompt({
   defaultValue,
   placeholder,
   onResult,
-  require,
+  required,
   confirmText,
   cancelText,
 }: PromptProps) {
@@ -38,7 +38,7 @@ export function Prompt({
       <Input
         hideLabel
         autoSelect
-        require={require}
+        required={required}
         placeholder={placeholder ?? 'Enter text'}
         label={label}
         defaultValue={defaultValue}

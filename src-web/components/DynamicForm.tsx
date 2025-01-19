@@ -13,6 +13,7 @@ import { useCallback } from 'react';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useFolders } from '../hooks/useFolders';
 import { useHttpRequests } from '../hooks/useHttpRequests';
+import { capitalize } from '../lib/capitalize';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import { Checkbox } from './core/Checkbox';
 import { Editor } from './core/Editor/Editor';
@@ -30,23 +31,25 @@ export function DynamicForm<T extends Record<string, string | boolean>>({
   data,
   onChange,
   useTemplating,
+  autocompleteVariables,
   stateKey,
 }: {
   config: FormInput[];
   onChange: (value: T) => void;
   data: T;
   useTemplating?: boolean;
+  autocompleteVariables?: boolean;
   stateKey: string;
 }) {
   const setDataAttr = useCallback(
     (name: string, value: string | boolean | null) => {
-      onChange({ ...data, [name]: value == null ? '__NULL__' : value });
+      onChange({ ...data, [name]: value == DYNAMIC_FORM_NULL_ARG ? undefined : value });
     },
     [data, onChange],
   );
 
   return (
-    <VStack space={3}>
+    <VStack space={3} className="h-full overflow-auto">
       {config.map((a, i) => {
         switch (a.type) {
           case 'select':
@@ -55,7 +58,9 @@ export function DynamicForm<T extends Record<string, string | boolean>>({
                 key={i + stateKey}
                 arg={a}
                 onChange={(v) => setDataAttr(a.name, v)}
-                value={data[a.name] ? String(data[a.name]) : DYNAMIC_FORM_NULL_ARG}
+                value={
+                  data[a.name] ? String(data[a.name]) : (a.defaultValue ?? DYNAMIC_FORM_NULL_ARG)
+                }
               />
             );
           case 'text':
@@ -65,8 +70,9 @@ export function DynamicForm<T extends Record<string, string | boolean>>({
                 stateKey={stateKey}
                 arg={a}
                 useTemplating={useTemplating || false}
+                autocompleteVariables={autocompleteVariables || false}
                 onChange={(v) => setDataAttr(a.name, v)}
-                value={data[a.name] ? String(data[a.name]) : ''}
+                value={data[a.name] ? String(data[a.name]) : (a.defaultValue ?? '')}
               />
             );
           case 'editor':
@@ -76,8 +82,9 @@ export function DynamicForm<T extends Record<string, string | boolean>>({
                 stateKey={stateKey}
                 arg={a}
                 useTemplating={useTemplating || false}
+                autocompleteVariables={autocompleteVariables || false}
                 onChange={(v) => setDataAttr(a.name, v)}
-                value={data[a.name] ? String(data[a.name]) : ''}
+                value={data[a.name] ? String(data[a.name]) : (a.defaultValue ?? '')}
               />
             );
           case 'checkbox':
@@ -95,7 +102,7 @@ export function DynamicForm<T extends Record<string, string | boolean>>({
                 key={i + stateKey}
                 arg={a}
                 onChange={(v) => setDataAttr(a.name, v)}
-                value={data[a.name] ? String(data[a.name]) : '__ERROR__'}
+                value={data[a.name] ? String(data[a.name]) : DYNAMIC_FORM_NULL_ARG}
               />
             );
           case 'file':
@@ -104,7 +111,7 @@ export function DynamicForm<T extends Record<string, string | boolean>>({
                 key={i + stateKey}
                 arg={a}
                 onChange={(v) => setDataAttr(a.name, v)}
-                filePath={data[a.name] ? String(data[a.name]) : '__ERROR__'}
+                filePath={data[a.name] ? String(data[a.name]) : DYNAMIC_FORM_NULL_ARG}
               />
             );
         }
@@ -118,12 +125,14 @@ function TextArg({
   onChange,
   value,
   useTemplating,
+  autocompleteVariables,
   stateKey,
 }: {
   arg: FormInputText;
   value: string;
   onChange: (v: string) => void;
   useTemplating: boolean;
+  autocompleteVariables: boolean;
   stateKey: string;
 }) {
   const handleChange = useCallback(
@@ -137,18 +146,14 @@ function TextArg({
     <Input
       name={arg.name}
       onChange={handleChange}
-      defaultValue={value === DYNAMIC_FORM_NULL_ARG ? '' : value}
-      require={!arg.optional}
+      defaultValue={value === DYNAMIC_FORM_NULL_ARG ? arg.defaultValue : value}
+      required={!arg.optional}
       type={arg.password ? 'password' : 'text'}
-      label={
-        <>
-          {arg.label ?? arg.name}
-          {arg.optional && <span className="text-xs text-text-subtlest"> (optional)</span>}
-        </>
-      }
+      label={arg.label ?? arg.name}
       hideLabel={arg.label == null}
       placeholder={arg.placeholder ?? arg.defaultValue ?? ''}
       useTemplating={useTemplating}
+      autocompleteVariables={autocompleteVariables}
       stateKey={stateKey}
       forceUpdateKey={stateKey}
     />
@@ -160,12 +165,14 @@ function EditorArg({
   onChange,
   value,
   useTemplating,
+  autocompleteVariables,
   stateKey,
 }: {
   arg: FormInputEditor;
   value: string;
   onChange: (v: string) => void;
   useTemplating: boolean;
+  autocompleteVariables: boolean;
   stateKey: string;
 }) {
   const handleChange = useCallback(
@@ -178,22 +185,32 @@ function EditorArg({
   const id = `input-${arg.name}`;
 
   return (
-    <div className="w-full grid grid-rows-[auto_minmax(0,1fr)]">
-      <Label htmlFor={id}>{arg.label}</Label>
+    <div className=" w-full grid grid-cols-1 grid-rows-[auto_minmax(0,1fr)]">
+      <Label
+        htmlFor={id}
+        optional={arg.optional}
+        visuallyHidden={arg.hideLabel}
+        otherTags={arg.language ? [capitalize(arg.language)] : undefined}
+      >
+        {arg.label}
+      </Label>
       <Editor
         id={id}
         className={classNames(
           'border border-border rounded-md overflow-hidden px-2 py-1.5',
           'focus-within:border-border-focus',
+          'max-h-[15rem]', // So it doesn't take up too much space
         )}
         language={arg.language}
         onChange={handleChange}
         heightMode="auto"
-        defaultValue={value === DYNAMIC_FORM_NULL_ARG ? '' : value}
+        defaultValue={value === DYNAMIC_FORM_NULL_ARG ? arg.defaultValue : value}
         placeholder={arg.placeholder ?? arg.defaultValue ?? ''}
         useTemplating={useTemplating}
+        autocompleteVariables={autocompleteVariables}
         stateKey={stateKey}
         forceUpdateKey={stateKey}
+        hideGutter
       />
     </div>
   );
@@ -213,11 +230,12 @@ function SelectArg({
       label={arg.label ?? arg.name}
       name={arg.name}
       onChange={onChange}
+      hideLabel={arg.hideLabel}
       value={value}
       options={[
         ...arg.options.map((a) => ({
           label: a.name,
-          value: a.value === arg.defaultValue ? DYNAMIC_FORM_NULL_ARG : a.value,
+          value: a.value,
         })),
       ]}
     />

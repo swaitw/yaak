@@ -29,7 +29,7 @@ export function PlainInput({
   onChange,
   onFocus,
   onPaste,
-  require,
+  required,
   rightSlot,
   size = 'md',
   type = 'text',
@@ -72,11 +72,11 @@ export function PlainInput({
   );
 
   const isValid = useMemo(() => {
-    if (require && !validateRequire(currentValue)) return false;
+    if (required && !validateRequire(currentValue)) return false;
     if (typeof validate === 'boolean') return validate;
     if (typeof validate === 'function' && !validate(currentValue)) return false;
     return true;
-  }, [require, currentValue, validate]);
+  }, [required, currentValue, validate]);
 
   const handleChange = useCallback(
     (value: string) => {
@@ -98,7 +98,12 @@ export function PlainInput({
         labelPosition === 'top' && 'flex-row gap-0.5',
       )}
     >
-      <Label htmlFor={id} className={classNames(labelClassName, 'flex-shrink-0', hideLabel && 'sr-only')}>
+      <Label
+        htmlFor={id}
+        className={labelClassName}
+        visuallyHidden={hideLabel}
+        optional={!required}
+      >
         {label}
       </Label>
       <HStack
@@ -137,7 +142,7 @@ export function PlainInput({
             className={classNames(commonClassName, 'h-auto')}
             onFocus={handleFocus}
             onBlur={handleBlur}
-            required={require}
+            required={required}
             autoFocus={autoFocus}
             placeholder={placeholder}
             onKeyDownCapture={onKeyDownCapture}

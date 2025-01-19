@@ -30,8 +30,8 @@ export function TemplateFunctionDialog({ templateFunction, hide, initialTokens, 
         initialArg?.value.type === 'str'
           ? initialArg?.value.text
           : // TODO: Implement variable-based args
-            '__NULL__';
-      initial[arg.name] = initialArgValue ?? DYNAMIC_FORM_NULL_ARG;
+            undefined;
+      initial[arg.name] = initialArgValue ?? arg.defaultValue ?? DYNAMIC_FORM_NULL_ARG;
     }
 
     return initial;

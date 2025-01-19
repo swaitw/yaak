@@ -203,14 +203,15 @@ async fn cmd_grpc_go<R: Runtime>(
         Some(id) => Some(get_environment(&window, id).await.map_err(|e| e.to_string())?),
         None => None,
     };
-    let req = get_grpc_request(&window, request_id)
+    let unrendered_request = get_grpc_request(&window, request_id)
         .await
         .map_err(|e| e.to_string())?
         .ok_or("Failed to find GRPC request")?;
-    let base_environment =
-        get_base_environment(&window, &req.workspace_id).await.map_err(|e| e.to_string())?;
-    let mut req = render_grpc_request(
-        &req,
+    let base_environment = get_base_environment(&window, &unrendered_request.workspace_id)
+        .await
+        .map_err(|e| e.to_string())?;
+    let request = render_grpc_request(
+        &unrendered_request,
         &base_environment,
         environment.as_ref(),
         &PluginTemplateCallback::new(
@@ -223,7 +224,7 @@ async fn cmd_grpc_go<R: Runtime>(
     let mut metadata = BTreeMap::new();
 
     // Add the rest of metadata
-    for h in req.clone().metadata {
+    for h in request.clone().metadata {
         if h.name.is_empty() && h.value.is_empty() {
             continue;
         }
@@ -235,12 +236,12 @@ async fn cmd_grpc_go<R: Runtime>(
         metadata.insert(h.name, h.value);
     }
 
-    if let Some(auth_name) = req.authentication_type.clone() {
-        let auth = req.authentication.clone();
+    if let Some(auth_name) = request.authentication_type.clone() {
+        let auth = request.authentication.clone();
         let plugin_req = CallHttpAuthenticationRequest {
             config: serde_json::to_value(&auth).unwrap().as_object().unwrap().to_owned(),
             method: "POST".to_string(),
-            url: req.url.clone(),
+            url: request.url.clone(),
             headers: metadata
                 .iter()
                 .map(|(name, value)| HttpHeader {
@@ -253,15 +254,13 @@ async fn cmd_grpc_go<R: Runtime>(
             .call_http_authentication(&window, &auth_name, plugin_req)
             .await
             .map_err(|e| e.to_string())?;
-
-        req.url = plugin_result.url;
-        for header in plugin_result.headers {
+        for header in plugin_result.set_headers {
             metadata.insert(header.name, header.value);
         }
     }
 
     let conn = {
-        let req = req.clone();
+        let req = request.clone();
         upsert_grpc_connection(
             &window,
             &GrpcConnection {
@@ -282,8 +281,8 @@ async fn cmd_grpc_go<R: Runtime>(
     let conn_id = conn.id.clone();
 
     let base_msg = GrpcEvent {
-        workspace_id: req.clone().workspace_id,
-        request_id: req.clone().id,
+        workspace_id: request.clone().workspace_id,
+        request_id: request.clone().id,
         connection_id: conn.clone().id,
         ..Default::default()
     };
@@ -292,12 +291,12 @@ async fn cmd_grpc_go<R: Runtime>(
     let maybe_in_msg_tx = std::sync::Mutex::new(Some(in_msg_tx.clone()));
     let (cancelled_tx, mut cancelled_rx) = tokio::sync::watch::channel(false);
 
-    let uri = safe_uri(&req.url);
+    let uri = safe_uri(&request.url);
 
     let in_msg_stream = tokio_stream::wrappers::ReceiverStream::new(in_msg_rx);
 
     let (service, method) = {
-        let req = req.clone();
+        let req = request.clone();
         match (req.service, req.method) {
             (Some(service), Some(method)) => (service, method),
             _ => return Err("Service and method are required".to_string()),
@@ -309,7 +308,7 @@ async fn cmd_grpc_go<R: Runtime>(
         .lock()
         .await
         .connect(
-            &req.clone().id,
+            &request.clone().id,
             uri.as_str(),
             &proto_files.iter().map(|p| PathBuf::from_str(p).unwrap()).collect(),
         )
@@ -440,7 +439,7 @@ async fn cmd_grpc_go<R: Runtime>(
     let grpc_listen = {
         let window = window.clone();
         let base_event = base_msg.clone();
-        let req = req.clone();
+        let req = request.clone();
         let msg = if req.message.is_empty() { "{}".to_string() } else { req.message };
         let msg = render_template(
             msg.as_str(),

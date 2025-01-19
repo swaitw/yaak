@@ -248,7 +248,7 @@ pub struct PromptTextRequest {
     pub cancel_text: Option<String>,
     /// Require the user to enter a non-empty value
     #[ts(optional)]
-    pub require: Option<bool>,
+    pub required: Option<bool>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
@@ -306,6 +306,14 @@ pub struct GetHttpAuthenticationResponse {
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export, export_to = "events.ts")]
+pub struct HttpHeader {
+    pub name: String,
+    pub value: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "events.ts")]
 pub struct CallHttpAuthenticationRequest {
     pub config: serde_json::Map<String, serde_json::Value>,
     pub method: String,
@@ -316,17 +324,10 @@ pub struct CallHttpAuthenticationRequest {
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export, export_to = "events.ts")]
-pub struct HttpHeader {
-    pub name: String,
-    pub value: String,
-}
-
-#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
-#[serde(default, rename_all = "camelCase")]
-#[ts(export, export_to = "events.ts")]
 pub struct CallHttpAuthenticationResponse {
-    pub url: String,
-    pub headers: Vec<HttpHeader>,
+    /// HTTP headers to add to the request. Existing headers will be replaced, while
+    /// new headers will be added.
+    pub set_headers: Vec<HttpHeader>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
@@ -377,6 +378,10 @@ pub struct FormInputBase {
     /// The label of the input
     #[ts(optional)]
     pub label: Option<String>,
+
+    /// Visually hide the label of the input
+    #[ts(optional)]
+    pub hide_label: Option<bool>,
 
     /// The default value
     #[ts(optional)]
@@ -429,7 +434,13 @@ pub struct FormInputEditor {
     #[ts(optional = nullable)]
     pub placeholder: Option<String>,
 
-    pub language: EditorLanguage,
+    /// Don't show the editor gutter (line numbers, folds, etc.)
+    #[ts(optional)]
+    pub hide_gutter: Option<bool>,
+
+    /// Language for syntax highlighting
+    #[ts(optional)]
+    pub language: Option<EditorLanguage>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
