@@ -2021,15 +2021,6 @@ fn create_main_window(handle: &AppHandle, url: &str) -> WebviewWindow {
 
     let window = create_window(handle, config);
 
-    // Restore window state if it's a main window
-    if !label.starts_with(OTHER_WINDOW_PREFIX) {
-        if let Err(e) = window.restore_state(StateFlags::all()) {
-            warn!("Failed to restore window state {e:?}");
-        } else {
-            debug!("Restored window state");
-        }
-    }
-
     window
 }
 
@@ -2123,6 +2114,16 @@ fn create_window(handle: &AppHandle, config: CreateWindowConfig) -> WebviewWindo
             _ => {}
         }
     });
+
+    // Restore window state if it's a main window
+    let flags = if config.label.starts_with(OTHER_WINDOW_PREFIX) {
+        StateFlags::SIZE // Windows like settings just restore size
+    } else {
+        StateFlags::all() // Main workspace windows restore everything
+    };
+    if let Err(e) = win.restore_state(flags) {
+        warn!("Failed to restore window state {e:?}");
+    }
 
     win
 }
