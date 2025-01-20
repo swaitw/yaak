@@ -1,19 +1,15 @@
-import { Context } from '@yaakapp/api';
 import { describe, expect, test } from 'vitest';
-import { pluginHookImport } from '../src';
-
-const ctx = {} as Context;
+import { migrateImport } from '../src';
 
 describe('importer-yaak', () => {
   test('Skips invalid imports', () => {
-    expect(pluginHookImport(ctx, 'not JSON')).toBeUndefined();
-    expect(pluginHookImport(ctx, '[]')).toBeUndefined();
-    expect(pluginHookImport(ctx, JSON.stringify({ resources: {} }))).toBeUndefined();
+    expect(migrateImport('not JSON')).toBeUndefined();
+    expect(migrateImport('[]')).toBeUndefined();
+    expect(migrateImport(JSON.stringify({ resources: {} }))).toBeUndefined();
   });
 
   test('converts schema 1 to 2', () => {
-    const imported = pluginHookImport(
-      ctx,
+    const imported = migrateImport(
       JSON.stringify({
         yaakSchema: 1,
         resources: {
@@ -31,8 +27,7 @@ describe('importer-yaak', () => {
     );
   });
   test('converts schema 2 to 3', () => {
-    const imported = pluginHookImport(
-      ctx,
+    const imported = migrateImport(
       JSON.stringify({
         yaakSchema: 2,
         resources: {

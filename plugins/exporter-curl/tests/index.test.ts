@@ -1,13 +1,10 @@
 import { describe, expect, test } from 'vitest';
-import { Context } from '@yaakapp/api';
-import { pluginHookExport } from '../src';
-
-const ctx = {} as Context;
+import { convertToCurl } from '../src';
 
 describe('exporter-curl', () => {
   test('Exports GET with params', async () => {
     expect(
-      await pluginHookExport(ctx, {
+      await convertToCurl({
         url: 'https://yaak.app',
         urlParameters: [
           { name: 'a', value: 'aaa' },
@@ -21,7 +18,7 @@ describe('exporter-curl', () => {
   });
   test('Exports POST with url form data', async () => {
     expect(
-      await pluginHookExport(ctx, {
+      await convertToCurl({
         url: 'https://yaak.app',
         method: 'POST',
         bodyType: 'application/x-www-form-urlencoded',
@@ -40,12 +37,12 @@ describe('exporter-curl', () => {
 
   test('Exports POST with GraphQL data', async () => {
     expect(
-      await pluginHookExport(ctx, {
+      await convertToCurl({
         url: 'https://yaak.app',
         method: 'POST',
         bodyType: 'graphql',
         body: {
-          query : '{foo,bar}',
+          query: '{foo,bar}',
           variables: '{"a": "aaa", "b": "bbb"}',
         },
       }),
@@ -56,12 +53,12 @@ describe('exporter-curl', () => {
 
   test('Exports POST with GraphQL data no variables', async () => {
     expect(
-      await pluginHookExport(ctx, {
+      await convertToCurl({
         url: 'https://yaak.app',
         method: 'POST',
         bodyType: 'graphql',
         body: {
-          query : '{foo,bar}',
+          query: '{foo,bar}',
         },
       }),
     ).toEqual(
@@ -71,7 +68,7 @@ describe('exporter-curl', () => {
 
   test('Exports PUT with multipart form', async () => {
     expect(
-      await pluginHookExport(ctx, {
+      await convertToCurl({
         url: 'https://yaak.app',
         method: 'PUT',
         bodyType: 'multipart/form-data',
@@ -96,7 +93,7 @@ describe('exporter-curl', () => {
 
   test('Exports JSON body', async () => {
     expect(
-      await pluginHookExport(ctx, {
+      await convertToCurl({
         url: 'https://yaak.app',
         method: 'POST',
         bodyType: 'application/json',
@@ -116,7 +113,7 @@ describe('exporter-curl', () => {
 
   test('Exports multi-line JSON body', async () => {
     expect(
-      await pluginHookExport(ctx, {
+      await convertToCurl({
         url: 'https://yaak.app',
         method: 'POST',
         bodyType: 'application/json',
@@ -136,7 +133,7 @@ describe('exporter-curl', () => {
 
   test('Exports headers', async () => {
     expect(
-      await pluginHookExport(ctx, {
+      await convertToCurl({
         headers: [
           { name: 'a', value: 'aaa' },
           { name: 'b', value: 'bbb', enabled: true },
@@ -148,7 +145,7 @@ describe('exporter-curl', () => {
 
   test('Basic auth', async () => {
     expect(
-      await pluginHookExport(ctx, {
+      await convertToCurl({
         url: 'https://yaak.app',
         authenticationType: 'basic',
         authentication: {
@@ -161,7 +158,7 @@ describe('exporter-curl', () => {
 
   test('Broken basic auth', async () => {
     expect(
-      await pluginHookExport(ctx, {
+      await convertToCurl({
         url: 'https://yaak.app',
         authenticationType: 'basic',
         authentication: {},
@@ -171,7 +168,7 @@ describe('exporter-curl', () => {
 
   test('Digest auth', async () => {
     expect(
-      await pluginHookExport(ctx, {
+      await convertToCurl({
         url: 'https://yaak.app',
         authenticationType: 'digest',
         authentication: {
@@ -184,7 +181,7 @@ describe('exporter-curl', () => {
 
   test('Bearer auth', async () => {
     expect(
-      await pluginHookExport(ctx, {
+      await convertToCurl({
         url: 'https://yaak.app',
         authenticationType: 'bearer',
         authentication: {
@@ -196,7 +193,7 @@ describe('exporter-curl', () => {
 
   test('Broken bearer auth', async () => {
     expect(
-      await pluginHookExport(ctx, {
+      await convertToCurl({
         url: 'https://yaak.app',
         authenticationType: 'bearer',
         authentication: {

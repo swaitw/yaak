@@ -1,6 +1,16 @@
-import { Context, Environment } from '@yaakapp/api';
+import { Environment, PluginDefinition } from '@yaakapp/api';
 
-export function pluginHookImport(_ctx: Context, contents: string) {
+export const plugin: PluginDefinition = {
+  importer: {
+    name: 'Yaak',
+    description: 'Yaak official format',
+    onImport(_ctx, args) {
+      return migrateImport(args.text) as any;
+    },
+  },
+};
+
+export function migrateImport(contents: string) {
   let parsed;
   try {
     parsed = JSON.parse(contents);

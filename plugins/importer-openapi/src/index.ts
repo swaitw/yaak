@@ -1,7 +1,6 @@
-import { Context } from '@yaakapp/api';
+import { Context, Environment, Folder, HttpRequest, PluginDefinition, Workspace } from '@yaakapp/api';
 import { convert } from 'openapi-to-postmanv2';
-import { pluginHookImport as pluginHookImportPostman } from '../../importer-postman/src/index';
-import { Folder, HttpRequest, Workspace, Environment } from '@yaakapp/api';
+import { convertPostman } from '@yaakapp/importer-postman/src';
 
 type AtLeast<T, K extends keyof T> = Partial<T> & Pick<T, K>;
 
@@ -12,8 +11,17 @@ interface ExportResources {
   folders: AtLeast<Folder, 'name' | 'id' | 'model' | 'workspaceId'>[];
 }
 
-export async function pluginHookImport(
-  ctx: Context,
+export const plugin: PluginDefinition = {
+  importer: {
+    name: 'OpenAPI',
+    description: 'Import OpenAPI collections',
+    onImport(_ctx: Context, args: { text: string }) {
+      return convertOpenApi(args.text) as any;
+    },
+  },
+};
+
+export async function convertOpenApi(
   contents: string,
 ): Promise<{ resources: ExportResources } | undefined> {
   let postmanCollection;
@@ -32,5 +40,5 @@ export async function pluginHookImport(
     return undefined;
   }
 
-  return pluginHookImportPostman(ctx, JSON.stringify(postmanCollection));
+  return convertPostman(JSON.stringify(postmanCollection));
 }

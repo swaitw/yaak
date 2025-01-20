@@ -1,17 +1,21 @@
 import { DOMParser } from '@xmldom/xmldom';
-import { Context } from '@yaakapp/api';
+import { PluginDefinition } from '@yaakapp/api';
 import xpath from 'xpath';
 
-export function pluginHookResponseFilter(
-  _ctx: Context,
-  { filter, body }: { filter: string; body: string },
-) {
-  const doc = new DOMParser().parseFromString(body, 'text/xml');
-  const result = xpath.select(filter, doc, false);
-  if (Array.isArray(result)) {
-    return result.map(r => String(r)).join('\n');
-  } else {
-    // Not sure what cases this happens in (?)
-    return String(result);
-  }
-}
+export const plugin: PluginDefinition = {
+  filter: {
+    name: 'XPath',
+    description: 'Filter XPath',
+    onFilter(_ctx, args) {
+      const doc = new DOMParser().parseFromString(args.payload, 'text/xml');
+      const result = xpath.select(args.filter, doc, false);
+
+      if (Array.isArray(result)) {
+        return { filtered: result.map(r => String(r)).join('\n') };
+      } else {
+        // Not sure what cases this happens in (?)
+        return { filtered: String(result) };
+      }
+    },
+  },
+};

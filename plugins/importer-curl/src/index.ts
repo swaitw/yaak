@@ -1,4 +1,4 @@
-import { Context, Environment, Folder, HttpRequest, HttpUrlParameter, Workspace } from '@yaakapp/api';
+import { Context, Environment, Folder, HttpRequest, HttpUrlParameter, PluginDefinition, Workspace } from '@yaakapp/api';
 import { ControlOperator, parse, ParseEntry } from 'shell-quote';
 
 type AtLeast<T, K extends keyof T> = Partial<T> & Pick<T, K>;
@@ -35,7 +35,17 @@ type FlagValue = string | boolean;
 
 type FlagsByName = Record<string, FlagValue[]>;
 
-export function pluginHookImport(_ctx: Context, rawData: string) {
+export const plugin: PluginDefinition = {
+  importer: {
+    name: 'cURL',
+    description: 'Import cURL commands',
+    onImport(_ctx: Context, args: { text: string }) {
+      return convertCurl(args.text) as any;
+    },
+  },
+};
+
+export function convertCurl(rawData: string) {
   if (!rawData.match(/^\s*curl /)) {
     return null;
   }

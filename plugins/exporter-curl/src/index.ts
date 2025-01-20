@@ -1,4 +1,4 @@
-import { Context, HttpRequest, PluginDefinition } from '@yaakapp/api';
+import { HttpRequest, PluginDefinition } from '@yaakapp/api';
 
 const NEWLINE = '\\\n ';
 
@@ -9,14 +9,14 @@ export const plugin: PluginDefinition = {
     icon: 'copy',
     async onSelect(ctx, args) {
       const rendered_request = await ctx.httpRequest.render({ httpRequest: args.httpRequest, purpose: 'preview' });
-      const data = await pluginHookExport(ctx, rendered_request);
+      const data = await convertToCurl(rendered_request);
       ctx.clipboard.copyText(data);
       ctx.toast.show({ message: 'Curl copied to clipboard', icon: 'copy' });
     },
   }],
 };
 
-export async function pluginHookExport(_ctx: Context, request: Partial<HttpRequest>) {
+export async function convertToCurl(request: Partial<HttpRequest>) {
   const xs = ['curl'];
 
   // Add method and URL all on first line

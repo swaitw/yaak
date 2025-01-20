@@ -5,6 +5,7 @@ import {
   HttpRequest,
   HttpRequestHeader,
   HttpUrlParameter,
+  PluginDefinition,
   Workspace,
 } from '@yaakapp/api';
 
@@ -21,8 +22,17 @@ interface ExportResources {
   folders: AtLeast<Folder, 'name' | 'id' | 'model' | 'workspaceId'>[];
 }
 
-export function pluginHookImport(
-  _ctx: Context,
+export const plugin: PluginDefinition = {
+  importer: {
+    name: 'Postman',
+    description: 'Import postman collections',
+    onImport(_ctx: Context, args: { text: string }) {
+      return convertPostman(args.text) as any;
+    },
+  },
+};
+
+export function convertPostman(
   contents: string,
 ): { resources: ExportResources } | undefined {
   const root = parseJSONToRecord(contents);

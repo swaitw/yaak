@@ -1,12 +1,10 @@
-import { Context, HttpRequest, Workspace } from '@yaakapp/api';
+import { HttpRequest, Workspace } from '@yaakapp/api';
 import { describe, expect, test } from 'vitest';
-import { pluginHookImport } from '../src';
-
-const ctx = {} as Context;
+import { convertCurl } from '../src';
 
 describe('importer-curl', () => {
   test('Imports basic GET', () => {
-    expect(pluginHookImport(ctx, 'curl https://yaak.app')).toEqual({
+    expect(convertCurl('curl https://yaak.app')).toEqual({
       resources: {
         workspaces: [baseWorkspace()],
         httpRequests: [
@@ -19,7 +17,7 @@ describe('importer-curl', () => {
   });
 
   test('Explicit URL', () => {
-    expect(pluginHookImport(ctx, 'curl --url https://yaak.app')).toEqual({
+    expect(convertCurl('curl --url https://yaak.app')).toEqual({
       resources: {
         workspaces: [baseWorkspace()],
         httpRequests: [
@@ -32,7 +30,7 @@ describe('importer-curl', () => {
   });
 
   test('Missing URL', () => {
-    expect(pluginHookImport(ctx, 'curl -X POST')).toEqual({
+    expect(convertCurl('curl -X POST')).toEqual({
       resources: {
         workspaces: [baseWorkspace()],
         httpRequests: [
@@ -45,7 +43,7 @@ describe('importer-curl', () => {
   });
 
   test('URL between', () => {
-    expect(pluginHookImport(ctx, 'curl -v https://yaak.app -X POST')).toEqual({
+    expect(convertCurl('curl -v https://yaak.app -X POST')).toEqual({
       resources: {
         workspaces: [baseWorkspace()],
         httpRequests: [
@@ -59,7 +57,7 @@ describe('importer-curl', () => {
   });
 
   test('Random flags', () => {
-    expect(pluginHookImport(ctx, 'curl --random -Z -Y -S --foo https://yaak.app')).toEqual({
+    expect(convertCurl('curl --random -Z -Y -S --foo https://yaak.app')).toEqual({
       resources: {
         workspaces: [baseWorkspace()],
         httpRequests: [
@@ -72,7 +70,7 @@ describe('importer-curl', () => {
   });
 
   test('Imports --request method', () => {
-    expect(pluginHookImport(ctx, 'curl --request POST https://yaak.app')).toEqual({
+    expect(convertCurl('curl --request POST https://yaak.app')).toEqual({
       resources: {
         workspaces: [baseWorkspace()],
         httpRequests: [
@@ -86,7 +84,7 @@ describe('importer-curl', () => {
   });
 
   test('Imports -XPOST method', () => {
-    expect(pluginHookImport(ctx, 'curl -XPOST --request POST https://yaak.app')).toEqual({
+    expect(convertCurl('curl -XPOST --request POST https://yaak.app')).toEqual({
       resources: {
         workspaces: [baseWorkspace()],
         httpRequests: [
@@ -101,10 +99,7 @@ describe('importer-curl', () => {
 
   test('Imports multiple requests', () => {
     expect(
-      pluginHookImport(
-        ctx,
-        'curl \\\n  https://yaak.app\necho "foo"\ncurl example.com;curl foo.com',
-      ),
+      convertCurl('curl \\\n  https://yaak.app\necho "foo"\ncurl example.com;curl foo.com'),
     ).toEqual({
       resources: {
         workspaces: [baseWorkspace()],
@@ -119,7 +114,7 @@ describe('importer-curl', () => {
 
   test('Imports form data', () => {
     expect(
-      pluginHookImport(ctx, 'curl -X POST -F "a=aaa" -F b=bbb" -F f=@filepath https://yaak.app'),
+      convertCurl('curl -X POST -F "a=aaa" -F b=bbb" -F f=@filepath https://yaak.app'),
     ).toEqual({
       resources: {
         workspaces: [baseWorkspace()],
@@ -149,7 +144,7 @@ describe('importer-curl', () => {
   });
 
   test('Imports data params as form url-encoded', () => {
-    expect(pluginHookImport(ctx, 'curl -d a -d b -d c=ccc https://yaak.app')).toEqual({
+    expect(convertCurl('curl -d a -d b -d c=ccc https://yaak.app')).toEqual({
       resources: {
         workspaces: [baseWorkspace()],
         httpRequests: [
@@ -179,7 +174,7 @@ describe('importer-curl', () => {
 
   test('Imports data params as text', () => {
     expect(
-      pluginHookImport(ctx, 'curl -H Content-Type:text/plain -d a -d b -d c=ccc https://yaak.app'),
+      convertCurl('curl -H Content-Type:text/plain -d a -d b -d c=ccc https://yaak.app'),
     ).toEqual({
       resources: {
         workspaces: [baseWorkspace()],
@@ -198,7 +193,7 @@ describe('importer-curl', () => {
 
   test('Imports post data into URL', () => {
     expect(
-      pluginHookImport(ctx, 'curl -G https://api.stripe.com/v1/payment_links -d limit=3'),
+      convertCurl('curl -G https://api.stripe.com/v1/payment_links -d limit=3'),
     ).toEqual({
       resources: {
         workspaces: [baseWorkspace()],
@@ -210,7 +205,7 @@ describe('importer-curl', () => {
               enabled: true,
               name: 'limit',
               value: '3',
-            }]
+            }],
           }),
         ],
       },
@@ -219,10 +214,7 @@ describe('importer-curl', () => {
 
   test('Imports multi-line JSON', () => {
     expect(
-      pluginHookImport(
-        ctx,
-        `curl -H Content-Type:application/json -d $'{\n  "foo":"bar"\n}' https://yaak.app`,
-      ),
+      convertCurl(`curl -H Content-Type:application/json -d $'{\n  "foo":"bar"\n}' https://yaak.app`),
     ).toEqual({
       resources: {
         workspaces: [baseWorkspace()],
@@ -241,7 +233,7 @@ describe('importer-curl', () => {
 
   test('Imports multiple headers', () => {
     expect(
-      pluginHookImport(ctx, 'curl -H Foo:bar --header Name -H AAA:bbb -H :ccc https://yaak.app'),
+      convertCurl('curl -H Foo:bar --header Name -H AAA:bbb -H :ccc https://yaak.app'),
     ).toEqual({
       resources: {
         workspaces: [baseWorkspace()],
@@ -261,7 +253,7 @@ describe('importer-curl', () => {
   });
 
   test('Imports basic auth', () => {
-    expect(pluginHookImport(ctx, 'curl --user user:pass https://yaak.app')).toEqual({
+    expect(convertCurl('curl --user user:pass https://yaak.app')).toEqual({
       resources: {
         workspaces: [baseWorkspace()],
         httpRequests: [
@@ -279,7 +271,7 @@ describe('importer-curl', () => {
   });
 
   test('Imports digest auth', () => {
-    expect(pluginHookImport(ctx, 'curl --digest --user user:pass https://yaak.app')).toEqual({
+    expect(convertCurl('curl --digest --user user:pass https://yaak.app')).toEqual({
       resources: {
         workspaces: [baseWorkspace()],
         httpRequests: [
@@ -297,7 +289,7 @@ describe('importer-curl', () => {
   });
 
   test('Imports cookie as header', () => {
-    expect(pluginHookImport(ctx, 'curl --cookie "foo=bar" https://yaak.app')).toEqual({
+    expect(convertCurl('curl --cookie "foo=bar" https://yaak.app')).toEqual({
       resources: {
         workspaces: [baseWorkspace()],
         httpRequests: [
@@ -311,7 +303,7 @@ describe('importer-curl', () => {
   });
 
   test('Imports query params', () => {
-    expect(pluginHookImport(ctx, 'curl "https://yaak.app" --url-query foo=bar --url-query baz=qux')).toEqual({
+    expect(convertCurl('curl "https://yaak.app" --url-query foo=bar --url-query baz=qux')).toEqual({
       resources: {
         workspaces: [baseWorkspace()],
         httpRequests: [
@@ -328,7 +320,7 @@ describe('importer-curl', () => {
   });
 
   test('Imports query params from the URL', () => {
-    expect(pluginHookImport(ctx, 'curl "https://yaak.app?foo=bar&baz=a%20a"')).toEqual({
+    expect(convertCurl('curl "https://yaak.app?foo=bar&baz=a%20a"')).toEqual({
       resources: {
         workspaces: [baseWorkspace()],
         httpRequests: [

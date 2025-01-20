@@ -1,4 +1,4 @@
-import { Context, Environment, Folder, GrpcRequest, HttpRequest, Workspace } from '@yaakapp/api';
+import { Context, Environment, Folder, GrpcRequest, HttpRequest, PluginDefinition, Workspace } from '@yaakapp/api';
 import YAML from 'yaml';
 
 type AtLeast<T, K extends keyof T> = Partial<T> & Pick<T, K>;
@@ -11,7 +11,17 @@ export interface ExportResources {
   folders: AtLeast<Folder, 'name' | 'id' | 'model' | 'workspaceId'>[];
 }
 
-export function pluginHookImport(ctx: Context, contents: string) {
+export const plugin: PluginDefinition = {
+  importer: {
+    name: 'Insomnia',
+    description: 'Import Insomnia workspaces',
+    onImport(_ctx: Context, args: { text: string }) {
+      return convertInsomnia(args.text) as any;
+    },
+  },
+};
+
+export function convertInsomnia(contents: string) {
   let parsed: any;
 
   try {
