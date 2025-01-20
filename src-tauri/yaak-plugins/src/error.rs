@@ -1,4 +1,4 @@
-use crate::server::plugin_runtime::EventStreamEvent;
+use crate::events::InternalEvent;
 use thiserror::Error;
 use tokio::io;
 use tokio::sync::mpsc::error::SendError;
@@ -14,18 +14,15 @@ pub enum Error {
     #[error("Tauri shell error: {0}")]
     TauriShellErr(#[from] tauri_plugin_shell::Error),
 
-    #[error("Grpc transport error: {0}")]
-    GrpcTransportErr(#[from] tonic::transport::Error),
-
     #[error("Grpc send error: {0}")]
-    GrpcSendErr(#[from] SendError<tonic::Result<EventStreamEvent>>),
+    GrpcSendErr(#[from] SendError<InternalEvent>),
 
     #[error("JSON error: {0}")]
     JsonErr(#[from] serde_json::Error),
 
     #[error("Plugin not found: {0}")]
     PluginNotFoundErr(String),
-    
+
     #[error("Auth plugin not found: {0}")]
     AuthPluginNotFound(String),
 

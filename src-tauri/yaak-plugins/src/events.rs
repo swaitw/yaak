@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::collections::HashMap;
 use tauri::{Runtime, WebviewWindow};
 use ts_rs::TS;
@@ -11,9 +12,24 @@ use yaak_models::models::{Environment, Folder, GrpcRequest, HttpRequest, HttpRes
 pub struct InternalEvent {
     pub id: String,
     pub plugin_ref_id: String,
+    pub plugin_name: String,
     pub reply_id: Option<String>,
-    pub payload: InternalEventPayload,
     pub window_context: WindowContext,
+    pub payload: InternalEventPayload,
+}
+
+/// Special type used to deserialize everything but the payload. This is so we can
+/// catch any plugin-related type errors, since payload is sent by the plugin author
+/// and all other fields are sent by Yaak first-party code.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct InternalEventRawPayload {
+    pub id: String,
+    pub plugin_ref_id: String,
+    pub plugin_name: String,
+    pub reply_id: Option<String>,
+    pub window_context: WindowContext,
+    pub payload: Value,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -95,12 +111,21 @@ pub enum InternalEventPayload {
     /// Returned when a plugin doesn't get run, just so the server
     /// has something to listen for
     EmptyResponse(EmptyPayload),
+
+    ErrorResponse(ErrorResponse),
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default)]
 #[ts(export, type = "{}", export_to = "events.ts")]
 pub struct EmptyPayload {}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default)]
+#[ts(export, export_to = "events.ts")]
+pub struct ErrorResponse {
+    pub error: String,
+}
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
@@ -116,7 +141,6 @@ pub struct BootRequest {
 pub struct BootResponse {
     pub name: String,
     pub version: String,
-    pub capabilities: Vec<String>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]

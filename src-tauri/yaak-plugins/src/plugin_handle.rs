@@ -1,8 +1,8 @@
 use crate::error::Result;
 use crate::events::{BootResponse, InternalEvent, InternalEventPayload, WindowContext};
-use crate::server::plugin_runtime::EventStreamEvent;
 use crate::util::gen_id;
 use log::info;
+use std::path::Path;
 use std::sync::Arc;
 use tokio::sync::{mpsc, Mutex};
 
@@ -10,12 +10,12 @@ use tokio::sync::{mpsc, Mutex};
 pub struct PluginHandle {
     pub ref_id: String,
     pub dir: String,
-    pub(crate) to_plugin_tx: Arc<Mutex<mpsc::Sender<tonic::Result<EventStreamEvent>>>>,
+    pub(crate) to_plugin_tx: Arc<Mutex<mpsc::Sender<InternalEvent>>>,
     pub(crate) boot_resp: Arc<Mutex<BootResponse>>,
 }
 
 impl PluginHandle {
-    pub fn new(dir: &str, tx: mpsc::Sender<tonic::Result<EventStreamEvent>>) -> Self {
+    pub fn new(dir: &str, tx: mpsc::Sender<InternalEvent>) -> Self {
         let ref_id = gen_id();
 
         PluginHandle {
@@ -46,9 +46,11 @@ impl PluginHandle {
         payload: &InternalEventPayload,
         reply_id: Option<String>,
     ) -> InternalEvent {
+        let dir = Path::new(&self.dir);
         InternalEvent {
             id: gen_id(),
             plugin_ref_id: self.ref_id.clone(),
+            plugin_name: dir.file_name().unwrap().to_str().unwrap().to_string(),
             reply_id,
             payload: payload.clone(),
             window_context,
@@ -63,13 +65,7 @@ impl PluginHandle {
     }
 
     pub(crate) async fn send(&self, event: &InternalEvent) -> Result<()> {
-        self.to_plugin_tx
-            .lock()
-            .await
-            .send(Ok(EventStreamEvent {
-                event: serde_json::to_string(event)?,
-            }))
-            .await?;
+        self.to_plugin_tx.lock().await.send(event.to_owned()).await?;
         Ok(())
     }
 
