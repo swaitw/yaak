@@ -2,6 +2,7 @@ extern crate core;
 #[cfg(target_os = "macos")]
 extern crate objc;
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
+use crate::encoding::read_response_body;
 use crate::grpc::metadata_to_map;
 use crate::http_request::send_http_request;
 use crate::notifications::YaakNotifier;
@@ -77,6 +78,7 @@ use yaak_templates::format::format_json;
 use yaak_templates::{Parser, Tokens};
 
 mod analytics;
+mod encoding;
 mod grpc;
 mod http_request;
 mod notifications;
@@ -796,7 +798,7 @@ async fn cmd_filter_response<R: Runtime>(
         }
     }
 
-    let body = read_to_string(response.body_path.unwrap()).await.unwrap();
+    let body = read_response_body(response).await.unwrap();
 
     // TODO: Have plugins register their own content type (regex?)
     plugin_manager
@@ -808,11 +810,11 @@ async fn cmd_filter_response<R: Runtime>(
 #[tauri::command]
 async fn cmd_get_sse_events(file_path: &str) -> Result<Vec<ServerSentEvent>, String> {
     let body = fs::read(file_path).map_err(|e| e.to_string())?;
-    let mut p = EventParser::new();
-    p.process_bytes(body.into()).map_err(|e| e.to_string())?;
+    let mut event_parser = EventParser::new();
+    event_parser.process_bytes(body.into()).map_err(|e| e.to_string())?;
 
     let mut events = Vec::new();
-    while let Some(e) = p.get_event() {
+    while let Some(e) = event_parser.get_event() {
         if let SSE::Event(e) = e {
             events.push(ServerSentEvent {
                 event_type: e.event_type,
@@ -2178,8 +2180,8 @@ async fn call_frontend<T: Serialize + Clone, R: Runtime>(
     }
     window.unlisten(event_id);
 
-    let foo = rx.borrow();
-    foo.clone()
+    let v = rx.borrow();
+    v.clone()
 }
 
 async fn handle_plugin_event<R: Runtime>(

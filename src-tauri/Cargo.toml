@@ -76,6 +76,7 @@ yaak-plugins = { workspace = true }
 yaak-sse = { workspace = true }
 yaak-sync = { path = "yaak-sync" }
 yaak-templates = { path = "yaak-templates" }
+encoding_rs = "0.8.35"
 
 [workspace.dependencies]
 yaak-models = { path = "yaak-models" }
