@@ -23,7 +23,6 @@ export function HTMLOrTextViewer({ response, pretty, textViewerClassName }: Prop
     return null;
   }
 
-  console.log("HELLO", rawTextBody.data, response);
   // Wasn't able to decode as text, so it must be binary
   if (rawTextBody.data == null) {
     return <BinaryViewer response={response} />;

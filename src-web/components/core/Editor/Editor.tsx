@@ -10,6 +10,7 @@ import type { EditorKeymap, EnvironmentVariable } from '@yaakapp-internal/models
 import type { EditorLanguage, TemplateFunction } from '@yaakapp-internal/plugins';
 import classNames from 'classnames';
 import { EditorView } from 'codemirror';
+import { md5 } from 'js-md5';
 import type { MutableRefObject, ReactNode } from 'react';
 import {
   Children,
@@ -583,7 +584,7 @@ const placeholderElFromText = (text: string, type: EditorProps['type']) => {
   const el = document.createElement('div');
   if (type === 'password') {
     // Will be obscured (dots) so just needs to be something to take up space
-    el.innerHTML = 'aaaaaaaaaa';
+    el.innerHTML = 'something-cool';
     el.setAttribute('aria-hidden', 'true');
   } else {
     el.innerHTML = text ? text.replaceAll('\n', '<br/>') : ' ';
@@ -593,22 +594,38 @@ const placeholderElFromText = (text: string, type: EditorProps['type']) => {
 
 function saveCachedEditorState(stateKey: string | null, state: EditorState | null) {
   if (!stateKey || state == null) return;
-  sessionStorage.setItem(computeFullStateKey(stateKey), JSON.stringify(state.toJSON(stateFields)));
+  const stateObj = state.toJSON(stateFields);
+
+  // Save state in sessionStorage by removing doc and saving the hash of it instead
+  // This will be checked on restore and put back in if it matches
+  stateObj.docHash = md5(stateObj.doc);
+  delete stateObj.doc;
+
+  try {
+    sessionStorage.setItem(computeFullStateKey(stateKey), JSON.stringify(stateObj));
+  } catch (err) {
+    console.log('Failed to save to editor state', stateKey, err);
+  }
 }
 
 function getCachedEditorState(doc: string, stateKey: string | null) {
   if (stateKey == null) return;
 
-  const stateStr = sessionStorage.getItem(computeFullStateKey(stateKey));
-  if (stateStr == null) return null;
-
   try {
-    const state = JSON.parse(stateStr);
-    if (state.doc !== doc) return null;
+    const stateStr = sessionStorage.getItem(computeFullStateKey(stateKey));
+    if (stateStr == null) return null;
 
+    const { docHash, ...state } = JSON.parse(stateStr);
+
+    // Ensure the doc matches the one that was used to save the state
+    if (docHash !== md5(doc)) {
+      return null;
+    }
+
+    state.doc = doc;
     return state;
-  } catch {
-    // Nothing
+  } catch (err) {
+    console.log('Failed to restore editor storage', stateKey, err);
   }
 
   return null;
