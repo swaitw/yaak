@@ -368,7 +368,7 @@ export const RequestPane = memo(function RequestPane({
             onMethodChange={handleMethodChange}
             onUrlChange={handleUrlChange}
             forceUpdateKey={updateKey}
-            isLoading={activeResponse?.state !== 'closed'}
+            isLoading={activeResponse != null && activeResponse.state !== 'closed'}
           />
           <Tabs
             key={activeRequest.id} // Freshen tabs on request change
