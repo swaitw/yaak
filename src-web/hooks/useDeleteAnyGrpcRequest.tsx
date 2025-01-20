@@ -3,15 +3,15 @@ import { InlineCode } from '../components/core/InlineCode';
 import { trackEvent } from '../lib/analytics';
 import { showConfirm } from '../lib/confirm';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
-import { getGrpcRequest } from '../lib/store';
 import { invokeCmd } from '../lib/tauri';
 import { useFastMutation } from './useFastMutation';
+import { getGrpcRequest } from './useGrpcRequests';
 
 export function useDeleteAnyGrpcRequest() {
   return useFastMutation<GrpcRequest | null, string, string>({
     mutationKey: ['delete_any_grpc_request'],
     mutationFn: async (id) => {
-      const request = await getGrpcRequest(id);
+      const request = getGrpcRequest(id);
       if (request == null) return null;
 
       const confirmed = await showConfirm({

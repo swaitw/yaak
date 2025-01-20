@@ -13,12 +13,12 @@ import { useSendManyRequests } from '../hooks/useSendManyRequests';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 
 import { showDialog } from '../lib/dialog';
-import { getHttpRequest } from '../lib/store';
 import type { DropdownItem } from './core/Dropdown';
 import { ContextMenu } from './core/Dropdown';
 import { Icon } from './core/Icon';
 import { FolderSettingsDialog } from './FolderSettingsDialog';
 import type { SidebarTreeNode } from './Sidebar';
+import { getHttpRequest } from '../hooks/useHttpRequests';
 
 interface Props {
   child: SidebarTreeNode;
@@ -97,7 +97,7 @@ export function SidebarItemContextMenu({ child, show, close }: Props) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 leftSlot: <Icon icon={(a.icon as any) ?? 'empty'} />,
                 onSelect: async () => {
-                  const request = await getHttpRequest(child.id);
+                  const request = getHttpRequest(child.id);
                   if (request != null) await a.call(request);
                 },
               })),

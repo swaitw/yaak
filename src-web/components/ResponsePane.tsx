@@ -6,7 +6,7 @@ import { useLocalStorage } from 'react-use';
 import { useContentTypeFromHeaders } from '../hooks/useContentTypeFromHeaders';
 import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
 import { useResponseViewMode } from '../hooks/useResponseViewMode';
-import { isResponseLoading } from '../lib/model_util';
+import { ConfirmLargeResponse } from './ConfirmLargeResponse';
 import { Banner } from './core/Banner';
 import { CountBadge } from './core/CountBadge';
 import { DurationTag } from './core/DurationTag';
@@ -29,7 +29,6 @@ import { ImageViewer } from './responseViewers/ImageViewer';
 import { PdfViewer } from './responseViewers/PdfViewer';
 import { SvgViewer } from './responseViewers/SvgViewer';
 import { VideoViewer } from './responseViewers/VideoViewer';
-import { ConfirmLargeResponse } from './ConfirmLargeResponse';
 
 interface Props {
   style?: CSSProperties;
@@ -92,8 +91,6 @@ export const ResponsePane = memo(function ResponsePane({
     [activeRequestId, setActiveTabs],
   );
 
-  const isLoading = isResponseLoading(activeResponse);
-
   return (
     <div
       style={style}
@@ -127,7 +124,7 @@ export const ResponsePane = memo(function ResponsePane({
                   'whitespace-nowrap w-full pl-3 overflow-x-auto font-mono text-sm',
                 )}
               >
-                {isLoading && <Icon size="sm" icon="refresh" spin />}
+                {activeResponse.state !== 'closed' && <Icon size="sm" icon="refresh" spin />}
                 <StatusTag showReason response={activeResponse} />
                 <span>&bull;</span>
                 <DurationTag
@@ -164,7 +161,11 @@ export const ResponsePane = memo(function ResponsePane({
             >
               <TabContent value={TAB_BODY}>
                 <ConfirmLargeResponse response={activeResponse}>
-                  {!activeResponse.contentLength ? (
+                  {activeResponse.state === 'initialized' ? (
+                    <EmptyStateText>
+                      <Icon size="xl" spin icon="refresh" className="text-text-subtlest" />
+                    </EmptyStateText>
+                  ) : activeResponse.state === 'closed' && activeResponse.contentLength === 0 ? (
                     <div className="pb-2 h-full">
                       <EmptyStateText>Empty Body</EmptyStateText>
                     </div>

@@ -3,15 +3,15 @@ import { InlineCode } from '../components/core/InlineCode';
 import { trackEvent } from '../lib/analytics';
 import { showConfirm } from '../lib/confirm';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
-import { getHttpRequest } from '../lib/store';
 import { invokeCmd } from '../lib/tauri';
 import { useFastMutation } from './useFastMutation';
+import { getHttpRequest } from './useHttpRequests';
 
 export function useDeleteAnyHttpRequest() {
   return useFastMutation<HttpRequest | null, string, string>({
     mutationKey: ['delete_any_http_request'],
     mutationFn: async (id) => {
-      const request = await getHttpRequest(id);
+      const request = getHttpRequest(id);
       if (request == null) return null;
 
       const confirmed = await showConfirm({

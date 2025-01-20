@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { jotaiStore } from '../lib/jotai';
-import { getWorkspaceMeta } from '../lib/store';
 import { invokeCmd } from '../lib/tauri';
 import { activeWorkspaceIdAtom, getActiveWorkspaceId } from './useActiveWorkspace';
 import { cookieJarsAtom } from './useCookieJars';
@@ -42,5 +41,5 @@ async function sync() {
   jotaiStore.set(environmentsAtom, await invokeCmd('cmd_list_environments', args));
 
   // Single models
-  jotaiStore.set(workspaceMetaAtom, await getWorkspaceMeta(workspaceId));
+  jotaiStore.set(workspaceMetaAtom, await invokeCmd('cmd_get_workspace_meta', { workspaceId }));
 }

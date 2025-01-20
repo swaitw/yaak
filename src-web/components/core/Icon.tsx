@@ -94,7 +94,7 @@ const icons = {
 export interface IconProps {
   icon: keyof typeof icons;
   className?: string;
-  size?: '2xs' | 'xs' | 'sm' | 'md' | 'lg';
+  size?: '2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   spin?: boolean;
   title?: string;
 }
@@ -107,6 +107,7 @@ export const Icon = memo(function Icon({ icon, spin, size = 'md', className, tit
       className={classNames(
         className,
         'text-inherit flex-shrink-0',
+        size === 'xl' && 'h-6 w-6',
         size === 'lg' && 'h-5 w-5',
         size === 'md' && 'h-4 w-4',
         size === 'sm' && 'h-3.5 w-3.5',

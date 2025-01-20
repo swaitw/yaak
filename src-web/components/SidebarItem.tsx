@@ -14,7 +14,6 @@ import { useSidebarItemCollapsed } from '../hooks/useSidebarItemCollapsed';
 import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
 import { jotaiStore } from '../lib/jotai';
-import { isResponseLoading } from '../lib/model_util';
 import { HttpMethodTag } from './core/HttpMethodTag';
 import { Icon } from './core/Icon';
 import { StatusTag } from './core/StatusTag';
@@ -277,13 +276,13 @@ export const SidebarItem = memo(function SidebarItem({
           </div>
           {latestGrpcConnection ? (
             <div className="ml-auto">
-              {isResponseLoading(latestGrpcConnection) && (
+              {latestGrpcConnection.state !== 'closed' && (
                 <Icon spin size="sm" icon="update" className="text-text-subtlest" />
               )}
             </div>
           ) : latestHttpResponse ? (
             <div className="ml-auto">
-              {isResponseLoading(latestHttpResponse) ? (
+              {latestHttpResponse.state !== 'closed' ? (
                 <Icon spin size="sm" icon="refresh" className="text-text-subtlest" />
               ) : (
                 <StatusTag className="text-xs" response={latestHttpResponse} />

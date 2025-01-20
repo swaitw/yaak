@@ -1,3 +1,4 @@
+import type { GrpcEvent, GrpcRequest } from '@yaakapp-internal/models';
 import classNames from 'classnames';
 import { format } from 'date-fns';
 import type { CSSProperties } from 'react';
@@ -5,8 +6,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useGrpcEvents } from '../hooks/useGrpcEvents';
 import { usePinnedGrpcConnection } from '../hooks/usePinnedGrpcConnection';
 import { useStateWithDeps } from '../hooks/useStateWithDeps';
-import type { GrpcEvent, GrpcRequest } from '@yaakapp-internal/models';
-import { isResponseLoading } from '../lib/model_util';
 import { Banner } from './core/Banner';
 import { Button } from './core/Button';
 import { Icon } from './core/Icon';
@@ -66,7 +65,7 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
             <HStack className="pl-3 mb-1 font-mono text-sm">
               <HStack space={2}>
                 <span>{events.length} Messages</span>
-                {isResponseLoading(activeConnection) && (
+                {activeConnection.state !== 'closed' && (
                   <Icon icon="refresh" size="sm" spin className="text-text-subtlest" />
                 )}
               </HStack>

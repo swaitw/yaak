@@ -16,7 +16,7 @@ export function BinaryViewer({ response }: Props) {
   const contentType = getContentTypeHeader(response.headers) ?? 'unknown';
 
   // Wait until the response has been fully-downloaded
-  if (response.state !== 'closed') {
+  if (response.state === 'closed') {
     return (
       <EmptyStateText>
         <Icon icon="refresh" spin />

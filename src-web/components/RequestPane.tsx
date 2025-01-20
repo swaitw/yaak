@@ -12,7 +12,6 @@ import { useHttpAuthentication } from '../hooks/useHttpAuthentication';
 import { httpRequestsAtom } from '../hooks/useHttpRequests';
 import { useImportCurl } from '../hooks/useImportCurl';
 import { useImportQuerystring } from '../hooks/useImportQuerystring';
-import { useIsResponseLoading } from '../hooks/useIsResponseLoading';
 import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
 import { useRequestEditor, useRequestEditorEvent } from '../hooks/useRequestEditor';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
@@ -277,7 +276,6 @@ export const RequestPane = memo(function RequestPane({
     ],
   );
 
-  const isLoading = useIsResponseLoading(activeRequestId);
   const { mutate: sendRequest } = useSendAnyHttpRequest();
   const { activeResponse } = usePinnedHttpResponse(activeRequestId);
   const { mutate: cancelResponse } = useCancelHttpResponse(activeResponse?.id ?? null);
@@ -370,7 +368,7 @@ export const RequestPane = memo(function RequestPane({
             onMethodChange={handleMethodChange}
             onUrlChange={handleUrlChange}
             forceUpdateKey={updateKey}
-            isLoading={isLoading}
+            isLoading={activeResponse?.state !== 'closed'}
           />
           <Tabs
             key={activeRequest.id} // Freshen tabs on request change

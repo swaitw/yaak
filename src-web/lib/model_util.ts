@@ -1,10 +1,4 @@
-import type {
-  AnyModel,
-  Cookie,
-  GrpcConnection,
-  HttpResponse,
-  HttpResponseHeader,
-} from '@yaakapp-internal/models';
+import type { AnyModel, Cookie, HttpResponseHeader } from '@yaakapp-internal/models';
 import { getMimeTypeFromContentType } from './contentType';
 
 export const BODY_TYPE_NONE = null;
@@ -27,13 +21,6 @@ export function cookieDomain(cookie: Cookie): string {
     return cookie.domain.Suffix;
   }
   return 'unknown';
-}
-
-export function isResponseLoading(
-  response: Pick<HttpResponse | GrpcConnection, 'state'> | null,
-): boolean {
-  if (response == null) return false;
-  return response.state !== 'closed';
 }
 
 export function modelsEq(a: AnyModel, b: AnyModel) {

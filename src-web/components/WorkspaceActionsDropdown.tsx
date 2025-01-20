@@ -8,11 +8,10 @@ import { useCreateWorkspace } from '../hooks/useCreateWorkspace';
 import { useDeleteSendHistory } from '../hooks/useDeleteSendHistory';
 import { settingsAtom } from '../hooks/useSettings';
 import { useWorkspaceMeta } from '../hooks/useWorkspaceMeta';
-import { useWorkspaces } from '../hooks/useWorkspaces';
+import { getWorkspace, useWorkspaces } from '../hooks/useWorkspaces';
 import { showDialog } from '../lib/dialog';
 import { jotaiStore } from '../lib/jotai';
 import { revealInFinderText } from '../lib/reveal';
-import { getWorkspace } from '../lib/store';
 import type { ButtonProps } from './core/Button';
 import { Button } from './core/Button';
 import type { DropdownItem } from './core/Dropdown';
@@ -106,7 +105,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
       return;
     }
 
-    const workspace = await getWorkspace(workspaceId);
+    const workspace = getWorkspace(workspaceId);
     if (workspace == null) return;
 
     showDialog({
