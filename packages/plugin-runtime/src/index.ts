@@ -3,7 +3,10 @@ import { EventChannel } from './EventChannel';
 import { PluginHandle } from './PluginHandle';
 import WebSocket from 'ws';
 
-const port = process.env.YAAK_PLUGIN_SERVER_PORT || '9442';
+const port = process.env.PORT;
+if (!port) {
+  throw new Error('Plugin runtime missing PORT')
+}
 
 const events = new EventChannel();
 const plugins: Record<string, PluginHandle> = {};
@@ -17,9 +20,9 @@ ws.on('message', async (e: Buffer) => {
     console.log('Failed to handle incoming plugin event', err);
   }
 });
-ws.on('open', (e) => console.log('Plugin runtime connected to websocket', e));
-ws.on('error', (e) => console.error('Plugin runtime websocket error', e));
-ws.on('close', (e) => console.log('Plugin runtime websocket closed', e));
+ws.on('open', () => console.log('Plugin runtime connected to websocket'));
+ws.on('error', (err: any) => console.error('Plugin runtime websocket error', err));
+ws.on('close', (code: number) => console.log('Plugin runtime websocket closed', code));
 
 // Listen for incoming events from plugins
 events.listen((e) => {
