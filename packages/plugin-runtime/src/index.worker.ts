@@ -212,15 +212,6 @@ function initialize(workerData: PluginWorkerData) {
   }
   importModule();
 
-  if (pkg.name?.includes('yaak-faker')) {
-    sendPayload(
-      { type: 'none' },
-      { type: 'error_response', error: 'Failed to initialize Faker plugin' },
-      null,
-    );
-    return;
-  }
-
   // Message comes into the plugin to be processed
   parentPort!.on('message', async (event: InternalEvent) => {
     const ctx = newCtx(event);
