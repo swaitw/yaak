@@ -14,7 +14,7 @@ const details: Record<
   LicenseCheckStatus['type'] | 'dev' | 'beta',
   { label: ReactNode; color: ButtonProps['color'] } | null
 > = {
-  beta: { label: <HStack space={1}><span>Beta Feedback</span><Icon size="xs" icon='external_link'/></HStack>, color: 'success' },
+  beta: { label: <HStack space={1}><span>Beta Feedback</span><Icon size="xs" icon='external_link'/></HStack>, color: 'info' },
   dev: { label: 'Develop', color: 'secondary' },
   commercial_use: null,
   invalid_license: { label: 'License Error', color: 'danger' },
