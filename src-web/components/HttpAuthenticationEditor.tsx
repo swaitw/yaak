@@ -49,7 +49,7 @@ export function HttpAuthenticationEditor({ request }: Props) {
 
   return (
     <div className="h-full grid grid-rows-[auto_minmax(0,1fr)]">
-      <HStack space={2} className="mb-1" alignItems="center">
+      <HStack space={2} className="mb-2" alignItems="center">
         <Checkbox
           className="w-full"
           checked={!request.authentication.disabled}
