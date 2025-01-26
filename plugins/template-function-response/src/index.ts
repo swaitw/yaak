@@ -17,17 +17,16 @@ const behaviorArg: FormInput = {
   label: 'Sending Behavior',
   defaultValue: 'smart',
   options: [
-    { name: 'When no responses', value: 'smart' },
-    { name: 'Always', value: 'always' },
+    { label: 'When no responses', value: 'smart' },
+    { label: 'Always', value: 'always' },
   ],
 };
 
-const requestArg: FormInput =
-  {
-    type: 'http_request',
-    name: 'request',
-    label: 'Request',
-  };
+const requestArg: FormInput = {
+  type: 'http_request',
+  name: 'request',
+  label: 'Request',
+};
 
 export const plugin: PluginDefinition = {
   templateFunctions: [
