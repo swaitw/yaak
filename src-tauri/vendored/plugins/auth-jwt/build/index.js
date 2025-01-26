@@ -3814,21 +3814,22 @@ var plugin = {
     name: "jwt",
     label: "JWT Bearer",
     shortLabel: "JWT",
-    config: [
+    args: [
       {
         type: "select",
         name: "algorithm",
         label: "Algorithm",
         hideLabel: true,
         defaultValue: defaultAlgorithm,
-        options: algorithms.map((value) => ({ name: value === "none" ? "None" : value, value }))
+        options: algorithms.map((value) => ({ label: value === "none" ? "None" : value, value }))
       },
       {
-        type: "editor",
+        type: "text",
         name: "secret",
         label: "Secret or Private Key",
+        password: true,
         optional: true,
-        hideGutter: true
+        multiLine: true
       },
       {
         type: "checkbox",
@@ -3844,8 +3845,8 @@ var plugin = {
         placeholder: "{ }"
       }
     ],
-    async onApply(_ctx, args) {
-      const { algorithm, secret: _secret, secretBase64, payload } = args.config;
+    async onApply(_ctx, { values }) {
+      const { algorithm, secret: _secret, secretBase64, payload } = values;
       const secret = secretBase64 ? Buffer.from(`${_secret}`, "base64") : `${_secret}`;
       const token = import_jsonwebtoken.default.sign(`${payload}`, secret, { algorithm });
       const value = `Bearer ${token}`;

@@ -1,13 +1,29 @@
 import {
+  CallHttpAuthenticationActionArgs,
   CallHttpAuthenticationRequest,
   CallHttpAuthenticationResponse,
-  GetHttpAuthenticationResponse,
-} from '../bindings/events';
+  FormInput,
+  GetHttpAuthenticationConfigRequest,
+  GetHttpAuthenticationSummaryResponse,
+  HttpAuthenticationAction,
+} from '../bindings/gen_events';
+import { MaybePromise } from '../helpers';
 import { Context } from './Context';
 
-export type AuthenticationPlugin = Omit<GetHttpAuthenticationResponse, 'pluginName'> & {
+type DynamicFormInput = FormInput & {
+  dynamic(
+    ctx: Context,
+    args: GetHttpAuthenticationConfigRequest,
+  ): MaybePromise<Partial<FormInput> | undefined | null>;
+};
+
+export type AuthenticationPlugin = GetHttpAuthenticationSummaryResponse & {
+  args: (FormInput | DynamicFormInput)[];
   onApply(
     ctx: Context,
     args: CallHttpAuthenticationRequest,
-  ): Promise<CallHttpAuthenticationResponse> | CallHttpAuthenticationResponse;
+  ): MaybePromise<CallHttpAuthenticationResponse>;
+  actions?: (HttpAuthenticationAction & {
+    onSelect(ctx: Context, args: CallHttpAuthenticationActionArgs): Promise<void> | void;
+  })[];
 };

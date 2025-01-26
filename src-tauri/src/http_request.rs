@@ -70,7 +70,7 @@ pub async fn send_http_request<R: Runtime>(
     if !url_string.starts_with("http://") && !url_string.starts_with("https://") {
         url_string = format!("http://{}", url_string);
     }
-    debug!("Sending request to {url_string}");
+    debug!("Sending request to {} {url_string}", request.method);
 
     let mut client_builder = reqwest::Client::builder()
         .redirect(match workspace.setting_follow_redirects {
@@ -262,7 +262,7 @@ pub async fn send_http_request<R: Runtime>(
                     None => {}
                     Some(a) => {
                         for p in a {
-                            let enabled = get_bool(p, "enabled");
+                            let enabled = get_bool(p, "enabled", true);
                             let name = get_str(p, "name");
                             if !enabled || name.is_empty() {
                                 continue;
@@ -296,7 +296,7 @@ pub async fn send_http_request<R: Runtime>(
                     None => {}
                     Some(fd) => {
                         for p in fd {
-                            let enabled = get_bool(p, "enabled");
+                            let enabled = get_bool(p, "enabled", true);
                             let name = get_str(p, "name").to_string();
 
                             if !enabled || name.is_empty() {
@@ -376,13 +376,11 @@ pub async fn send_http_request<R: Runtime>(
 
     if let Some(auth_name) = request.authentication_type.to_owned() {
         let req = CallHttpAuthenticationRequest {
-            config: serde_json::to_value(&request.authentication)
-                .unwrap()
-                .as_object()
-                .unwrap()
-                .to_owned(),
-            method: sendable_req.method().to_string(),
+            context_id: format!("{:x}", md5::compute(request.id)),
+            values: serde_json::from_value(serde_json::to_value(&request.authentication).unwrap())
+                .unwrap(),
             url: sendable_req.url().to_string(),
+            method: sendable_req.method().to_string(),
             headers: sendable_req
                 .headers()
                 .iter()
@@ -604,10 +602,10 @@ fn ensure_proto(url_str: &str) -> String {
     format!("http://{url_str}")
 }
 
-fn get_bool(v: &Value, key: &str) -> bool {
+fn get_bool(v: &Value, key: &str, fallback: bool) -> bool {
     match v.get(key) {
-        None => false,
-        Some(v) => v.as_bool().unwrap_or_default(),
+        None => fallback,
+        Some(v) => v.as_bool().unwrap_or(fallback),
     }
 }
 

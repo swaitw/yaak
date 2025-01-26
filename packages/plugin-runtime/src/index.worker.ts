@@ -1,11 +1,18 @@
+// OAuth 2.0 spec -> https://datatracker.ietf.org/doc/html/rfc6749
+
 import type {
   BootRequest,
   Context,
+  DeleteKeyValueResponse,
   FindHttpResponsesResponse,
+  FormInput,
   GetHttpRequestByIdResponse,
+  GetKeyValueResponse,
+  HttpAuthenticationAction,
   HttpRequestAction,
   InternalEvent,
   InternalEventPayload,
+  JsonPrimitive,
   PluginDefinition,
   PromptTextResponse,
   RenderHttpRequestResponse,
@@ -19,8 +26,16 @@ import type { Stats } from 'node:fs';
 import { readFileSync, statSync, watch } from 'node:fs';
 import path from 'node:path';
 import * as util from 'node:util';
+import { parentPort as nullableParentPort, workerData } from 'node:worker_threads';
+import Promise from '../../../../../Library/Caches/deno/npm/registry.npmjs.org/any-promise/1.3.0';
 import { interceptStdout } from './interceptStdout';
-import { parentPort, workerData } from 'node:worker_threads';
+import { migrateHttpRequestActionKey, migrateTemplateFunctionSelectOptions } from './migrations';
+
+if (nullableParentPort == null) {
+  throw new Error('Worker does not have access to parentPort');
+}
+
+const parentPort = nullableParentPort;
 
 export interface PluginWorkerData {
   bootRequest: BootRequest;
@@ -73,7 +88,7 @@ function initialize(workerData: PluginWorkerData) {
     if (event.payload.type !== 'empty_response') {
       console.log('Sending event to app', event.id, event.payload.type);
     }
-    parentPort!.postMessage(event);
+    parentPort.postMessage(event);
   }
 
   function sendAndWaitForReply<T extends Omit<InternalEventPayload, 'type'>>(
@@ -84,14 +99,15 @@ function initialize(workerData: PluginWorkerData) {
     const eventToSend = buildEventToSend(windowContext, payload, null);
 
     // 2. Spawn listener in background
-    const promise = new Promise<InternalEventPayload>((resolve) => {
+    const promise = new Promise<T>((resolve) => {
       const cb = (event: InternalEvent) => {
         if (event.replyId === eventToSend.id) {
-          parentPort!.off('message', cb); // Unlisten, now that we're done
-          resolve(event.payload); // Not type-safe but oh well
+          parentPort.off('message', cb); // Unlisten, now that we're done
+          const { type: _, ...payload } = event.payload;
+          resolve(payload as T);
         }
       };
-      parentPort!.on('message', cb);
+      parentPort.on('message', cb);
     });
 
     // 3. Send the event after we start listening (to prevent race)
@@ -101,10 +117,29 @@ function initialize(workerData: PluginWorkerData) {
     return promise as unknown as Promise<T>;
   }
 
+  function sendAndListenForEvents(
+    windowContext: WindowContext,
+    payload: InternalEventPayload,
+    onEvent: (event: InternalEventPayload) => void,
+  ): void {
+    // 1. Build event to send
+    const eventToSend = buildEventToSend(windowContext, payload, null);
+
+    // 2. Listen for replies in the background
+    parentPort.on('message', (event: InternalEvent) => {
+      if (event.replyId === eventToSend.id) {
+        onEvent(event.payload);
+      }
+    });
+
+    // 3. Send the event after we start listening (to prevent race)
+    sendEvent(eventToSend);
+  }
+
   // Reload plugin if the JS or package.json changes
   const windowContextNone: WindowContext = { type: 'none' };
   const fileChangeCallback = async () => {
-    await importModule();
+    importModule();
     return sendPayload(windowContextNone, { type: 'reload_response' }, null);
   };
 
@@ -128,6 +163,27 @@ function initialize(workerData: PluginWorkerData) {
           type: 'show_toast_request',
           ...args,
         });
+      },
+    },
+    window: {
+      async openUrl({ onNavigate, ...args }) {
+        args.label = args.label || `${Math.random()}`;
+        const payload: InternalEventPayload = { type: 'open_window_request', ...args };
+        const onEvent = (event: InternalEventPayload) => {
+          if (event.type === 'window_navigate_event') {
+            onNavigate?.(event);
+          }
+        };
+        sendAndListenForEvents(event.windowContext, payload, onEvent);
+        return {
+          close: () => {
+            const closePayload: InternalEventPayload = {
+              type: 'close_window_request',
+              label: args.label,
+            };
+            sendPayload(event.windowContext, closePayload, null);
+          },
+        };
       },
     },
     prompt: {
@@ -201,6 +257,30 @@ function initialize(workerData: PluginWorkerData) {
         return result.data;
       },
     },
+    store: {
+      async get<T>(key: string) {
+        const payload = { type: 'get_key_value_request', key } as const;
+        const result = await sendAndWaitForReply<GetKeyValueResponse>(event.windowContext, payload);
+        return result.value ? (JSON.parse(result.value) as T) : undefined;
+      },
+      async set<T>(key: string, value: T) {
+        const valueStr = JSON.stringify(value);
+        const payload: InternalEventPayload = {
+          type: 'set_key_value_request',
+          key,
+          value: valueStr,
+        };
+        await sendAndWaitForReply<GetKeyValueResponse>(event.windowContext, payload);
+      },
+      async delete(key: string) {
+        const payload = { type: 'delete_key_value_request', key } as const;
+        const result = await sendAndWaitForReply<DeleteKeyValueResponse>(
+          event.windowContext,
+          payload,
+        );
+        return result.deleted;
+      },
+    },
   });
 
   let plug: PluginDefinition | null = null;
@@ -210,10 +290,11 @@ function initialize(workerData: PluginWorkerData) {
     delete require.cache[id];
     plug = require(id).plugin;
   }
+
   importModule();
 
   // Message comes into the plugin to be processed
-  parentPort!.on('message', async (event: InternalEvent) => {
+  parentPort.on('message', async (event: InternalEvent) => {
     const ctx = newCtx(event);
     const { windowContext, payload, id: replyId } = event;
     try {
@@ -272,7 +353,7 @@ function initialize(workerData: PluginWorkerData) {
         Array.isArray(plug?.httpRequestActions)
       ) {
         const reply: HttpRequestAction[] = plug.httpRequestActions.map((a) => ({
-          ...a,
+          ...migrateHttpRequestActionKey(a),
           // Add everything except onSelect
           onSelect: undefined,
         }));
@@ -289,11 +370,13 @@ function initialize(workerData: PluginWorkerData) {
         payload.type === 'get_template_functions_request' &&
         Array.isArray(plug?.templateFunctions)
       ) {
-        const reply: TemplateFunction[] = plug.templateFunctions.map((a) => ({
-          ...a,
-          // Add everything except render
-          onRender: undefined,
-        }));
+        const reply: TemplateFunction[] = plug.templateFunctions.map((templateFunction) => {
+          return {
+            ...migrateTemplateFunctionSelectOptions(templateFunction),
+            // Add everything except render
+            onRender: undefined,
+          };
+        });
         const replyPayload: InternalEventPayload = {
           type: 'get_template_functions_response',
           pluginRefId,
@@ -303,11 +386,42 @@ function initialize(workerData: PluginWorkerData) {
         return;
       }
 
-      if (payload.type === 'get_http_authentication_request' && plug?.authentication) {
-        const { onApply: _, ...auth } = plug.authentication;
+      if (payload.type === 'get_http_authentication_summary_request' && plug?.authentication) {
+        const { name, shortLabel, label } = plug.authentication;
         const replyPayload: InternalEventPayload = {
-          ...auth,
-          type: 'get_http_authentication_response',
+          type: 'get_http_authentication_summary_response',
+          name,
+          label,
+          shortLabel,
+        };
+
+        sendPayload(windowContext, replyPayload, replyId);
+        return;
+      }
+
+      if (payload.type === 'get_http_authentication_config_request' && plug?.authentication) {
+        const { args, actions } = plug.authentication;
+        const resolvedArgs: FormInput[] = [];
+        for (let i = 0; i < args.length; i++) {
+          let v = args[i];
+          if ('dynamic' in v) {
+            const dynamicAttrs = await v.dynamic(ctx, payload);
+            const { dynamic, ...other } = v;
+            resolvedArgs.push({ ...other, ...dynamicAttrs } as FormInput);
+          } else {
+            resolvedArgs.push(v);
+          }
+        }
+        const resolvedActions: HttpAuthenticationAction[] = [];
+        for (const { onSelect, ...action } of actions ?? []) {
+          resolvedActions.push(action);
+        }
+
+        const replyPayload: InternalEventPayload = {
+          type: 'get_http_authentication_config_response',
+          args: resolvedArgs,
+          actions: resolvedActions,
+          pluginRefId,
         };
 
         sendPayload(windowContext, replyPayload, replyId);
@@ -317,12 +431,13 @@ function initialize(workerData: PluginWorkerData) {
       if (payload.type === 'call_http_authentication_request' && plug?.authentication) {
         const auth = plug.authentication;
         if (typeof auth?.onApply === 'function') {
+          applyFormInputDefaults(auth.args, payload.values);
           const result = await auth.onApply(ctx, payload);
           sendPayload(
             windowContext,
             {
-              ...result,
               type: 'call_http_authentication_response',
+              setHeaders: result.setHeaders,
             },
             replyId,
           );
@@ -331,10 +446,24 @@ function initialize(workerData: PluginWorkerData) {
       }
 
       if (
+        payload.type === 'call_http_authentication_action_request' &&
+        plug?.authentication != null
+      ) {
+        const action = plug.authentication.actions?.find((a) => a.name === payload.name);
+        if (typeof action?.onSelect === 'function') {
+          await action.onSelect(ctx, payload.args);
+          sendEmpty(windowContext, replyId);
+          return;
+        }
+      }
+
+      if (
         payload.type === 'call_http_request_action_request' &&
         Array.isArray(plug?.httpRequestActions)
       ) {
-        const action = plug.httpRequestActions.find((a) => a.key === payload.key);
+        const action = plug.httpRequestActions.find(
+          (a) => migrateHttpRequestActionKey(a).name === payload.name,
+        );
         if (typeof action?.onSelect === 'function') {
           await action.onSelect(ctx, payload.args);
           sendEmpty(windowContext, replyId);
@@ -348,6 +477,7 @@ function initialize(workerData: PluginWorkerData) {
       ) {
         const action = plug.templateFunctions.find((a) => a.name === payload.name);
         if (typeof action?.onRender === 'function') {
+          applyFormInputDefaults(action.args, payload.args.values);
           const result = await action.onRender(ctx, payload.args);
           sendPayload(
             windowContext,
@@ -362,7 +492,7 @@ function initialize(workerData: PluginWorkerData) {
       }
 
       if (payload.type === 'reload_request') {
-        await importModule();
+        importModule();
       }
     } catch (err) {
       console.log('Plugin call threw exception', payload.type, err);
@@ -374,7 +504,7 @@ function initialize(workerData: PluginWorkerData) {
         },
         replyId,
       );
-      // TODO: Return errors to server
+      return;
     }
 
     // No matches, so send back an empty response so the caller doesn't block forever
@@ -424,4 +554,18 @@ function watchFile(filepath: string, cb: (filepath: string) => void) {
     }
     watchedFiles[filepath] = stat;
   });
+}
+
+/** Recursively apply form input defaults to a set of values */
+function applyFormInputDefaults(
+  inputs: FormInput[],
+  values: { [p: string]: JsonPrimitive | undefined },
+) {
+  for (const input of inputs) {
+    if ('inputs' in input) {
+      applyFormInputDefaults(input.inputs ?? [], values);
+    } else if ('defaultValue' in input && values[input.name] === undefined) {
+      values[input.name] = input.defaultValue;
+    }
+  }
 }

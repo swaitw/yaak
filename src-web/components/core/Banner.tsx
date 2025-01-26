@@ -7,7 +7,7 @@ interface Props {
   color?: 'primary' | 'secondary' | 'success' | 'notice' | 'warning' | 'danger' | 'info';
 }
 
-export function Banner({ children, className, color = 'secondary' }: Props) {
+export function Banner({ children, className, color }: Props) {
   return (
     <div>
       <div
@@ -16,7 +16,7 @@ export function Banner({ children, className, color = 'secondary' }: Props) {
           `x-theme-banner--${color}`,
           'whitespace-pre-wrap',
           'border border-dashed border-border bg-surface',
-          'px-3 py-2 rounded select-auto cursor-text',
+          'px-3 py-2 rounded select-auto',
           'overflow-x-auto text-text',
         )}
       >

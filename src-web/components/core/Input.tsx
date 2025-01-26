@@ -16,6 +16,7 @@ export type InputProps = Pick<
   | 'useTemplating'
   | 'autocomplete'
   | 'forceUpdateKey'
+  | 'disabled'
   | 'autoFocus'
   | 'autoSelect'
   | 'autocompleteVariables'
@@ -75,6 +76,7 @@ export const Input = forwardRef<EditorView, InputProps>(function Input(
     readOnly,
     stateKey,
     multiLine,
+    disabled,
     ...props
   }: InputProps,
   ref,
@@ -82,18 +84,26 @@ export const Input = forwardRef<EditorView, InputProps>(function Input(
   const [obscured, setObscured] = useStateWithDeps(type === 'password', [type]);
   const [currentValue, setCurrentValue] = useState(defaultValue ?? '');
   const [focused, setFocused] = useState(false);
+  const [hasChanged, setHasChanged] = useStateWithDeps<boolean>(false, [stateKey, forceUpdateKey]);
   const editorRef = useRef<EditorView | null>(null);
   useImperativeHandle<EditorView | null, EditorView | null>(ref, () => editorRef.current);
 
   const handleFocus = useCallback(() => {
     if (readOnly) return;
     setFocused(true);
+    // Select all text on focus
+    editorRef.current?.dispatch({
+      selection: { anchor: 0, head: editorRef.current.state.doc.length },
+    });
     onFocus?.();
   }, [onFocus, readOnly]);
 
   const handleBlur = useCallback(() => {
     setFocused(false);
-    editorRef.current?.dispatch({ selection: { anchor: 0 } });
+    // Move selection to the end on blur
+    editorRef.current?.dispatch({
+      selection: { anchor: editorRef.current.state.doc.length },
+    });
     onBlur?.();
   }, [onBlur]);
 
@@ -114,13 +124,14 @@ export const Input = forwardRef<EditorView, InputProps>(function Input(
     (value: string) => {
       setCurrentValue(value);
       onChange?.(value);
+      setHasChanged(true);
     },
-    [onChange],
+    [onChange, setHasChanged],
   );
 
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  // Submit nearest form on Enter key press
+  // Submit the nearest form on Enter key press
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.key !== 'Enter') return;
@@ -145,7 +156,7 @@ export const Input = forwardRef<EditorView, InputProps>(function Input(
     >
       <Label
         htmlFor={id.current}
-        optional={!required}
+        required={required}
         visuallyHidden={hideLabel}
         className={classNames(labelClassName)}
       >
@@ -158,8 +169,9 @@ export const Input = forwardRef<EditorView, InputProps>(function Input(
           'x-theme-input',
           'relative w-full rounded-md text',
           'border',
-          focused ? 'border-border-focus' : 'border-border',
-          !isValid && '!border-danger',
+          focused && !disabled ? 'border-border-focus' : 'border-border',
+          disabled && 'border-dotted',
+          !isValid && hasChanged && '!border-danger',
           size === 'md' && 'min-h-md',
           size === 'sm' && 'min-h-sm',
           size === 'xs' && 'min-h-xs',
@@ -190,7 +202,12 @@ export const Input = forwardRef<EditorView, InputProps>(function Input(
             onChange={handleChange}
             onPaste={onPaste}
             onPasteOverwrite={onPasteOverwrite}
-            className={classNames(editorClassName, multiLine && 'py-1.5')}
+            disabled={disabled}
+            className={classNames(
+              editorClassName,
+              multiLine && size === 'md' && 'py-1.5',
+              multiLine && size === 'sm' && 'py-1',
+            )}
             onFocus={handleFocus}
             onBlur={handleBlur}
             readOnly={readOnly}
@@ -201,7 +218,7 @@ export const Input = forwardRef<EditorView, InputProps>(function Input(
           <IconButton
             title={obscured ? `Show ${label}` : `Obscure ${label}`}
             size="xs"
-            className="mr-0.5 group/obscure !h-auto my-0.5"
+            className={classNames("mr-0.5 group/obscure !h-auto my-0.5", disabled && 'opacity-disabled')}
             iconClassName="text-text-subtle group-hover/obscure:text"
             iconSize="sm"
             icon={obscured ? 'eye' : 'eye_closed'}

@@ -1,4 +1,5 @@
 import type { HttpRequest } from '@yaakapp-internal/models';
+import type {GenericCompletionOption} from "@yaakapp-internal/plugins";
 import classNames from 'classnames';
 import { atom, useAtom, useAtomValue } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
@@ -8,7 +9,7 @@ import { activeRequestIdAtom } from '../hooks/useActiveRequestId';
 import { useCancelHttpResponse } from '../hooks/useCancelHttpResponse';
 import { useContentTypeFromHeaders } from '../hooks/useContentTypeFromHeaders';
 import { grpcRequestsAtom } from '../hooks/useGrpcRequests';
-import { useHttpAuthentication } from '../hooks/useHttpAuthentication';
+import { useHttpAuthenticationSummaries } from '../hooks/useHttpAuthentication';
 import { httpRequestsAtom } from '../hooks/useHttpRequests';
 import { useImportCurl } from '../hooks/useImportCurl';
 import { useImportQuerystring } from '../hooks/useImportQuerystring';
@@ -36,10 +37,7 @@ import { showToast } from '../lib/toast';
 import { BinaryFileEditor } from './BinaryFileEditor';
 import { CountBadge } from './core/CountBadge';
 import { Editor } from './core/Editor/Editor';
-import type {
-  GenericCompletionConfig,
-  GenericCompletionOption,
-} from './core/Editor/genericCompletion';
+import type { GenericCompletionConfig } from './core/Editor/genericCompletion';
 import { InlineCode } from './core/InlineCode';
 import type { Pair } from './core/PairEditor';
 import { PlainInput } from './core/PlainInput';
@@ -93,7 +91,7 @@ export const RequestPane = memo(function RequestPane({
   const { updateKey: forceUpdateKey } = useRequestUpdateKey(activeRequest.id ?? null);
   const [{ urlKey }] = useRequestEditor();
   const contentType = useContentTypeFromHeaders(activeRequest.headers);
-  const authentication = useHttpAuthentication();
+  const authentication = useHttpAuthenticationSummaries();
 
   const handleContentTypeChange = useCallback(
     async (contentType: string | null) => {

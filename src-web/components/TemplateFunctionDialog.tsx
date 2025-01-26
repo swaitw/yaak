@@ -25,6 +25,10 @@ export function TemplateFunctionDialog({ templateFunction, hide, initialTokens, 
         ? initialTokens.tokens[0]?.val.args
         : [];
     for (const arg of templateFunction.args) {
+      if (!('name' in arg)) {
+        // Skip visual-only args
+        continue;
+      }
       const initialArg = initialArgs.find((a) => a.name === arg.name);
       const initialArgValue =
         initialArg?.value.type === 'str'
@@ -79,7 +83,7 @@ export function TemplateFunctionDialog({ templateFunction, hide, initialTokens, 
     <VStack className="pb-3" space={4}>
       <h1 className="font-mono !text-base">{templateFunction.name}(…)</h1>
       <DynamicForm
-        config={templateFunction.args}
+        inputs={templateFunction.args}
         data={argValues}
         onChange={setArgValues}
         stateKey={`template_function.${templateFunction.name}`}
