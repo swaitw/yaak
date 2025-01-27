@@ -29,6 +29,7 @@ import { useRequestEditor } from '../../../hooks/useRequestEditor';
 import { useSettings } from '../../../hooks/useSettings';
 import { useTemplateFunctionCompletionOptions } from '../../../hooks/useTemplateFunctions';
 import { showDialog } from '../../../lib/dialog';
+import { tryFormatJson, tryFormatXml } from '../../../lib/formatters';
 import { TemplateFunctionDialog } from '../../TemplateFunctionDialog';
 import { TemplateVariableDialog } from '../../TemplateVariableDialog';
 import { IconButton } from '../IconButton';
@@ -134,7 +135,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
   }
 
   if (disabled) {
-      readOnly = true;
+    readOnly = true;
   }
 
   if (
@@ -145,6 +146,15 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
     language === 'pairs'
   ) {
     disableTabIndent = true;
+  }
+
+  if (format == null) {
+    format =
+      language === 'json'
+        ? tryFormatJson
+        : language === 'xml' || language === 'html'
+          ? tryFormatXml
+          : undefined;
   }
 
   const cm = useRef<{ view: EditorView; languageCompartment: Compartment } | null>(null);

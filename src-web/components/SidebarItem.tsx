@@ -217,6 +217,7 @@ export const SidebarItem = memo(function SidebarItem({
 
   const itemPrefix = (item.model === 'http_request' || item.model === 'grpc_request') && (
     <HttpMethodTag
+      shortNames
       request={item}
       className={classNames(!(active || selected) && 'text-text-subtlest')}
     />
@@ -271,7 +272,7 @@ export const SidebarItem = memo(function SidebarItem({
                 onKeyDown={handleInputKeyDown}
               />
             ) : (
-              <span className="truncate">{itemName}</span>
+              <span className="truncate w-full">{itemName}</span>
             )}
           </div>
           {latestGrpcConnection ? (

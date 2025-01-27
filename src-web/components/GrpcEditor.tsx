@@ -14,7 +14,6 @@ import { useEffect, useMemo, useRef } from 'react';
 import type { ReflectResponseService } from '../hooks/useGrpc';
 import { showAlert } from '../lib/alert';
 import { showDialog } from '../lib/dialog';
-import { tryFormatJson } from '../lib/formatters';
 import { pluralizeCount } from '../lib/pluralize';
 import { Button } from './core/Button';
 import type { EditorProps } from './core/Editor/Editor';
@@ -186,7 +185,6 @@ export function GrpcEditor({
         useTemplating
         forceUpdateKey={request.id}
         defaultValue={request.message}
-        format={tryFormatJson}
         heightMode="auto"
         placeholder="..."
         ref={editorViewRef}

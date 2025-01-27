@@ -7,7 +7,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocalStorage } from 'react-use';
 import { useIntrospectGraphQL } from '../hooks/useIntrospectGraphQL';
 import { showDialog } from '../lib/dialog';
-import { tryFormatJson } from '../lib/formatters';
 import { Button } from './core/Button';
 import { Dropdown } from './core/Dropdown';
 import type { EditorProps } from './core/Editor/Editor';
@@ -178,7 +177,6 @@ export function GraphQLEditor({ request, onChange, baseRequest, ...extraEditorPr
           Variables
         </Separator>
         <Editor
-          format={tryFormatJson}
           language="json"
           heightMode="auto"
           defaultValue={currentBody.variables}

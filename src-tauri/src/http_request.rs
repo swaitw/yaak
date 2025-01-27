@@ -326,14 +326,33 @@ pub async fn send_http_request<R: Runtime>(
 
                             // Set or guess mimetype
                             if !content_type.is_empty() {
-                                part = part.mime_str(content_type).map_err(|e| e.to_string())?;
+                                part = match part.mime_str(content_type) {
+                                    Ok(p) => p,
+                                    Err(e) => {
+                                        return Ok(response_err(
+                                            &*response.lock().await,
+                                            format!("Invalid mime for multi-part entry {e:?}"),
+                                            window,
+                                        )
+                                        .await);
+                                    }
+                                };
                             } else if !file_path.is_empty() {
                                 let default_mime =
                                     Mime::from_str("application/octet-stream").unwrap();
                                 let mime =
                                     mime_guess::from_path(file_path.clone()).first_or(default_mime);
-                                part =
-                                    part.mime_str(mime.essence_str()).map_err(|e| e.to_string())?;
+                                part = match part.mime_str(mime.essence_str()) {
+                                    Ok(p) => p,
+                                    Err(e) => {
+                                        return Ok(response_err(
+                                            &*response.lock().await,
+                                            format!("Invalid mime for multi-part entry {e:?}"),
+                                            window,
+                                        )
+                                        .await);
+                                    }
+                                };
                             }
 
                             // Set file path if not empty

@@ -1,3 +1,4 @@
+import { formatSize } from '@yaakapp-internal/lib/formatSize';
 import classNames from 'classnames';
 import type { EditorView } from 'codemirror';
 import {
@@ -13,6 +14,8 @@ import {
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
 import { useToggle } from '../../hooks/useToggle';
+import { languageFromContentType } from '../../lib/contentType';
+import { showDialog } from '../../lib/dialog';
 import { generateId } from '../../lib/generateId';
 import { showPrompt } from '../../lib/prompt';
 import { DropMarker } from '../DropMarker';
@@ -21,6 +24,8 @@ import { Button } from './Button';
 import { Checkbox } from './Checkbox';
 import type { DropdownItem } from './Dropdown';
 import { Dropdown } from './Dropdown';
+import type { EditorProps } from './Editor/Editor';
+import { Editor } from './Editor/Editor';
 import type { GenericCompletionConfig } from './Editor/genericCompletion';
 import { Icon } from './Icon';
 import { IconButton } from './IconButton';
@@ -326,6 +331,7 @@ function PairEditorRow({
   const ref = useRef<HTMLDivElement>(null);
   const nameInputRef = useRef<EditorView>(null);
   const valueInputRef = useRef<EditorView>(null);
+  const valueLanguage = languageFromContentType(pair.contentType ?? null);
 
   useEffect(() => {
     if (forceFocusNamePairId === pair.id) {
@@ -378,6 +384,24 @@ function PairEditorRow({
   const handleChangeValueContentType = useMemo(
     () => (contentType: string) => onChange({ ...pair, contentType }),
     [onChange, pair],
+  );
+
+  const handleEditMultiLineValue = useCallback(
+    () =>
+      showDialog({
+        id: 'pair-edit-multiline',
+        size: 'dynamic',
+        title: <>Edit {pair.name}</>,
+        render: ({ hide }) => (
+          <MultilineEditDialog
+            hide={hide}
+            onChange={handleChangeValueText}
+            defaultValue={pair.value}
+            language={valueLanguage}
+          />
+        ),
+      }),
+    [handleChangeValueText, pair.name, pair.value, valueLanguage],
   );
 
   const [, connectDrop] = useDrop<Pair>(
@@ -495,6 +519,15 @@ function PairEditorRow({
               onFocus={handleFocus}
               placeholder={valuePlaceholder ?? 'value'}
             />
+          ) : pair.value.includes('\n') ? (
+            <Button
+              color="secondary"
+              size="sm"
+              onClick={handleEditMultiLineValue}
+              title={pair.value}
+            >
+              Edit {formatSize(pair.value.length)}
+            </Button>
           ) : (
             <Input
               ref={valueInputRef}
@@ -505,6 +538,7 @@ function PairEditorRow({
               size="sm"
               containerClassName={classNames(isLast && 'border-dashed')}
               validate={valueValidate}
+              language={valueLanguage}
               forceUpdateKey={forceUpdateKey}
               defaultValue={pair.value}
               label="Value"
@@ -526,6 +560,7 @@ function PairEditorRow({
           onChangeText={handleChangeValueText}
           onChangeContentType={handleChangeValueContentType}
           onDelete={handleDelete}
+          editMultiLine={handleEditMultiLineValue}
         />
       ) : (
         <Dropdown items={deleteItems}>
@@ -552,12 +587,14 @@ function FileActionsDropdown({
   onChangeText,
   onChangeContentType,
   onDelete,
+  editMultiLine,
 }: {
   pair: Pair;
   onChangeFile: ({ filePath }: { filePath: string | null }) => void;
   onChangeText: (text: string) => void;
   onChangeContentType: (contentType: string) => void;
   onDelete: () => void;
+  editMultiLine: () => void;
 }) {
   const onChange = useCallback(
     (v: string) => {
@@ -570,9 +607,14 @@ function FileActionsDropdown({
   const extraItems = useMemo<DropdownItem[]>(
     () => [
       {
+        label: 'Edit Multi-Line',
+        leftSlot: <Icon icon="file_code" />,
+        hidden: pair.isFile,
+        onSelect: editMultiLine,
+      },
+      {
         label: 'Set Content-Type',
         leftSlot: <Icon icon="pencil" />,
-        hidden: !pair.isFile,
         onSelect: async () => {
           const contentType = await showPrompt({
             id: 'content-type',
@@ -602,7 +644,7 @@ function FileActionsDropdown({
         leftSlot: <Icon icon="trash" />,
       },
     ],
-    [onChangeContentType, onChangeFile, onDelete, pair.contentType, pair.isFile],
+    [editMultiLine, onChangeContentType, onChangeFile, onDelete, pair.contentType, pair.isFile],
   );
 
   return (
@@ -628,4 +670,41 @@ function emptyPair(): PairWithId {
 
 function isPairEmpty(pair: Pair): boolean {
   return !pair.name && !pair.value;
+}
+
+function MultilineEditDialog({
+  defaultValue,
+  language,
+  onChange,
+  hide,
+}: {
+  defaultValue: string;
+  language: EditorProps['language'];
+  onChange: (value: string) => void;
+  hide: () => void;
+}) {
+  const [value, setValue] = useState<string>(defaultValue);
+  return (
+    <div className="w-[100vw] max-w-[40rem] h-[50vh] max-h-full grid grid-rows-[minmax(0,1fr)_auto]">
+      <Editor
+        heightMode="auto"
+        defaultValue={defaultValue}
+        language={language}
+        onChange={setValue}
+        stateKey={null}
+      />
+      <div>
+        <Button
+          color="primary"
+          className="ml-auto my-2"
+          onClick={() => {
+            onChange(value);
+            hide();
+          }}
+        >
+          Done
+        </Button>
+      </div>
+    </div>
+  );
 }

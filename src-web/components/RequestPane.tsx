@@ -1,5 +1,5 @@
 import type { HttpRequest } from '@yaakapp-internal/models';
-import type {GenericCompletionOption} from "@yaakapp-internal/plugins";
+import type { GenericCompletionOption } from '@yaakapp-internal/plugins';
 import classNames from 'classnames';
 import { atom, useAtom, useAtomValue } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
@@ -21,7 +21,6 @@ import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
 import { deepEqualAtom } from '../lib/atoms';
 import { languageFromContentType } from '../lib/contentType';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
-import { tryFormatJson } from '../lib/formatters';
 import { generateId } from '../lib/generateId';
 import {
   BODY_TYPE_BINARY,
@@ -407,7 +406,6 @@ export const RequestPane = memo(function RequestPane({
                   defaultValue={`${activeRequest.body?.text ?? ''}`}
                   language="json"
                   onChange={handleBodyTextChange}
-                  format={tryFormatJson}
                   stateKey={`json.${activeRequest.id}`}
                 />
               ) : activeRequest.bodyType === BODY_TYPE_XML ? (

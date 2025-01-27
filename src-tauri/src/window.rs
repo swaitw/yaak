@@ -3,7 +3,7 @@ use crate::{DEFAULT_WINDOW_HEIGHT, DEFAULT_WINDOW_WIDTH, MIN_WINDOW_HEIGHT, MIN_
 use log::{info, warn};
 use std::process::exit;
 use tauri::{
-    AppHandle, Emitter, LogicalSize, Manager, Runtime, TitleBarStyle, WebviewUrl, WebviewWindow,
+    AppHandle, Emitter, LogicalSize, Manager, Runtime, WebviewUrl, WebviewWindow,
 };
 use tauri_plugin_opener::OpenerExt;
 use tokio::sync::mpsc;
@@ -67,6 +67,7 @@ pub(crate) fn create_window<R: Runtime>(
     if config.hide_titlebar {
         #[cfg(target_os = "macos")]
         {
+            use tauri::TitleBarStyle;
             win_builder = win_builder.hidden_title(true).title_bar_style(TitleBarStyle::Overlay);
         }
         #[cfg(not(target_os = "macos"))]

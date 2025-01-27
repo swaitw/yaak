@@ -15,18 +15,16 @@ const longMethodMap = {
   delete: 'DELETE',
   options: 'OPTIONS',
   head: 'HEAD',
-  grpc: 'GRPC',
 } as const;
 
 const shortMethodMap: Record<keyof typeof longMethodMap, string> = {
   get: 'GET',
   put: 'PUT',
-  post: 'POST',
-  patch: 'PTCH',
+  post: 'PST',
+  patch: 'PTC',
   delete: 'DEL',
-  options: 'OPTS',
-  head: 'HEAD',
-  grpc: 'GRPC',
+  options: 'OPT',
+  head: 'HED',
 };
 
 export function HttpMethodTag({ shortNames, request, className }: Props) {
@@ -34,7 +32,7 @@ export function HttpMethodTag({ shortNames, request, className }: Props) {
     request.model === 'http_request' && request.bodyType === 'graphql'
       ? 'GQL'
       : request.model === 'grpc_request'
-        ? 'GRPC'
+        ? 'GRP'
         : request.method;
 
   const m = method.toLowerCase();
