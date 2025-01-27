@@ -234,7 +234,6 @@ export const plugin: PluginDefinition = {
       const grantType = requiredString(values, 'grantType') as GrantType;
       const credentialsInBody = values.credentials === 'body';
 
-      console.log('Performing OAuth', values);
       let token: AccessToken;
       if (grantType === 'authorization_code') {
         const authorizationUrl = requiredString(values, 'authorizationUrl');
