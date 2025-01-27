@@ -428,7 +428,6 @@ var plugin = {
     actions: [
       {
         label: "Copy Current Token",
-        name: "copyCurrentToken",
         icon: "copy",
         async onSelect(ctx, { contextId }) {
           const token = await getToken(ctx, contextId);
@@ -442,7 +441,6 @@ var plugin = {
       },
       {
         label: "Delete Token",
-        name: "clearToken",
         icon: "trash",
         async onSelect(ctx, { contextId }) {
           if (await deleteToken(ctx, contextId)) {

@@ -27,9 +27,8 @@ import { readFileSync, statSync, watch } from 'node:fs';
 import path from 'node:path';
 import * as util from 'node:util';
 import { parentPort as nullableParentPort, workerData } from 'node:worker_threads';
-import Promise from '../../../../../Library/Caches/deno/npm/registry.npmjs.org/any-promise/1.3.0';
 import { interceptStdout } from './interceptStdout';
-import { migrateHttpRequestActionKey, migrateTemplateFunctionSelectOptions } from './migrations';
+import { migrateTemplateFunctionSelectOptions } from './migrations';
 
 if (nullableParentPort == null) {
   throw new Error('Worker does not have access to parentPort');
@@ -353,7 +352,7 @@ function initialize(workerData: PluginWorkerData) {
         Array.isArray(plug?.httpRequestActions)
       ) {
         const reply: HttpRequestAction[] = plug.httpRequestActions.map((a) => ({
-          ...migrateHttpRequestActionKey(a),
+          ...a,
           // Add everything except onSelect
           onSelect: undefined,
         }));
@@ -449,7 +448,7 @@ function initialize(workerData: PluginWorkerData) {
         payload.type === 'call_http_authentication_action_request' &&
         plug?.authentication != null
       ) {
-        const action = plug.authentication.actions?.find((a) => a.name === payload.name);
+        const action = plug.authentication.actions?.[payload.index];
         if (typeof action?.onSelect === 'function') {
           await action.onSelect(ctx, payload.args);
           sendEmpty(windowContext, replyId);
@@ -461,9 +460,7 @@ function initialize(workerData: PluginWorkerData) {
         payload.type === 'call_http_request_action_request' &&
         Array.isArray(plug?.httpRequestActions)
       ) {
-        const action = plug.httpRequestActions.find(
-          (a) => migrateHttpRequestActionKey(a).name === payload.name,
-        );
+        const action = plug.httpRequestActions[payload.index];
         if (typeof action?.onSelect === 'function') {
           await action.onSelect(ctx, payload.args);
           sendEmpty(windowContext, replyId);

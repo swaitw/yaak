@@ -27,7 +27,6 @@ module.exports = __toCommonJS(src_exports);
 var NEWLINE = "\\\n ";
 var plugin = {
   httpRequestActions: [{
-    name: "export-curl",
     label: "Copy as Curl",
     icon: "copy",
     async onSelect(ctx, args) {

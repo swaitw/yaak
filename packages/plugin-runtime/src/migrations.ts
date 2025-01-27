@@ -1,4 +1,4 @@
-import {HttpRequestAction, TemplateFunction} from '@yaakapp/api';
+import { TemplateFunction } from '@yaakapp/api';
 
 export function migrateTemplateFunctionSelectOptions(f: TemplateFunction): TemplateFunction {
   const migratedArgs = f.args.map((a) => {
@@ -15,11 +15,4 @@ export function migrateTemplateFunctionSelectOptions(f: TemplateFunction): Templ
     ...f,
     args: migratedArgs,
   };
-}
-
-export function migrateHttpRequestActionKey(a: HttpRequestAction): HttpRequestAction {
-  return  {
-    ...a,
-    name: a.name || (a as any).key,
-  }
 }
