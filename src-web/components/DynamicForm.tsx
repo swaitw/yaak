@@ -219,18 +219,11 @@ function TextArg({
   autocompleteVariables: boolean;
   stateKey: string;
 }) {
-  const handleChange = useCallback(
-    (value: string) => {
-      onChange(value === '' ? DYNAMIC_FORM_NULL_ARG : value);
-    },
-    [onChange],
-  );
-
   return (
     <Input
       name={arg.name}
       multiLine={arg.multiLine}
-      onChange={handleChange}
+      onChange={onChange}
       defaultValue={value === DYNAMIC_FORM_NULL_ARG ? arg.defaultValue : value}
       required={!arg.optional}
       disabled={arg.disabled}
@@ -238,7 +231,7 @@ function TextArg({
       label={arg.label ?? arg.name}
       size={INPUT_SIZE}
       hideLabel={arg.label == null}
-      placeholder={arg.placeholder ?? arg.defaultValue ?? ''}
+      placeholder={arg.placeholder ?? undefined}
       autocomplete={arg.completionOptions ? { options: arg.completionOptions } : undefined}
       useTemplating={useTemplating}
       autocompleteVariables={autocompleteVariables}
@@ -263,13 +256,6 @@ function EditorArg({
   autocompleteVariables: boolean;
   stateKey: string;
 }) {
-  const handleChange = useCallback(
-    (value: string) => {
-      onChange(value === '' ? DYNAMIC_FORM_NULL_ARG : value);
-    },
-    [onChange],
-  );
-
   const id = `input-${arg.name}`;
 
   // Read-only editor force refresh for every defaultValue change
@@ -296,10 +282,10 @@ function EditorArg({
         autocomplete={arg.completionOptions ? { options: arg.completionOptions } : undefined}
         disabled={arg.disabled}
         language={arg.language}
-        onChange={handleChange}
+        onChange={onChange}
         heightMode="auto"
         defaultValue={value === DYNAMIC_FORM_NULL_ARG ? arg.defaultValue : value}
-        placeholder={arg.placeholder ?? arg.defaultValue ?? ''}
+        placeholder={arg.placeholder ?? undefined}
         useTemplating={useTemplating}
         autocompleteVariables={autocompleteVariables}
         stateKey={stateKey}

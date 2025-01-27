@@ -593,7 +593,6 @@ var plugin = {
       const headerPrefix = optionalString(values, "headerPrefix") ?? "";
       const grantType = requiredString(values, "grantType");
       const credentialsInBody = values.credentials === "body";
-      console.log("Performing OAuth", values);
       let token;
       if (grantType === "authorization_code") {
         const authorizationUrl = requiredString(values, "authorizationUrl");

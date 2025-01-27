@@ -27,7 +27,6 @@ export function HttpAuthenticationEditor({ request }: Props) {
 
   const handleChange = useCallback(
     (authentication: Record<string, boolean>) => {
-      console.log('UPDATE', authentication);
       if (request.model === 'http_request') {
         updateHttpRequest.mutate({
           id: request.id,
