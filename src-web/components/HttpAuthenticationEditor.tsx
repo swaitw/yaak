@@ -19,7 +19,7 @@ interface Props {
 export function HttpAuthenticationEditor({ request }: Props) {
   const updateHttpRequest = useUpdateAnyHttpRequest();
   const updateGrpcRequest = useUpdateAnyGrpcRequest();
-  const auth = useHttpAuthenticationConfig(
+  const authConfig = useHttpAuthenticationConfig(
     request.authenticationType,
     request.authentication,
     request.id,
@@ -43,7 +43,7 @@ export function HttpAuthenticationEditor({ request }: Props) {
     [request.id, request.model, updateGrpcRequest, updateHttpRequest],
   );
 
-  if (auth.data == null) {
+  if (authConfig.data == null) {
     return <EmptyStateText>No Authentication {request.authenticationType}</EmptyStateText>;
   }
 
@@ -56,9 +56,9 @@ export function HttpAuthenticationEditor({ request }: Props) {
           onChange={(disabled) => handleChange({ ...request.authentication, disabled: !disabled })}
           title="Enabled"
         />
-        {auth.data.actions && (
+        {authConfig.data.actions && (
           <Dropdown
-            items={auth.data.actions.map(
+            items={authConfig.data.actions.map(
               (a): DropdownItem => ({
                 label: a.label,
                 leftSlot: a.icon ? <Icon icon={a.icon} /> : null,
@@ -75,7 +75,7 @@ export function HttpAuthenticationEditor({ request }: Props) {
         autocompleteVariables
         useTemplating
         stateKey={`auth.${request.id}.${request.authenticationType}`}
-        inputs={auth.data.args}
+        inputs={authConfig.data.args}
         data={request.authentication}
         onChange={handleChange}
       />

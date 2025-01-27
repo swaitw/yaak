@@ -24,9 +24,17 @@ export function useHttpAuthenticationConfig(
   );
 
   return useQuery({
-    queryKey: ['http_authentication_config', requestId, authName, values, responseKey, forceRefreshCounter],
+    queryKey: [
+      'http_authentication_config',
+      requestId,
+      authName,
+      values,
+      responseKey,
+      forceRefreshCounter,
+    ],
     placeholderData: (prev) => prev, // Keep previous data on refetch
     queryFn: async () => {
+      if (authName == null) return null;
       const config = await invokeCmd<GetHttpAuthenticationConfigResponse>(
         'cmd_get_http_authentication_config',
         {

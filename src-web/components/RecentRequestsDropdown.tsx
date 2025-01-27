@@ -59,8 +59,7 @@ export function RecentRequestsDropdown({ className }: Props) {
 
       recentRequestItems.push({
         label: fallbackRequestName(request),
-        // leftSlot: <CountBadge className="!ml-0 px-0 w-5" count={recentRequestItems.length} />,
-        leftSlot: <HttpMethodTag className="text-right" shortNames request={request} />,
+        leftSlot: <HttpMethodTag request={request} />,
         onSelect: async () => {
           await router.navigate({
             to: '/workspaces/$workspaceId',
