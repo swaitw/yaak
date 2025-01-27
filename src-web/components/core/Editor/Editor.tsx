@@ -148,7 +148,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
     disableTabIndent = true;
   }
 
-  if (format == null) {
+  if (format == null && !readOnly) {
     format =
       language === 'json'
         ? tryFormatJson
