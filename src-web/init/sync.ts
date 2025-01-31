@@ -62,7 +62,8 @@ function isModelRelevant(workspaceId: string, m: AnyModel) {
     m.model !== 'folder' &&
     m.model !== 'environment' &&
     m.model !== 'http_request' &&
-    m.model !== 'grpc_request'
+    m.model !== 'grpc_request' &&
+    m.model !== 'websocket_request'
   ) {
     return false;
   } else if (m.model === 'workspace') {
