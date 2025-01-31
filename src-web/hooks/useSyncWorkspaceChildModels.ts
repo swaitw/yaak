@@ -1,3 +1,4 @@
+import {listWebsocketConnections, listWebsocketRequests} from '@yaakapp-internal/ws';
 import { useEffect } from 'react';
 import { jotaiStore } from '../lib/jotai';
 import { invokeCmd } from '../lib/tauri';
@@ -10,6 +11,8 @@ import { grpcRequestsAtom } from './useGrpcRequests';
 import { httpRequestsAtom } from './useHttpRequests';
 import { httpResponsesAtom } from './useHttpResponses';
 import { keyValuesAtom } from './useKeyValue';
+import {websocketConnectionsAtom} from "./useWebsocketConnections";
+import { websocketRequestsAtom } from './useWebsocketRequests';
 import { workspaceMetaAtom } from './useWorkspaceMeta';
 
 export function useSyncWorkspaceChildModels() {
@@ -33,11 +36,13 @@ async function sync() {
   jotaiStore.set(httpRequestsAtom, await invokeCmd('cmd_list_http_requests', args));
   jotaiStore.set(grpcRequestsAtom, await invokeCmd('cmd_list_grpc_requests', args));
   jotaiStore.set(foldersAtom, await invokeCmd('cmd_list_folders', args));
+  jotaiStore.set(websocketRequestsAtom, await listWebsocketRequests(args));
 
   // Then, set the rest
   jotaiStore.set(cookieJarsAtom, await invokeCmd('cmd_list_cookie_jars', args));
   jotaiStore.set(httpResponsesAtom, await invokeCmd('cmd_list_http_responses', args));
   jotaiStore.set(grpcConnectionsAtom, await invokeCmd('cmd_list_grpc_connections', args));
+  jotaiStore.set(websocketConnectionsAtom, await listWebsocketConnections(args));
   jotaiStore.set(environmentsAtom, await invokeCmd('cmd_list_environments', args));
 
   // Single models

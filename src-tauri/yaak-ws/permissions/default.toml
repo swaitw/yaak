@@ -1,0 +1,14 @@
+[default]
+description = "Default permissions for the plugin"
+permissions = [
+    "allow-close",
+    "allow-connect",
+    "allow-delete-connection",
+    "allow-delete-connections",
+    "allow-delete-request",
+    "allow-list-connections",
+    "allow-list-events",
+    "allow-list-requests",
+    "allow-send",
+    "allow-upsert-request",
+]

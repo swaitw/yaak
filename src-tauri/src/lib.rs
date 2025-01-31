@@ -7,7 +7,6 @@ use crate::grpc::metadata_to_map;
 use crate::http_request::send_http_request;
 use crate::notifications::YaakNotifier;
 use crate::render::{render_grpc_request, render_template};
-use crate::template_callback::PluginTemplateCallback;
 use crate::updates::{UpdateMode, YaakUpdater};
 use eventsource_client::{EventParser, SSE};
 use log::{debug, error, warn};
@@ -31,29 +30,8 @@ use tokio::sync::Mutex;
 use tokio::task::block_in_place;
 use yaak_grpc::manager::{DynamicMessage, GrpcHandle};
 use yaak_grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
-use yaak_models::models::{
-    CookieJar, Environment, EnvironmentVariable, Folder, GrpcConnection, GrpcConnectionState,
-    GrpcEvent, GrpcEventType, GrpcRequest, HttpRequest, HttpResponse, HttpResponseState, KeyValue,
-    ModelType, Plugin, Settings, Workspace, WorkspaceMeta,
-};
-use yaak_models::queries::{
-    batch_upsert, cancel_pending_grpc_connections, cancel_pending_responses,
-    create_default_http_response, delete_all_grpc_connections,
-    delete_all_grpc_connections_for_workspace, delete_all_http_responses_for_request,
-    delete_all_http_responses_for_workspace, delete_cookie_jar, delete_environment, delete_folder,
-    delete_grpc_connection, delete_grpc_request, delete_http_request, delete_http_response,
-    delete_plugin, delete_workspace, duplicate_folder, duplicate_grpc_request,
-    duplicate_http_request, ensure_base_environment, generate_model_id, get_base_environment,
-    get_cookie_jar, get_environment, get_folder, get_grpc_connection, get_grpc_request,
-    get_http_request, get_http_response, get_key_value_raw, get_or_create_settings,
-    get_or_create_workspace_meta, get_plugin, get_workspace, get_workspace_export_resources,
-    list_cookie_jars, list_environments, list_folders, list_grpc_connections_for_workspace,
-    list_grpc_events, list_grpc_requests, list_http_requests, list_http_responses_for_workspace,
-    list_key_values_raw, list_plugins, list_workspaces, set_key_value_raw, update_response_if_id,
-    update_settings, upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection,
-    upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_plugin, upsert_workspace,
-    upsert_workspace_meta, BatchUpsertResult, UpdateSource,
-};
+use yaak_models::models::{CookieJar, Environment, EnvironmentVariable, Folder, GrpcConnection, GrpcConnectionState, GrpcEvent, GrpcEventType, GrpcRequest, HttpRequest, HttpResponse, HttpResponseState, KeyValue, ModelType, Plugin, Settings, WebsocketRequest, Workspace, WorkspaceMeta};
+use yaak_models::queries::{batch_upsert, cancel_pending_grpc_connections, cancel_pending_responses, create_default_http_response, delete_all_grpc_connections, delete_all_grpc_connections_for_workspace, delete_all_http_responses_for_request, delete_all_http_responses_for_workspace, delete_all_websocket_connections_for_workspace, delete_cookie_jar, delete_environment, delete_folder, delete_grpc_connection, delete_grpc_request, delete_http_request, delete_http_response, delete_plugin, delete_workspace, duplicate_folder, duplicate_grpc_request, duplicate_http_request, ensure_base_environment, generate_model_id, get_base_environment, get_cookie_jar, get_environment, get_folder, get_grpc_connection, get_grpc_request, get_http_request, get_http_response, get_key_value_raw, get_or_create_settings, get_or_create_workspace_meta, get_plugin, get_workspace, get_workspace_export_resources, list_cookie_jars, list_environments, list_folders, list_grpc_connections_for_workspace, list_grpc_events, list_grpc_requests, list_http_requests, list_http_responses_for_workspace, list_key_values_raw, list_plugins, list_workspaces, set_key_value_raw, update_response_if_id, update_settings, upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection, upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_plugin, upsert_workspace, upsert_workspace_meta, BatchUpsertResult, UpdateSource};
 use yaak_plugins::events::{
     BootResponse, CallHttpAuthenticationRequest, CallHttpRequestActionRequest, FilterResponse,
     GetHttpAuthenticationConfigResponse, GetHttpAuthenticationSummaryResponse,
@@ -61,6 +39,7 @@ use yaak_plugins::events::{
     InternalEventPayload, JsonPrimitive, RenderPurpose, WindowContext,
 };
 use yaak_plugins::manager::PluginManager;
+use yaak_plugins::template_callback::PluginTemplateCallback;
 use yaak_sse::sse::ServerSentEvent;
 use yaak_templates::format::format_json;
 use yaak_templates::{Parser, Tokens};
@@ -74,7 +53,6 @@ mod plugin_events;
 mod render;
 #[cfg(target_os = "macos")]
 mod tauri_plugin_mac_window;
-mod template_callback;
 mod updates;
 mod window;
 mod window_menu;
@@ -920,6 +898,18 @@ async fn cmd_import_data<R: Runtime>(
         })
         .collect();
 
+    let websocket_requests: Vec<WebsocketRequest> = resources
+        .websocket_requests
+        .into_iter()
+        .map(|mut v| {
+            v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeWebsocketRequest, &mut id_map);
+            v.workspace_id =
+                maybe_gen_id(v.workspace_id.as_str(), ModelType::TypeWorkspace, &mut id_map);
+            v.folder_id = maybe_gen_id_opt(v.folder_id, ModelType::TypeFolder, &mut id_map);
+            v
+        })
+        .collect();
+
     let upserted = batch_upsert(
         &window,
         workspaces,
@@ -927,6 +917,7 @@ async fn cmd_import_data<R: Runtime>(
         folders,
         http_requests,
         grpc_requests,
+        websocket_requests,
         &UpdateSource::Import,
     )
     .await
@@ -1611,6 +1602,9 @@ async fn cmd_delete_send_history(workspace_id: &str, window: WebviewWindow) -> R
     delete_all_grpc_connections_for_workspace(&window, workspace_id, &UpdateSource::Window)
         .await
         .map_err(|e| e.to_string())?;
+    delete_all_websocket_connections_for_workspace(&window, workspace_id, &UpdateSource::Window)
+        .await
+        .map_err(|e| e.to_string())?;
     Ok(())
 }
 
@@ -1825,6 +1819,7 @@ pub fn run() {
         .plugin(yaak_license::init())
         .plugin(yaak_models::plugin::Builder::default().build())
         .plugin(yaak_plugins::init())
+        .plugin(yaak_ws::init())
         .plugin(yaak_sync::init());
 
     #[cfg(target_os = "macos")]
