@@ -55,12 +55,12 @@ export function AutoScroller<T>({ data, render, header }: Props<T>) {
             size="sm"
             iconSize="md"
             variant="border"
-            className={'!bg-surface z-10'}
+            className="!bg-surface z-10"
             onClick={() => setAutoScroll((v) => !v)}
           />
         </div>
       )}
-      {header ?? <span aria-hidden/>}
+      {header ?? <span aria-hidden />}
       <div ref={containerRef} className="h-full w-full overflow-y-auto" onScroll={handleScroll}>
         <div
           style={{
@@ -77,7 +77,7 @@ export function AutoScroller<T>({ data, render, header }: Props<T>) {
                 top: 0,
                 left: 0,
                 width: '100%',
-                height: `${virtualItem.size * 1000}px`,
+                height: `${virtualItem.size}px`,
                 transform: `translateY(${virtualItem.start}px)`,
               }}
             >
