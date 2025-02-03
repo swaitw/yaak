@@ -16,7 +16,7 @@ export function Banner({ children, className, color }: Props) {
         'whitespace-pre-wrap',
         'border border-dashed border-border bg-surface',
         'px-3 py-2 rounded select-auto',
-        'overflow-auto h-auto text-text',
+        'overflow-auto h-auto mb-auto text-text',
       )}
     >
       {children}
