@@ -19,6 +19,7 @@ requests. It's built using [Tauri](https://tauri.app), Rust, and ReactJS.
 💽 Mirror workspace data to a directory for integration with Git or Dropbox.<br/>
 📜 View response history for each request.<br/>
 🔌 Create your own plugins for authentication, template tags, and more!<br/>
+🛜 Configure a proxy to access firewall-blocked APIs
 
 ## Feedback and Bug Reports
 
