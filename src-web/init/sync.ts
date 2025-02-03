@@ -25,7 +25,7 @@ function initForWorkspace(workspaceId: string, syncDir: string | null) {
   const debouncedSync = debounce(() => {
     if (syncDir == null) return;
     syncWorkspace.mutate({ workspaceId, syncDir });
-  });
+  }, 1000);
 
   // Sync on model upsert
   const unsubUpsertedModels = listenToTauriEvent<ModelPayload>('upserted_model', (p) => {

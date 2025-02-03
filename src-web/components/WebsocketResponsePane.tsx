@@ -2,13 +2,14 @@ import type { WebsocketEvent, WebsocketRequest } from '@yaakapp-internal/models'
 import classNames from 'classnames';
 import { format } from 'date-fns';
 import { hexy } from 'hexy';
-import React, { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useCopy } from '../hooks/useCopy';
 import { useFormatText } from '../hooks/useFormatText';
 import { usePinnedWebsocketConnection } from '../hooks/usePinnedWebsocketConnection';
 import { useStateWithDeps } from '../hooks/useStateWithDeps';
 import { useWebsocketEvents } from '../hooks/useWebsocketEvents';
 import { languageFromContentType } from '../lib/contentType';
+import { AutoScroller } from './core/AutoScroller';
 import { Banner } from './core/Banner';
 import { Button } from './core/Button';
 import { Editor } from './core/Editor/Editor';
@@ -55,7 +56,7 @@ export function WebsocketResponsePane({ activeRequest }: Props) {
   }, [activeEvent?.message, hexDump]);
 
   const language = languageFromContentType(null, message);
-  const formattedContent = useFormatText({ language, text: message, pretty: true });
+  const formattedMessage = useFormatText({ language, text: message, pretty: true });
   const copy = useCopy();
 
   return (
@@ -76,32 +77,33 @@ export function WebsocketResponsePane({ activeRequest }: Props) {
                 <span>&bull;</span>
                 <span>{events.length} Messages</span>
               </HStack>
-              <div className="ml-auto">
+              <HStack space={0.5} className="ml-auto">
                 <RecentWebsocketConnectionsDropdown
                   connections={connections}
                   activeConnection={activeConnection}
                   onPinnedConnectionId={setPinnedConnectionId}
                 />
-              </div>
+              </HStack>
             </HStack>
-            <div className="overflow-y-auto h-full">
-              {activeConnection.error && (
-                <Banner color="danger" className="m-3">
-                  {activeConnection.error}
-                </Banner>
-              )}
-              {...events.map((e) => (
+            {activeConnection.error && (
+              <Banner color="danger" className="m-3">
+                {activeConnection.error}
+              </Banner>
+            )}
+            <AutoScroller
+              data={events}
+              render={(event) => (
                 <EventRow
-                  key={e.id}
-                  event={e}
-                  isActive={e.id === activeEventId}
+                  key={event.id}
+                  event={event}
+                  isActive={event.id === activeEventId}
                   onClick={() => {
-                    if (e.id === activeEventId) setActiveEventId(null);
-                    else setActiveEventId(e.id);
+                    if (event.id === activeEventId) setActiveEventId(null);
+                    else setActiveEventId(event.id);
                   }}
                 />
-              ))}
-            </div>
+              )}
+            />
           </div>
         )
       }
@@ -113,30 +115,32 @@ export function WebsocketResponsePane({ activeRequest }: Props) {
               <Separator />
             </div>
             <div className="mx-2 overflow-y-auto grid grid-rows-[auto_minmax(0,1fr)]">
-              <div className="mb-2 select-text cursor-text grid grid-cols-[minmax(0,1fr)_auto] items-center">
+              <div className="h-xs mb-2 grid grid-cols-[minmax(0,1fr)_auto] items-center">
                 <div className="font-semibold">
                   {activeEvent.messageType === 'close'
                     ? 'Connection Closed'
                     : `Message ${activeEvent.isServer ? 'Received' : 'Sent'}`}
                 </div>
-                <HStack space={1}>
-                  <Button
-                    variant="border"
-                    size="xs"
-                    onClick={() => {
-                      if (activeEventId == null) return;
-                      setHexDumps({ ...hexDumps, [activeEventId]: !hexDump });
-                    }}
-                  >
-                    {hexDump ? 'Show Message' : 'Show Hexdump'}
-                  </Button>
-                  <IconButton
-                    title="Copy message"
-                    icon="copy"
-                    size="xs"
-                    onClick={() => copy(message)}
-                  />
-                </HStack>
+                {message != '' && (
+                  <HStack space={1}>
+                    <Button
+                      variant="border"
+                      size="xs"
+                      onClick={() => {
+                        if (activeEventId == null) return;
+                        setHexDumps({ ...hexDumps, [activeEventId]: !hexDump });
+                      }}
+                    >
+                      {hexDump ? 'Show Message' : 'Show Hexdump'}
+                    </Button>
+                    <IconButton
+                      title="Copy message"
+                      icon="copy"
+                      size="xs"
+                      onClick={() => copy(formattedMessage.data ?? '')}
+                    />
+                  </HStack>
+                )}
               </div>
               {!showLarge && activeEvent.message.length > 1000 * 1000 ? (
                 <VStack space={2} className="italic text-text-subtlest">
@@ -164,7 +168,7 @@ export function WebsocketResponsePane({ activeRequest }: Props) {
               ) : (
                 <Editor
                   language={language}
-                  defaultValue={formattedContent.data ?? ''}
+                  defaultValue={formattedMessage.data ?? ''}
                   wrapLines={false}
                   readOnly={true}
                   stateKey={null}
@@ -188,17 +192,19 @@ function EventRow({
   event: WebsocketEvent;
 }) {
   const { createdAt, message: messageBytes, isServer, messageType } = event;
+  const ref = useRef<HTMLDivElement>(null);
   const message = messageBytes
     ? new TextDecoder('utf-8').decode(Uint8Array.from(messageBytes))
     : '';
+
   return (
-    <div className="px-1">
+    <div className="px-1" ref={ref}>
       <button
         onClick={onClick}
         className={classNames(
           'w-full grid grid-cols-[auto_minmax(0,3fr)_auto] gap-2 items-center text-left',
-          'px-1.5 py-1 font-mono cursor-default group focus:outline-none rounded',
-          isActive && '!bg-surface-highlight !text-text',
+          'px-1.5 h-xs font-mono cursor-default group focus:outline-none focus:text-text rounded',
+          isActive && '!bg-surface-active !text-text',
           'text-text-subtle hover:text',
         )}
       >
@@ -215,9 +221,13 @@ function EventRow({
           }
         />
         <div className={classNames('w-full truncate text-xs')}>
-          {messageType === 'close'
-            ? 'Connection closed by ' + (isServer ? 'server' : 'client')
-            : message.slice(0, 1000)}
+          {messageType === 'close' ? (
+            'Connection closed by ' + (isServer ? 'server' : 'client')
+          ) : message === '' ? (
+            <em className="italic text-text-subtlest">No content</em>
+          ) : (
+            message.slice(0, 1000)
+          )}
           {/*{error && <span className="text-warning"> ({error})</span>}*/}
         </div>
         <div className={classNames('opacity-50 text-xs')}>

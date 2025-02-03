@@ -456,7 +456,7 @@ export function HttpRequestPane({ style, fullHeight, className, activeRequest }:
                   stateKey={`other.${activeRequest.id}`}
                 />
               ) : (
-                <EmptyStateText>Empty Body</EmptyStateText>
+                <EmptyStateText>No Body</EmptyStateText>
               )}
             </TabContent>
             <TabContent value={TAB_DESCRIPTION}>

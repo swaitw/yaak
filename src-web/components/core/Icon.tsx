@@ -61,6 +61,7 @@ const icons = {
   keyboard: lucide.KeyboardIcon,
   left_panel_hidden: lucide.PanelLeftOpenIcon,
   left_panel_visible: lucide.PanelLeftCloseIcon,
+  lock: lucide.LockIcon,
   magic_wand: lucide.Wand2Icon,
   minus: lucide.MinusIcon,
   minus_circle: lucide.MinusCircleIcon,

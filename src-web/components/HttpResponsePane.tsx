@@ -162,9 +162,7 @@ export function HttpResponsePane({ style, className, activeRequestId }: Props) {
                       <Icon size="xl" spin icon="refresh" className="text-text-subtlest" />
                     </EmptyStateText>
                   ) : activeResponse.state === 'closed' && activeResponse.contentLength === 0 ? (
-                    <div className="pb-2 h-full">
-                      <EmptyStateText>Empty Body</EmptyStateText>
-                    </div>
+                    <EmptyStateText>Empty </EmptyStateText>
                   ) : contentType?.match(/^text\/event-stream$/i) && viewMode === 'pretty' ? (
                     <EventStreamViewer response={activeResponse} />
                   ) : contentType?.match(/^image\/svg/) ? (

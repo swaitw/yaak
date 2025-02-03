@@ -3,7 +3,7 @@ use crate::error::Result;
 use crate::manager::WebsocketManager;
 use crate::render::render_request;
 use chrono::Utc;
-use log::info;
+use log::{info, warn};
 use std::str::FromStr;
 use tauri::http::{HeaderMap, HeaderName};
 use tauri::{AppHandle, Manager, Runtime, State, WebviewWindow};
@@ -143,7 +143,9 @@ pub(crate) async fn close<R: Runtime>(
         .ok_or(GenericError("WebSocket Request not found".to_string()))?;
 
     let mut ws_manager = ws_manager.lock().await;
-    ws_manager.send(&connection.id, Message::Close(None)).await?;
+    if let Err(e) = ws_manager.send(&connection.id, Message::Close(None)).await {
+        warn!("Failed to close WebSocket connection: {e:?}");
+    };
     upsert_websocket_event(
         &window,
         WebsocketEvent {

@@ -2,11 +2,12 @@ import type { GrpcEvent, GrpcRequest } from '@yaakapp-internal/models';
 import classNames from 'classnames';
 import { format } from 'date-fns';
 import type { CSSProperties } from 'react';
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useCopy } from '../hooks/useCopy';
 import { useGrpcEvents } from '../hooks/useGrpcEvents';
 import { usePinnedGrpcConnection } from '../hooks/usePinnedGrpcConnection';
 import { useStateWithDeps } from '../hooks/useStateWithDeps';
+import { AutoScroller } from './core/AutoScroller';
 import { Banner } from './core/Banner';
 import { Button } from './core/Button';
 import { Icon } from './core/Icon';
@@ -80,24 +81,25 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
                 />
               </div>
             </HStack>
-            <div className="overflow-y-auto h-full">
-              {activeConnection.error && (
-                <Banner color="danger" className="m-3">
-                  {activeConnection.error}
-                </Banner>
-              )}
-              {...events.map((e) => (
+            {activeConnection.error && (
+              <Banner color="danger" className="m-3">
+                {activeConnection.error}
+              </Banner>
+            )}
+            <AutoScroller
+              data={events}
+              render={(event) => (
                 <EventRow
-                  key={e.id}
-                  event={e}
-                  isActive={e.id === activeEventId}
+                  key={event.id}
+                  event={event}
+                  isActive={event.id === activeEventId}
                   onClick={() => {
-                    if (e.id === activeEventId) setActiveEventId(null);
-                    else setActiveEventId(e.id);
+                    if (event.id === activeEventId) setActiveEventId(null);
+                    else setActiveEventId(event.id);
                   }}
                 />
-              ))}
-            </div>
+              )}
+            />
           </div>
         )
       }
@@ -195,14 +197,16 @@ function EventRow({
   event: GrpcEvent;
 }) {
   const { eventType, status, createdAt, content, error } = event;
+  const ref = useRef<HTMLDivElement>(null);
+
   return (
-    <div className="px-1">
+    <div className="px-1" ref={ref}>
       <button
         onClick={onClick}
         className={classNames(
           'w-full grid grid-cols-[auto_minmax(0,3fr)_auto] gap-2 items-center text-left',
-          'px-1.5 py-1 font-mono cursor-default group focus:outline-none rounded',
-          isActive && '!bg-surface-highlight !text-text',
+          'px-1.5 h-xs font-mono cursor-default group focus:outline-none focus:text-text rounded',
+          isActive && '!bg-surface-active !text-text',
           'text-text-subtle hover:text',
         )}
       >
