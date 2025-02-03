@@ -534,19 +534,18 @@ impl PluginManager {
             .ok_or(PluginNotFoundErr(auth_name.into()))?;
 
         let context_id = format!("{:x}", md5::compute(request_id.to_string()));
-        self
-            .send_to_plugin_and_wait(
-                &WindowContext::from_window(window),
-                &plugin,
-                &InternalEventPayload::CallHttpAuthenticationActionRequest(
-                    CallHttpAuthenticationActionRequest {
-                        index: action_index,
-                        plugin_ref_id: plugin.clone().ref_id,
-                        args: CallHttpAuthenticationActionArgs { context_id, values },
-                    },
-                ),
-            )
-            .await?;
+        self.send_to_plugin_and_wait(
+            &WindowContext::from_window(window),
+            &plugin,
+            &InternalEventPayload::CallHttpAuthenticationActionRequest(
+                CallHttpAuthenticationActionRequest {
+                    index: action_index,
+                    plugin_ref_id: plugin.clone().ref_id,
+                    args: CallHttpAuthenticationActionArgs { context_id, values },
+                },
+            ),
+        )
+        .await?;
         Ok(())
     }
 
@@ -556,6 +555,19 @@ impl PluginManager {
         auth_name: &str,
         req: CallHttpAuthenticationRequest,
     ) -> Result<CallHttpAuthenticationResponse> {
+        let disabled = match req.values.get("disabled") {
+            Some(JsonPrimitive::Boolean(v)) => v.clone(),
+            _ => false,
+        };
+        
+        // Auth is disabled, so don't do anything
+        if disabled {
+            info!("Not applying disabled auth {:?}", auth_name);
+            return Ok(CallHttpAuthenticationResponse {
+                set_headers: Vec::new(),
+            });
+        }
+
         let handlers = self.get_http_authentication_summaries(window).await?;
         let (plugin, _) = handlers
             .iter()
