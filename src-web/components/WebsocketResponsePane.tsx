@@ -85,13 +85,15 @@ export function WebsocketResponsePane({ activeRequest }: Props) {
                 />
               </HStack>
             </HStack>
-            {activeConnection.error && (
-              <Banner color="danger" className="m-3">
-                {activeConnection.error}
-              </Banner>
-            )}
             <AutoScroller
               data={events}
+              header={
+                activeConnection.error && (
+                  <Banner color="danger" className="m-3">
+                    {activeConnection.error}
+                  </Banner>
+                )
+              }
               render={(event) => (
                 <EventRow
                   key={event.id}

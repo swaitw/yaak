@@ -5518,6 +5518,11 @@
           "const": "yaak-ws:allow-delete-request"
         },
         {
+          "description": "Enables the duplicate_request command without any pre-configured scope.",
+          "type": "string",
+          "const": "yaak-ws:allow-duplicate-request"
+        },
+        {
           "description": "Enables the list_connections command without any pre-configured scope.",
           "type": "string",
           "const": "yaak-ws:allow-list-connections"
@@ -5586,6 +5591,11 @@
           "description": "Denies the delete_request command without any pre-configured scope.",
           "type": "string",
           "const": "yaak-ws:deny-delete-request"
+        },
+        {
+          "description": "Denies the duplicate_request command without any pre-configured scope.",
+          "type": "string",
+          "const": "yaak-ws:deny-duplicate-request"
         },
         {
           "description": "Denies the list_connections command without any pre-configured scope.",

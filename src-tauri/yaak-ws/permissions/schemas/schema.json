@@ -355,6 +355,16 @@
           "const": "deny-delete-request"
         },
         {
+          "description": "Enables the duplicate_request command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-duplicate-request"
+        },
+        {
+          "description": "Denies the duplicate_request command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-duplicate-request"
+        },
+        {
           "description": "Enables the list_connections command without any pre-configured scope.",
           "type": "string",
           "const": "allow-list-connections"

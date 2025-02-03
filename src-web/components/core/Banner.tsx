@@ -9,19 +9,17 @@ interface Props {
 
 export function Banner({ children, className, color }: Props) {
   return (
-    <div>
-      <div
-        className={classNames(
-          className,
-          `x-theme-banner--${color}`,
-          'whitespace-pre-wrap',
-          'border border-dashed border-border bg-surface',
-          'px-3 py-2 rounded select-auto',
-          'overflow-x-auto text-text',
-        )}
-      >
-        {children}
-      </div>
+    <div
+      className={classNames(
+        className,
+        `x-theme-banner--${color}`,
+        'whitespace-pre-wrap',
+        'border border-dashed border-border bg-surface',
+        'px-3 py-2 rounded select-auto',
+        'overflow-auto text-text',
+      )}
+    >
+      {children}
     </div>
   );
 }

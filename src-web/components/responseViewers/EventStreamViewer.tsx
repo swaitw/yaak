@@ -6,6 +6,7 @@ import { useFormatText } from '../../hooks/useFormatText';
 import { useResponseBodyEventSource } from '../../hooks/useResponseBodyEventSource';
 import { isJSON } from '../../lib/contentType';
 import { AutoScroller } from '../core/AutoScroller';
+import { Banner } from '../core/Banner';
 import { Button } from '../core/Button';
 import type { EditorProps } from '../core/Editor/Editor';
 import { Editor } from '../core/Editor/Editor';
@@ -51,10 +52,26 @@ function ActualEventStreamViewer({ response }: Props) {
       defaultRatio={0.4}
       minHeightPx={20}
       firstSlot={() => (
-        <EventStreamEvents
-          events={events.data ?? []}
-          activeEventIndex={activeEventIndex}
-          setActiveEventIndex={setActiveEventIndex}
+        <AutoScroller
+          data={events.data ?? []}
+          header={
+            events.error && (
+              <Banner color="danger" className="m-3">
+                {String(events.error)}
+              </Banner>
+            )
+          }
+          render={(event, i) => (
+            <EventRow
+              event={event}
+              isActive={i === activeEventIndex}
+              index={i}
+              onClick={() => {
+                if (i === activeEventIndex) setActiveEventIndex(null);
+                else setActiveEventIndex(i);
+              }}
+            />
+          )}
         />
       )}
       secondSlot={
@@ -112,34 +129,7 @@ function FormattedEditor({ text, language }: { text: string; language: EditorPro
   return <Editor readOnly defaultValue={formatted.data} language={language} stateKey={null} />;
 }
 
-function EventStreamEvents({
-  events,
-  activeEventIndex,
-  setActiveEventIndex,
-}: {
-  events: ServerSentEvent[];
-  activeEventIndex: number | null;
-  setActiveEventIndex: (eventId: number | null) => void;
-}) {
-  return (
-    <AutoScroller
-      data={events}
-      render={(event, i) => (
-        <EventStreamEvent
-          event={event}
-          isActive={i === activeEventIndex}
-          index={i}
-          onClick={() => {
-            if (i === activeEventIndex) setActiveEventIndex(null);
-            else setActiveEventIndex(i);
-          }}
-        />
-      )}
-    />
-  );
-}
-
-function EventStreamEvent({
+function EventRow({
   onClick,
   isActive,
   event,

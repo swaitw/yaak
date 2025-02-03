@@ -81,13 +81,15 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
                 />
               </div>
             </HStack>
-            {activeConnection.error && (
-              <Banner color="danger" className="m-3">
-                {activeConnection.error}
-              </Banner>
-            )}
             <AutoScroller
               data={events}
+              header={
+                activeConnection.error && (
+                  <Banner color="danger" className="m-3">
+                    {activeConnection.error}
+                  </Banner>
+                )
+              }
               render={(event) => (
                 <EventRow
                   key={event.id}

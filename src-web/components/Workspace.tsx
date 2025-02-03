@@ -2,6 +2,7 @@ import classNames from 'classnames';
 import { motion } from 'framer-motion';
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react';
 import { useCallback, useMemo, useRef, useState } from 'react';
+import {duplicateWebsocketRequest} from "../commands/duplicateWebsocketRequest";
 import {
   useEnsureActiveCookieJar,
   useSubscribeActiveCookieJarId,
@@ -253,10 +254,17 @@ function useGlobalWorkspaceHooks() {
 
   useHotKey('http_request.duplicate', async () => {
     const activeRequest = getActiveRequest();
-    if (activeRequest?.model === 'http_request') {
+    if (activeRequest == null) {
+      // Nothing
+    } else if (activeRequest.model === 'http_request') {
       await duplicateHttpRequest.mutateAsync();
-    } else {
+    } else if (activeRequest.model === 'grpc_request') {
       await duplicateGrpcRequest.mutateAsync();
+    } else if (activeRequest.model === 'websocket_request') {
+      await duplicateWebsocketRequest.mutateAsync(activeRequest);
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      throw new Error('Failed to duplicate invalid request model: ' + (activeRequest as any).model);
     }
   });
 }

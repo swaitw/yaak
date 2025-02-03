@@ -6,10 +6,11 @@ use chrono::Utc;
 use log::{info, warn};
 use std::str::FromStr;
 use tauri::http::{HeaderMap, HeaderName};
-use tauri::{AppHandle, Manager, Runtime, State, WebviewWindow};
+use tauri::{AppHandle, Manager, Runtime, State, Url, WebviewWindow};
 use tokio::sync::{mpsc, Mutex};
 use tokio_tungstenite::tungstenite::http::HeaderValue;
 use tokio_tungstenite::tungstenite::Message;
+use yaak_http::apply_path_placeholders;
 use yaak_models::models::{
     HttpResponseHeader, WebsocketConnection, WebsocketConnectionState, WebsocketEvent,
     WebsocketEventType, WebsocketRequest,
@@ -31,6 +32,14 @@ pub(crate) async fn upsert_request<R: Runtime>(
     w: WebviewWindow<R>,
 ) -> Result<WebsocketRequest> {
     Ok(queries::upsert_websocket_request(&w, request, &UpdateSource::Window).await?)
+}
+
+#[tauri::command]
+pub(crate) async fn duplicate_request<R: Runtime>(
+    request_id: &str,
+    w: WebviewWindow<R>,
+) -> Result<WebsocketRequest> {
+    Ok(queries::duplicate_websocket_request(&w, request_id, &UpdateSource::Window).await?)
 }
 
 #[tauri::command]
@@ -290,7 +299,22 @@ pub(crate) async fn connect<R: Runtime>(
         });
     }
 
-    let response = match ws_manager.connect(&connection.id, &request.url, headers, receive_tx).await
+
+    let (url, url_parameters) = apply_path_placeholders(&request.url, request.url_parameters);
+
+    // Add URL parameters to URL
+    let mut url = Url::parse(&url).unwrap();
+    {
+        let mut query_pairs = url.query_pairs_mut();
+        for p in url_parameters.clone() {
+            if !p.enabled || p.name.is_empty() {
+                continue;
+            }
+            query_pairs.append_pair(p.name.as_str(), p.value.as_str());
+        }
+    }
+
+    let response = match ws_manager.connect(&connection.id, url.as_str(), headers, receive_tx).await
     {
         Ok(r) => r,
         Err(e) => {
@@ -298,6 +322,7 @@ pub(crate) async fn connect<R: Runtime>(
                 &window,
                 &WebsocketConnection {
                     error: Some(format!("{e:?}")),
+                    state: WebsocketConnectionState::Closed,
                     ..connection
                 },
                 &UpdateSource::Window,

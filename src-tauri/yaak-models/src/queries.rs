@@ -1054,6 +1054,20 @@ pub async fn upsert_websocket_event<R: Runtime>(
     Ok(m)
 }
 
+pub async fn duplicate_websocket_request<R: Runtime>(
+    window: &WebviewWindow<R>,
+    id: &str,
+    update_source: &UpdateSource,
+) -> Result<WebsocketRequest> {
+    let mut request = match get_websocket_request(window, id).await? {
+        None => return Err(ModelNotFound(id.to_string())),
+        Some(r) => r,
+    };
+    request.id = "".to_string();
+    request.sort_priority = request.sort_priority + 0.001;
+    upsert_websocket_request(window, request, update_source).await
+}
+
 pub async fn upsert_websocket_request<R: Runtime>(
     window: &WebviewWindow<R>,
     request: WebsocketRequest,
@@ -2653,7 +2667,9 @@ pub async fn get_workspace_export_resources<R: Runtime>(
         data.resources.folders.append(&mut list_folders(mgr, workspace_id).await?);
         data.resources.http_requests.append(&mut list_http_requests(mgr, workspace_id).await?);
         data.resources.grpc_requests.append(&mut list_grpc_requests(mgr, workspace_id).await?);
-        data.resources.websocket_requests.append(&mut list_websocket_requests(mgr, workspace_id).await?);
+        data.resources
+            .websocket_requests
+            .append(&mut list_websocket_requests(mgr, workspace_id).await?);
     }
 
     // Nuke environments if we don't want them

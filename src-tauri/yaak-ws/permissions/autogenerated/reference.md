@@ -7,6 +7,7 @@ Default permissions for the plugin
 - `allow-delete-connection`
 - `allow-delete-connections`
 - `allow-delete-request`
+- `allow-duplicate-request`
 - `allow-list-connections`
 - `allow-list-events`
 - `allow-list-requests`
@@ -174,6 +175,32 @@ Enables the delete_request command without any pre-configured scope.
 <td>
 
 Denies the delete_request command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`yaak-ws:allow-duplicate-request`
+
+</td>
+<td>
+
+Enables the duplicate_request command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`yaak-ws:deny-duplicate-request`
+
+</td>
+<td>
+
+Denies the duplicate_request command without any pre-configured scope.
 
 </td>
 </tr>

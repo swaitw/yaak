@@ -6,6 +6,7 @@ permissions = [
     "allow-delete-connection",
     "allow-delete-connections",
     "allow-delete-request",
+    "allow-duplicate-request",
     "allow-list-connections",
     "allow-list-events",
     "allow-list-requests",

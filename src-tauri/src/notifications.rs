@@ -1,6 +1,6 @@
 use std::time::SystemTime;
 
-use crate::analytics::get_num_launches;
+use crate::analytics::{get_num_launches, get_os};
 use chrono::{DateTime, Duration, Utc};
 use log::debug;
 use reqwest::Method;
@@ -66,8 +66,9 @@ impl YaakNotifier {
         let req = reqwest::Client::default()
             .request(Method::GET, "https://notify.yaak.app/notifications")
             .query(&[
-                ("version", info.version.to_string()),
-                ("launches", num_launches.to_string()),
+                ("version", info.version.to_string().as_str()),
+                ("launches", num_launches.to_string().as_str()),
+                ("platform", get_os())
             ]);
         let resp = req.send().await.map_err(|e| e.to_string())?;
         if resp.status() != 200 {

@@ -9,6 +9,12 @@ export function upsertWebsocketRequest(
   }) as Promise<WebsocketRequest>;
 }
 
+export function duplicateWebsocketRequest(requestId: string) {
+  return invoke('plugin:yaak-ws|duplicate_request', {
+    requestId,
+  }) as Promise<WebsocketRequest>;
+}
+
 export function deleteWebsocketRequest(requestId: string) {
   return invoke('plugin:yaak-ws|delete_request', {
     requestId,

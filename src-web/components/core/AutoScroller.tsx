@@ -1,14 +1,15 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
-import type { ReactElement, UIEvent } from 'react';
+import type { ReactElement, ReactNode, UIEvent } from 'react';
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { IconButton } from './IconButton';
 
 interface Props<T> {
   data: T[];
   render: (item: T, index: number) => ReactElement<HTMLElement>;
+  header?: ReactNode;
 }
 
-export function AutoScroller<T>({ data, render }: Props<T>) {
+export function AutoScroller<T>({ data, render, header }: Props<T>) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [autoScroll, setAutoScroll] = useState<boolean>(true);
 
@@ -45,7 +46,7 @@ export function AutoScroller<T>({ data, render }: Props<T>) {
   }, [autoScroll, data.length]);
 
   return (
-    <div className="h-full w-full relative">
+    <div className="h-full w-full relative grid grid-rows-[auto_minmax(0,1fr)]">
       {!autoScroll && (
         <div className="absolute bottom-0 right-0 m-2">
           <IconButton
@@ -59,6 +60,7 @@ export function AutoScroller<T>({ data, render }: Props<T>) {
           />
         </div>
       )}
+      {header ?? <span aria-hidden/>}
       <div ref={containerRef} className="h-full w-full overflow-y-auto" onScroll={handleScroll}>
         <div
           style={{
@@ -75,7 +77,7 @@ export function AutoScroller<T>({ data, render }: Props<T>) {
                 top: 0,
                 left: 0,
                 width: '100%',
-                // height: `${virtualItem.size}px`,
+                height: `${virtualItem.size * 1000}px`,
                 transform: `translateY(${virtualItem.start}px)`,
               }}
             >
