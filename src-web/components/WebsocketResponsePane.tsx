@@ -15,6 +15,7 @@ import { Button } from './core/Button';
 import { Editor } from './core/Editor/Editor';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
+import { LoadingIcon } from './core/LoadingIcon';
 import { Separator } from './core/Separator';
 import { SplitLayout } from './core/SplitLayout';
 import { HStack, VStack } from './core/Stacks';
@@ -71,7 +72,7 @@ export function WebsocketResponsePane({ activeRequest }: Props) {
             <HStack className="pl-3 mb-1 font-mono text-sm">
               <HStack space={2}>
                 {activeConnection.state !== 'closed' && (
-                  <Icon icon="refresh" size="sm" spin className="text-text-subtlest" />
+                  <LoadingIcon size="sm" className="text-text-subtlest" />
                 )}
                 <StatusTag showReason response={activeConnection} />
                 <span>&bull;</span>

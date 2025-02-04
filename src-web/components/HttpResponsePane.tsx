@@ -11,7 +11,7 @@ import { Banner } from './core/Banner';
 import { CountBadge } from './core/CountBadge';
 import { DurationTag } from './core/DurationTag';
 import { HotKeyList } from './core/HotKeyList';
-import { Icon } from './core/Icon';
+import { LoadingIcon } from './core/LoadingIcon';
 import { SizeTag } from './core/SizeTag';
 import { HStack } from './core/Stacks';
 import { StatusTag } from './core/StatusTag';
@@ -120,7 +120,7 @@ export function HttpResponsePane({ style, className, activeRequestId }: Props) {
                   'whitespace-nowrap w-full pl-3 overflow-x-auto font-mono text-sm',
                 )}
               >
-                {activeResponse.state !== 'closed' && <Icon size="sm" icon="refresh" spin />}
+                {activeResponse.state !== 'closed' && <LoadingIcon size="sm" />}
                 <StatusTag showReason response={activeResponse} />
                 <span>&bull;</span>
                 <DurationTag
@@ -159,7 +159,7 @@ export function HttpResponsePane({ style, className, activeRequestId }: Props) {
                 <ConfirmLargeResponse response={activeResponse}>
                   {activeResponse.state === 'initialized' ? (
                     <EmptyStateText>
-                      <Icon size="xl" spin icon="refresh" className="text-text-subtlest" />
+                      <LoadingIcon size="xl" className="text-text-subtlest" />
                     </EmptyStateText>
                   ) : activeResponse.state === 'closed' && activeResponse.contentLength === 0 ? (
                     <EmptyStateText>Empty </EmptyStateText>
@@ -217,7 +217,7 @@ function EnsureCompleteResponse({
   if (response.state !== 'closed') {
     return (
       <EmptyStateText>
-        <Icon icon="refresh" spin />
+        <LoadingIcon />
       </EmptyStateText>
     );
   }

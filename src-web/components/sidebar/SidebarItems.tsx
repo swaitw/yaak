@@ -1,6 +1,8 @@
-import type { GrpcConnection, HttpResponse } from '@yaakapp-internal/models';
 import classNames from 'classnames';
 import React, { Fragment, memo } from 'react';
+import { useGrpcConnections } from '../../hooks/useGrpcConnections';
+import { useHttpResponses } from '../../hooks/useHttpResponses';
+import { useWebsocketConnections } from '../../hooks/useWebsocketConnections';
 import { VStack } from '../core/Stacks';
 import { DropMarker } from '../DropMarker';
 import type { SidebarTreeNode } from './Sidebar';
@@ -17,8 +19,6 @@ export interface SidebarItemsProps {
   handleEnd: (id: string) => void;
   handleDragStart: (id: string) => void;
   onSelect: (requestId: string) => void;
-  httpResponses: HttpResponse[];
-  grpcConnections: GrpcConnection[];
 }
 
 export const SidebarItems = memo(function SidebarItems({
@@ -32,9 +32,11 @@ export const SidebarItems = memo(function SidebarItems({
   handleEnd,
   handleMove,
   handleDragStart,
-  httpResponses,
-  grpcConnections,
 }: SidebarItemsProps) {
+  const httpResponses = useHttpResponses();
+  const grpcConnections = useGrpcConnections();
+  const websocketConnections = useWebsocketConnections();
+
   return (
     <VStack
       as="ul"
@@ -57,6 +59,9 @@ export const SidebarItems = memo(function SidebarItems({
               itemModel={child.model}
               latestHttpResponse={httpResponses.find((r) => r.requestId === child.id) ?? null}
               latestGrpcConnection={grpcConnections.find((c) => c.requestId === child.id) ?? null}
+              latestWebsocketConnection={
+                websocketConnections.find((c) => c.requestId === child.id) ?? null
+              }
               onMove={handleMove}
               onEnd={handleEnd}
               onSelect={onSelect}
@@ -71,8 +76,6 @@ export const SidebarItems = memo(function SidebarItems({
                   handleMove={handleMove}
                   hoveredIndex={hoveredIndex}
                   hoveredTree={hoveredTree}
-                  httpResponses={httpResponses}
-                  grpcConnections={grpcConnections}
                   onSelect={onSelect}
                   selectedTree={selectedTree}
                   tree={child}

@@ -14,6 +14,7 @@ import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { JsonAttributeTree } from './core/JsonAttributeTree';
 import { KeyValueRow, KeyValueRows } from './core/KeyValueRow';
+import { LoadingIcon } from './core/LoadingIcon';
 import { Separator } from './core/Separator';
 import { SplitLayout } from './core/SplitLayout';
 import { HStack, VStack } from './core/Stacks';
@@ -70,7 +71,7 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
               <HStack space={2}>
                 <span>{events.length} Messages</span>
                 {activeConnection.state !== 'closed' && (
-                  <Icon icon="refresh" size="sm" spin className="text-text-subtlest" />
+                  <LoadingIcon size="sm" className="text-text-subtlest" />
                 )}
               </HStack>
               <div className="ml-auto">

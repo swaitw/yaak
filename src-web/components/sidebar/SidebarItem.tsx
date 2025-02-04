@@ -1,4 +1,9 @@
-import type { AnyModel, GrpcConnection, HttpResponse } from '@yaakapp-internal/models';
+import type {
+  AnyModel,
+  GrpcConnection,
+  HttpResponse,
+  WebsocketConnection,
+} from '@yaakapp-internal/models';
 import classNames from 'classnames';
 import { atom, useAtomValue } from 'jotai';
 import type { ReactElement } from 'react';
@@ -17,6 +22,7 @@ import { getWebsocketRequest } from '../../hooks/useWebsocketRequests';
 import { jotaiStore } from '../../lib/jotai';
 import { HttpMethodTag } from '../core/HttpMethodTag';
 import { Icon } from '../core/Icon';
+import { LoadingIcon } from '../core/LoadingIcon';
 import { StatusTag } from '../core/StatusTag';
 import type { SidebarTreeNode } from './Sidebar';
 import { sidebarSelectedIdAtom } from './SidebarAtoms';
@@ -39,6 +45,7 @@ export type SidebarItemProps = {
   child: SidebarTreeNode;
   latestHttpResponse: HttpResponse | null;
   latestGrpcConnection: GrpcConnection | null;
+  latestWebsocketConnection: WebsocketConnection | null;
 } & Pick<SidebarItemsProps, 'onSelect'>;
 
 type DragItem = {
@@ -58,6 +65,7 @@ export const SidebarItem = memo(function SidebarItem({
   className,
   latestHttpResponse,
   latestGrpcConnection,
+  latestWebsocketConnection,
   children,
 }: SidebarItemProps) {
   const ref = useRef<HTMLLIElement>(null);
@@ -283,13 +291,19 @@ export const SidebarItem = memo(function SidebarItem({
           {latestGrpcConnection ? (
             <div className="ml-auto">
               {latestGrpcConnection.state !== 'closed' && (
-                <Icon spin size="sm" icon="update" className="text-text-subtlest" />
+                <LoadingIcon size="sm" className="text-text-subtlest" />
+              )}
+            </div>
+          ) : latestWebsocketConnection ? (
+            <div className="ml-auto">
+              {latestWebsocketConnection.state !== 'closed' && (
+                <LoadingIcon size="sm" className="text-text-subtlest" />
               )}
             </div>
           ) : latestHttpResponse ? (
             <div className="ml-auto">
               {latestHttpResponse.state !== 'closed' ? (
-                <Icon spin size="sm" icon="refresh" className="text-text-subtlest" />
+                <LoadingIcon size="sm" className="text-text-subtlest" />
               ) : (
                 <StatusTag className="text-xs" response={latestHttpResponse} />
               )}

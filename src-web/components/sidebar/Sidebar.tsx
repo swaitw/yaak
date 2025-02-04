@@ -14,9 +14,7 @@ import { getActiveRequest } from '../../hooks/useActiveRequest';
 import { useActiveWorkspace } from '../../hooks/useActiveWorkspace';
 import { useCreateDropdownItems } from '../../hooks/useCreateDropdownItems';
 import { useDeleteAnyRequest } from '../../hooks/useDeleteAnyRequest';
-import { useGrpcConnections } from '../../hooks/useGrpcConnections';
 import { useHotKey } from '../../hooks/useHotKey';
-import { useHttpResponses } from '../../hooks/useHttpResponses';
 import { useSidebarHidden } from '../../hooks/useSidebarHidden';
 import { getSidebarCollapsedMap } from '../../hooks/useSidebarItemCollapsed';
 import { useUpdateAnyFolder } from '../../hooks/useUpdateAnyFolder';
@@ -51,8 +49,6 @@ export function Sidebar({ className }: Props) {
   const [hidden, setHidden] = useSidebarHidden();
   const sidebarRef = useRef<HTMLElement>(null);
   const activeWorkspace = useActiveWorkspace();
-  const httpResponses = useHttpResponses();
-  const grpcConnections = useGrpcConnections();
   const [hasFocus, setHasFocus] = useState<boolean>(false);
   const [selectedId, setSelectedId] = useAtom(sidebarSelectedIdAtom);
   const [selectedTree, setSelectedTree] = useState<SidebarTreeNode | null>(null);
@@ -372,8 +368,6 @@ export function Sidebar({ className }: Props) {
         <SidebarItems
           treeParentMap={treeParentMap}
           selectedTree={selectedTree}
-          httpResponses={httpResponses}
-          grpcConnections={grpcConnections}
           tree={tree}
           draggingId={draggingId}
           onSelect={handleSelect}
