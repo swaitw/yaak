@@ -1,7 +1,7 @@
 # Yaak API Client
 
-Yaak is a desktop API client for organizing and executing REST, GraphQL, and gRPC
-requests. It's built using [Tauri](https://tauri.app), Rust, and ReactJS.
+Yaak is a desktop API client for interacting with REST, GraphQL, Server Sent Events (SSE), WebSocket, and gRPC
+APIs. It's built using [Tauri](https://tauri.app), Rust, and ReactJS.
 
 ![screenshot](https://github.com/user-attachments/assets/f18e963f-0b68-4ecb-b8b8-cb71aa9aec02)
 
