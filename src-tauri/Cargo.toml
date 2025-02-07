@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "yaak-git",
     "yaak-grpc",
     "yaak-http",
     "yaak-license",
@@ -37,7 +38,7 @@ objc = "0.2.7"
 cocoa = "0.26.0"
 
 [target.'cfg(target_os = "linux")'.dependencies]
-openssl-sys = { version = "0.9", features = ["vendored"] } # For Ubuntu installation to work
+openssl-sys = { version = "0.9.105", features = ["vendored"] } # For Ubuntu installation to work
 
 [dependencies]
 chrono = { version = "0.4.31", features = ["serde"] }
@@ -72,13 +73,14 @@ tokio = { version = "1.43.0", features = ["sync"] }
 tokio-stream = "0.1.17"
 ts-rs = { workspace = true }
 uuid = "1.12.1"
+yaak-git = { path = "yaak-git" }
 yaak-grpc = { path = "yaak-grpc" }
 yaak-http = { workspace = true }
 yaak-license = { path = "yaak-license" }
 yaak-models = { workspace = true }
 yaak-plugins = { workspace = true }
 yaak-sse = { workspace = true }
-yaak-sync = { path = "yaak-sync" }
+yaak-sync = { workspace = true }
 yaak-templates = { workspace = true }
 yaak-ws = { path = "yaak-ws" }
 
@@ -91,8 +93,9 @@ tauri-plugin = "2.0.4"
 tauri-plugin-shell = "2.2.0"
 thiserror = "2.0.3"
 ts-rs = "10.0.0"
+yaak-http = { path = "yaak-http" }
 yaak-models = { path = "yaak-models" }
 yaak-plugins = { path = "yaak-plugins" }
-yaak-http = { path = "yaak-http" }
+yaak-sync = { path = "yaak-sync" }
 yaak-sse = { path = "yaak-sse" }
 yaak-templates = { path = "yaak-templates" }

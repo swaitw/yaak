@@ -7,6 +7,7 @@ import { Portal } from './Portal';
 
 export type ToastInstance = {
   id: string;
+  uniqueKey: string;
   message: ReactNode;
   timeout: 3000 | 5000 | 8000 | null;
   onClose?: ToastProps['onClose'];
@@ -18,18 +19,21 @@ export const Toasts = () => {
     <Portal name="toasts">
       <div className="absolute right-0 bottom-0 z-50">
         <AnimatePresence>
-          {toasts.map(({ message, ...props }: ToastInstance) => (
-            <Toast
-              key={props.id}
-              open
-              {...props}
-              // We call onClose inside actions.hide instead of passing to toast so that
-              // it gets called from external close calls as well
-              onClose={() => hideToast(props.id)}
-            >
-              {message}
-            </Toast>
-          ))}
+          {toasts.map((toast: ToastInstance) => {
+            const { message, uniqueKey, ...props } = toast;
+            return (
+              <Toast
+                key={uniqueKey}
+                open
+                {...props}
+                // We call onClose inside actions.hide instead of passing to toast so that
+                // it gets called from external close calls as well
+                onClose={() => hideToast(toast)}
+              >
+                {message}
+              </Toast>
+            );
+          })}
         </AnimatePresence>
       </div>
     </Portal>

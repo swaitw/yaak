@@ -1,4 +1,3 @@
-use crate::error::Error::InvalidSyncFile;
 use crate::error::Result;
 use crate::models::SyncModel;
 use chrono::Utc;
@@ -164,13 +163,12 @@ pub(crate) async fn get_fs_candidates(dir: &Path) -> Result<Vec<FsCandidate>> {
         };
 
         let path = dir_entry.path();
-        let (model, _, checksum) = match SyncModel::from_file(&path).await {
+        let (model, _, checksum) = match SyncModel::from_file(&path) {
             Ok(Some(m)) => m,
             Ok(None) => continue,
-            Err(InvalidSyncFile(_)) => continue,
             Err(e) => {
                 warn!("Failed to read sync file {e}");
-                continue;
+                return Err(e);
             }
         };
 
@@ -315,7 +313,7 @@ pub(crate) async fn apply_sync_ops<R: Runtime>(
     }
 
     debug!(
-        "Sync ops {}",
+        "Applying sync ops {}",
         sync_ops.iter().map(|op| op.to_string()).collect::<Vec<String>>().join(", ")
     );
     let mut sync_state_ops = Vec::new();

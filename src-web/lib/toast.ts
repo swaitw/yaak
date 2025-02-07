@@ -9,29 +9,40 @@ export function showToast({
   id,
   timeout = 5000,
   ...props
-}: Omit<ToastInstance, 'id' | 'timeout'> & {
+}: Omit<ToastInstance, 'id' | 'timeout' | 'uniqueKey'> & {
   id?: ToastInstance['id'];
   timeout?: ToastInstance['timeout'];
 }) {
   id = id ?? generateId();
-  if (timeout != null) {
-    setTimeout(() => hideToast(id), timeout);
+  const uniqueKey = generateId();
+
+  const toasts = jotaiStore.get(toastsAtom);
+  const toastWithSameId = toasts.find((t) => t.id === id);
+
+  let delay = 0;
+  if (toastWithSameId) {
+    console.log('HIDING TOAST', id);
+    hideToast(toastWithSameId);
+    // Allow enough time for old toast to animate out
+    delay = 200;
   }
-  jotaiStore.set(toastsAtom, (a) => {
-    if (a.some((v) => v.id === id)) {
-      // It's already visible with this id
-      return a;
+
+  setTimeout(() => {
+    const newToast: ToastInstance = { id, uniqueKey, timeout, ...props };
+    if (timeout != null) {
+      setTimeout(() => hideToast(newToast), timeout);
     }
-    return [...a, { id, timeout, ...props }];
-  });
+    jotaiStore.set(toastsAtom, (prev) => [...prev, newToast]);
+  }, delay);
+
   return id;
 }
 
-export function hideToast(id: string) {
+export function hideToast(toHide: ToastInstance) {
   jotaiStore.set(toastsAtom, (all) => {
-    const t = all.find((t) => t.id === id);
+    const t = all.find((t) => t.uniqueKey === toHide.uniqueKey);
     t?.onClose?.();
-    return all.filter((t) => t.id !== id);
+    return all.filter((t) => t.uniqueKey !== toHide.uniqueKey);
   });
 }
 

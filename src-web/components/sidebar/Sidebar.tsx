@@ -27,6 +27,7 @@ import { ContextMenu } from '../core/Dropdown';
 import { sidebarSelectedIdAtom, sidebarTreeAtom } from './SidebarAtoms';
 import type { SidebarItemProps } from './SidebarItem';
 import { SidebarItems } from './SidebarItems';
+import { GitDropdown } from '../GitDropdown';
 
 interface Props {
   className?: string;
@@ -378,6 +379,7 @@ export function Sidebar({ className }: Props) {
           handleDragStart={handleDragStart}
         />
       </div>
+      <GitDropdown />
     </aside>
   );
 }

@@ -1819,6 +1819,7 @@ pub fn run() {
         .plugin(yaak_license::init())
         .plugin(yaak_models::plugin::Builder::default().build())
         .plugin(yaak_plugins::init())
+        .plugin(yaak_git::init())
         .plugin(yaak_ws::init())
         .plugin(yaak_sync::init());
 

@@ -1,3 +1,4 @@
+import type { Color } from '@yaakapp-internal/plugins';
 import classNames from 'classnames';
 import type { HTMLAttributes, ReactNode } from 'react';
 import { forwardRef, useImperativeHandle, useRef } from 'react';
@@ -9,16 +10,7 @@ import { LoadingIcon } from './LoadingIcon';
 
 export type ButtonProps = Omit<HTMLAttributes<HTMLButtonElement>, 'color' | 'onChange'> & {
   innerClassName?: string;
-  color?:
-    | 'custom'
-    | 'default'
-    | 'secondary'
-    | 'primary'
-    | 'info'
-    | 'success'
-    | 'notice'
-    | 'warning'
-    | 'danger';
+  color?: Color | 'custom' | 'default';
   variant?: 'border' | 'solid';
   isLoading?: boolean;
   size?: '2xs' | 'xs' | 'sm' | 'md';
@@ -58,6 +50,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
 ) {
   const hotkeyTrigger = useFormattedHotkey(hotkeyAction ?? null)?.join('');
   const fullTitle = hotkeyTrigger ? `${title ?? ''} ${hotkeyTrigger}`.trim() : title;
+
+  if (isLoading) {
+    disabled = true;
+  }
 
   const classes = classNames(
     className,
@@ -110,7 +106,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       ref={buttonRef}
       type={type}
       className={classes}
-      disabled={disabled || isLoading}
+      disabled={disabled}
       onClick={(e) => {
         onClick?.(e);
         if (event != null) {
