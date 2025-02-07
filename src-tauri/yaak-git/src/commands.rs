@@ -1,5 +1,6 @@
 use crate::branch::{git_checkout_branch, git_create_branch, git_delete_branch, git_merge_branch};
 use crate::error::Result;
+use crate::fetch::git_fetch_all;
 use crate::git::{
     git_add, git_commit, git_init, git_log, git_status, git_unstage, GitCommit, GitStatusSummary,
 };
@@ -10,7 +11,7 @@ use tauri::command;
 // NOTE: All of these commands are async to prevent blocking work from locking up the UI
 
 #[command]
-pub async fn checkout(dir: &Path, branch: &str, force: bool) -> Result<()> {
+pub async fn checkout(dir: &Path, branch: &str, force: bool) -> Result<String> {
     git_checkout_branch(dir, branch, force)
 }
 
@@ -47,6 +48,11 @@ pub async fn initialize(dir: &Path) -> Result<()> {
 #[command]
 pub async fn commit(dir: &Path, message: &str) -> Result<()> {
     git_commit(dir, message)
+}
+
+#[command]
+pub async fn fetch_all(dir: &Path) -> Result<()> {
+    git_fetch_all(dir)
 }
 
 #[command]

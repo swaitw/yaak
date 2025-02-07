@@ -5433,6 +5433,11 @@
           "const": "yaak-git:allow-checkout"
         },
         {
+          "description": "Enables the checkout_remote command without any pre-configured scope.",
+          "type": "string",
+          "const": "yaak-git:allow-checkout-remote"
+        },
+        {
           "description": "Enables the commit command without any pre-configured scope.",
           "type": "string",
           "const": "yaak-git:allow-commit"
@@ -5441,6 +5446,11 @@
           "description": "Enables the delete_branch command without any pre-configured scope.",
           "type": "string",
           "const": "yaak-git:allow-delete-branch"
+        },
+        {
+          "description": "Enables the fetch_all command without any pre-configured scope.",
+          "type": "string",
+          "const": "yaak-git:allow-fetch-all"
         },
         {
           "description": "Enables the initialize command without any pre-configured scope.",
@@ -5493,6 +5503,11 @@
           "const": "yaak-git:deny-checkout"
         },
         {
+          "description": "Denies the checkout_remote command without any pre-configured scope.",
+          "type": "string",
+          "const": "yaak-git:deny-checkout-remote"
+        },
+        {
           "description": "Denies the commit command without any pre-configured scope.",
           "type": "string",
           "const": "yaak-git:deny-commit"
@@ -5501,6 +5516,11 @@
           "description": "Denies the delete_branch command without any pre-configured scope.",
           "type": "string",
           "const": "yaak-git:deny-delete-branch"
+        },
+        {
+          "description": "Denies the fetch_all command without any pre-configured scope.",
+          "type": "string",
+          "const": "yaak-git:deny-fetch-all"
         },
         {
           "description": "Denies the initialize command without any pre-configured scope.",

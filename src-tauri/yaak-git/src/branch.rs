@@ -22,9 +22,13 @@ pub(crate) fn branch_set_upstream_after_push(repo: &Repository, branch_name: &st
     Ok(())
 }
 
-pub(crate) fn git_checkout_branch(dir: &Path, branch: &str, force: bool) -> Result<()> {
+pub(crate) fn git_checkout_branch(dir: &Path, branch_name: &str, force: bool) -> Result<String> {
+    if branch_name.starts_with("origin/") {
+        return git_checkout_remote_branch(dir, branch_name, force);
+    }
+
     let repo = open_repo(dir)?;
-    let branch = get_branch_by_name(&repo, branch)?;
+    let branch = get_branch_by_name(&repo, branch_name)?;
     let branch_ref = branch.into_reference();
     let branch_tree = branch_ref.peel_to_tree()?;
 
@@ -36,7 +40,22 @@ pub(crate) fn git_checkout_branch(dir: &Path, branch: &str, force: bool) -> Resu
     repo.checkout_tree(branch_tree.as_object(), Some(&mut options))?;
     repo.set_head(branch_ref.name().unwrap())?;
 
-    Ok(())
+    Ok(branch_name.to_string())
+}
+
+pub(crate) fn git_checkout_remote_branch(dir: &Path, branch_name: &str, force: bool) -> Result<String> {
+    let branch_name = branch_name.trim_start_matches("origin/");
+    let repo = open_repo(dir)?;
+
+    let refname = format!("refs/remotes/origin/{}", branch_name);
+    let remote_ref = repo.find_reference(&refname)?;
+    let commit = remote_ref.peel_to_commit()?;
+
+    let mut new_branch = repo.branch(branch_name, &commit, false)?;
+    let upstream_name = format!("origin/{}", branch_name);
+    new_branch.set_upstream(Some(&upstream_name))?;
+
+    return git_checkout_branch(dir, branch_name, force)
 }
 
 pub(crate) fn git_create_branch(dir: &Path, name: &str) -> Result<()> {

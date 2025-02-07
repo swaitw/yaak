@@ -34,8 +34,15 @@ export function GitDropdown() {
 
 function SyncDropdownWithSyncDir({ syncDir }: { syncDir: string }) {
   const workspace = useActiveWorkspace();
-  const [{ status, log }, { branch, deleteBranch, mergeBranch, push, pull, checkout }] =
+  const [{ status, log }, { branch, deleteBranch, fetchAll, mergeBranch, push, pull, checkout }] =
     useGit(syncDir);
+
+  const localBranches = status.data?.localBranches ?? [];
+  const remoteBranches = status.data?.remoteBranches ?? [];
+  const remoteOnlyBranches = remoteBranches.filter(
+    (b) => !localBranches.includes(b.replace(/^origin\//, '')),
+  );
+  const currentBranch = status.data?.headRefShorthand ?? 'UNKNOWN';
 
   if (workspace == null) {
     return null;
@@ -69,12 +76,12 @@ function SyncDropdownWithSyncDir({ syncDir }: { syncDir: string }) {
             showErrorToast('git-checkout-error', String(err));
           }
         },
-        async onSuccess() {
+        async onSuccess(branchName) {
           showToast({
             id: 'git-checkout-success',
             message: (
               <>
-                Switched branch <InlineCode>{branch}</InlineCode>
+                Switched branch <InlineCode>{branchName}</InlineCode>
               </>
             ),
             color: 'success',
@@ -124,7 +131,7 @@ function SyncDropdownWithSyncDir({ syncDir }: { syncDir: string }) {
     {
       label: 'Merge Branch',
       leftSlot: <Icon icon="merge" />,
-      hidden: (status.data?.branches ?? []).length <= 1,
+      hidden: localBranches.length <= 1,
       async onSelect() {
         showDialog({
           id: 'git-merge',
@@ -132,15 +139,13 @@ function SyncDropdownWithSyncDir({ syncDir }: { syncDir: string }) {
           size: 'sm',
           description: (
             <>
-              Select a branch to merge into <InlineCode>{status.data?.headRefShorthand}</InlineCode>
+              Select a branch to merge into <InlineCode>{currentBranch}</InlineCode>
             </>
           ),
           render: ({ hide }) => (
             <BranchSelectionDialog
               selectText="Merge"
-              branches={(status.data?.branches ?? []).filter(
-                (b) => b !== status.data?.headRefShorthand,
-              )}
+              branches={localBranches.filter((b) => b !== currentBranch)}
               onCancel={hide}
               onSelect={async (branch) => {
                 await mergeBranch.mutateAsync(
@@ -153,7 +158,7 @@ function SyncDropdownWithSyncDir({ syncDir }: { syncDir: string }) {
                         message: (
                           <>
                             Merged <InlineCode>{branch}</InlineCode> into{' '}
-                            <InlineCode>{status.data?.headRefShorthand}</InlineCode>
+                            <InlineCode>{currentBranch}</InlineCode>
                           </>
                         ),
                       });
@@ -173,10 +178,9 @@ function SyncDropdownWithSyncDir({ syncDir }: { syncDir: string }) {
     {
       label: 'Delete Branch',
       leftSlot: <Icon icon="trash" />,
-      hidden: (status.data?.branches ?? []).length <= 1,
+      hidden: localBranches.length <= 1,
       color: 'danger',
       async onSelect() {
-        const currentBranch = status.data?.headRefShorthand;
         if (currentBranch == null) return;
 
         const confirmed = await showConfirmDelete({
@@ -256,9 +260,17 @@ function SyncDropdownWithSyncDir({ syncDir }: { syncDir: string }) {
         });
       },
     },
-    { type: 'separator', label: 'Branches', hidden: (status.data?.branches ?? []).length < 1 },
-    ...(status.data?.branches ?? []).map((branch) => {
-      const isCurrent = status.data?.headRefShorthand === branch;
+    { type: 'separator', label: 'Branches', hidden: localBranches.length < 1 },
+    ...localBranches.map((branch) => {
+      const isCurrent = currentBranch === branch;
+      return {
+        label: branch,
+        leftSlot: <Icon icon={isCurrent ? 'check' : 'empty'} />,
+        onSelect: isCurrent ? undefined : () => tryCheckout(branch, false),
+      };
+    }),
+    ...remoteOnlyBranches.map((branch) => {
+      const isCurrent = currentBranch === branch;
       return {
         label: branch,
         leftSlot: <Icon icon={isCurrent ? 'check' : 'empty'} />,
@@ -268,9 +280,9 @@ function SyncDropdownWithSyncDir({ syncDir }: { syncDir: string }) {
   ];
 
   return (
-    <Dropdown fullWidth items={items}>
+    <Dropdown fullWidth items={items} onOpen={fetchAll.mutate}>
       <GitMenuButton>
-        {noRepo ? 'Configure Git' : <InlineCode>{status.data?.headRefShorthand}</InlineCode>}
+        <InlineCode>{currentBranch}</InlineCode>
         <Icon icon="git_branch" size="sm" />
       </GitMenuButton>
     </Dropdown>

@@ -1,4 +1,4 @@
-use crate::commands::{add, branch, checkout, commit, delete_branch, initialize, log, merge_branch, pull, push, status, unstage};
+use crate::commands::{add, branch, checkout, commit, delete_branch, fetch_all, initialize, log, merge_branch, pull, push, status, unstage};
 use tauri::{
     generate_handler,
     plugin::{Builder, TauriPlugin},
@@ -9,6 +9,7 @@ mod branch;
 mod callbacks;
 mod commands;
 mod error;
+mod fetch;
 mod git;
 mod merge;
 mod pull;
@@ -24,6 +25,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             checkout,
             commit,
             delete_branch,
+            fetch_all,
             initialize,
             log,
             merge_branch,

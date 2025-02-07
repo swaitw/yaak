@@ -12,6 +12,7 @@ import classNames from 'classnames';
 
 import { useMemo, useState } from 'react';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
+import { showToast } from '../lib/toast';
 import { Banner } from './core/Banner';
 import { Button } from './core/Button';
 import type { CheckboxProps } from './core/Checkbox';
@@ -46,8 +47,9 @@ export function GitCommitDialog({ syncDir, onDone, workspace }: Props) {
   };
 
   const handleCreateCommitAndPush = async () => {
-    await handleCreateCommit();
+    await commit.mutateAsync({ message });
     await push.mutateAsync();
+    showToast({ id: 'git-push-success', message: 'Pushed changes', color: 'success' });
     onDone();
   };
 

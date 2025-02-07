@@ -1,6 +1,6 @@
 use crate::error::Result;
 use crate::repository::open_repo;
-use crate::util::list_branch_names;
+use crate::util::{local_branch_names, remote_branch_names};
 use chrono::{DateTime, Utc};
 use git2::IndexAddOption;
 use log::{info, warn};
@@ -19,7 +19,8 @@ pub struct GitStatusSummary {
     pub head_ref_shorthand: Option<String>,
     pub entries: Vec<GitStatusEntry>,
     pub origins: Vec<String>,
-    pub branches: Vec<String>,
+    pub local_branches: Vec<String>,
+    pub remote_branches: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
@@ -288,7 +289,8 @@ pub fn git_status(dir: &Path) -> Result<GitStatusSummary> {
     }
 
     let origins = repo.remotes()?.into_iter().filter_map(|o| Some(o?.to_string())).collect();
-    let branches = list_branch_names(&repo)?;
+    let local_branches = local_branch_names(&repo)?;
+    let remote_branches = remote_branch_names(&repo)?;
 
     Ok(GitStatusSummary {
         entries,
@@ -296,7 +298,8 @@ pub fn git_status(dir: &Path) -> Result<GitStatusSummary> {
         path: dir.to_string_lossy().to_string(),
         head_ref,
         head_ref_shorthand,
-        branches,
+        local_branches,
+        remote_branches,
     })
 }
 

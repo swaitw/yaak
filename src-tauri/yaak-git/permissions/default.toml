@@ -6,6 +6,7 @@ permissions = [
     "allow-checkout",
     "allow-commit",
     "allow-delete-branch",
+    "allow-fetch-all",
     "allow-initialize",
     "allow-log",
     "allow-merge-branch",

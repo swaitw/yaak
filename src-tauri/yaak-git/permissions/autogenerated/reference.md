@@ -7,6 +7,7 @@ Default permissions for the plugin
 - `allow-checkout`
 - `allow-commit`
 - `allow-delete-branch`
+- `allow-fetch-all`
 - `allow-initialize`
 - `allow-log`
 - `allow-merge-branch`
@@ -105,6 +106,32 @@ Denies the checkout command without any pre-configured scope.
 <tr>
 <td>
 
+`yaak-git:allow-checkout-remote`
+
+</td>
+<td>
+
+Enables the checkout_remote command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`yaak-git:deny-checkout-remote`
+
+</td>
+<td>
+
+Denies the checkout_remote command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 `yaak-git:allow-commit`
 
 </td>
@@ -150,6 +177,32 @@ Enables the delete_branch command without any pre-configured scope.
 <td>
 
 Denies the delete_branch command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`yaak-git:allow-fetch-all`
+
+</td>
+<td>
+
+Enables the fetch_all command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`yaak-git:deny-fetch-all`
+
+</td>
+<td>
+
+Denies the fetch_all command without any pre-configured scope.
 
 </td>
 </tr>

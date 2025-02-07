@@ -9,7 +9,7 @@ export type GitStatus = "added" | "conflict" | "current" | "modified" | "removed
 
 export type GitStatusEntry = { relaPath: string, status: GitStatus, staged: boolean, prev: SyncModel | null, next: SyncModel | null, };
 
-export type GitStatusSummary = { path: string, headRef: string | null, headRefShorthand: string | null, entries: Array<GitStatusEntry>, origins: Array<string>, branches: Array<string>, };
+export type GitStatusSummary = { path: string, headRef: string | null, headRefShorthand: string | null, entries: Array<GitStatusEntry>, origins: Array<string>, localBranches: Array<string>, remoteBranches: Array<string>, };
 
 export type PullResult = { receivedBytes: number, receivedObjects: number, };
 

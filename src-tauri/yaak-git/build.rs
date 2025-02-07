@@ -4,6 +4,7 @@ const COMMANDS: &[&str] = &[
     "checkout",
     "commit",
     "delete_branch",
+    "fetch_all",
     "initialize",
     "log",
     "merge_branch",

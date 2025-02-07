@@ -71,6 +71,7 @@ export interface DropdownProps {
   items: DropdownItem[];
   fullWidth?: boolean;
   hotKeyAction?: HotkeyAction;
+  onOpen?: () => void;
 }
 
 export interface DropdownRef {
@@ -89,7 +90,7 @@ export interface DropdownRef {
 const openAtom = atom<string | null>(null);
 
 export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown(
-  { children, items, hotKeyAction, fullWidth }: DropdownProps,
+  { children, items, hotKeyAction, fullWidth, onOpen }: DropdownProps,
   ref,
 ) {
   const id = useRef(generateId());
@@ -116,13 +117,14 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
       const newIsOpen = typeof o === 'function' ? o(prevIsOpen) : o;
       // Persist background color of button until we close the dropdown
       if (newIsOpen) {
+        onOpen?.();
         buttonRef.current!.style.backgroundColor = window
           .getComputedStyle(buttonRef.current!)
           .getPropertyValue('background-color');
       }
       return newIsOpen ? id.current : null; // Set global atom to current ID to signify open state
     });
-  }, []);
+  }, [onOpen]);
 
   // Because a different dropdown can cause ours to close, a useEffect([isOpen]) is the only method
   // we have of detecting the dropdown closed, to do cleanup.

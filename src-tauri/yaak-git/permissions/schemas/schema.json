@@ -325,6 +325,16 @@
           "const": "deny-checkout"
         },
         {
+          "description": "Enables the checkout_remote command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-checkout-remote"
+        },
+        {
+          "description": "Denies the checkout_remote command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-checkout-remote"
+        },
+        {
           "description": "Enables the commit command without any pre-configured scope.",
           "type": "string",
           "const": "allow-commit"
@@ -343,6 +353,16 @@
           "description": "Denies the delete_branch command without any pre-configured scope.",
           "type": "string",
           "const": "deny-delete-branch"
+        },
+        {
+          "description": "Enables the fetch_all command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-fetch-all"
+        },
+        {
+          "description": "Denies the fetch_all command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-fetch-all"
         },
         {
           "description": "Enables the initialize command without any pre-configured scope.",

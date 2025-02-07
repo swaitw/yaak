@@ -41,7 +41,7 @@ export function useGit(dir: string) {
         mutationFn: (args) => invoke('plugin:yaak-git|delete_branch', { dir, ...args }),
         onSuccess,
       }),
-      checkout: useMutation<void, string, { branch: string; force: boolean }>({
+      checkout: useMutation<string, string, { branch: string; force: boolean }>({
         mutationKey: ['git', 'checkout', dir],
         mutationFn: (args) => invoke('plugin:yaak-git|checkout', { dir, ...args }),
         onSuccess,
@@ -49,6 +49,11 @@ export function useGit(dir: string) {
       commit: useMutation<void, string, { message: string }>({
         mutationKey: ['git', 'commit', dir],
         mutationFn: (args) => invoke('plugin:yaak-git|commit', { dir, ...args }),
+        onSuccess,
+      }),
+      fetchAll: useMutation<string, string, void>({
+        mutationKey: ['git', 'checkout', dir],
+        mutationFn: () => invoke('plugin:yaak-git|fetch_all', { dir }),
         onSuccess,
       }),
       push: useMutation<PushResult, string, void>({

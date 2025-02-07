@@ -34,9 +34,20 @@ pub(crate) fn get_current_branch(repo: &Repository) -> Result<Option<Branch>> {
     Ok(None)
 }
 
-pub(crate) fn list_branch_names(repo: &Repository) -> Result<Vec<String>> {
+pub(crate) fn local_branch_names(repo: &Repository) -> Result<Vec<String>> {
     let mut branches = Vec::new();
     for branch in repo.branches(Some(BranchType::Local))? {
+        let branch = branch?.0;
+        let name = branch.name_bytes()?;
+        let name = bytes_to_string(name)?;
+        branches.push(name);
+    }
+    Ok(branches)
+}
+
+pub(crate) fn remote_branch_names(repo: &Repository) -> Result<Vec<String>> {
+    let mut branches = Vec::new();
+    for branch in repo.branches(Some(BranchType::Remote))? {
         let branch = branch?.0;
         let name = branch.name_bytes()?;
         let name = bytes_to_string(name)?;
