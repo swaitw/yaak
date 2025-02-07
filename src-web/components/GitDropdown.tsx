@@ -214,12 +214,18 @@ function SyncDropdownWithSyncDir({ syncDir }: { syncDir: string }) {
       leftSlot: <Icon icon="arrow_up_from_line" />,
       waitForOnSelect: true,
       async onSelect() {
-        const message = await push.mutateAsync();
-        if (message === 'nothing_to_push') {
-          showToast({ id: 'push-success', message: 'Nothing to push', color: 'info' });
-        } else {
-          showToast({ id: 'push-success', message: 'Push successful', color: 'success' });
-        }
+        push.mutate(undefined, {
+          onSuccess(message) {
+            if (message === 'nothing_to_push') {
+              showToast({ id: 'push-success', message: 'Nothing to push', color: 'info' });
+            } else {
+              showToast({ id: 'push-success', message: 'Push successful', color: 'success' });
+            }
+          },
+          onError(err) {
+            showErrorToast('git-pull-error', String(err));
+          },
+        });
       },
     },
     {

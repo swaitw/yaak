@@ -35,7 +35,7 @@ pub(crate) fn default_callbacks<'s>() -> RemoteCallbacks<'s> {
             }
             (true, None) => Err(git2::Error::from_str("Couldn't get username from url")),
             _ => {
-                todo!("Implement basic auth credential");
+                return Err(git2::Error::from_str("https remotes are not (yet) supported"));
             }
         }
     });
@@ -71,6 +71,6 @@ pub(crate) fn default_callbacks<'s>() -> RemoteCallbacks<'s> {
         debug!("sideband transfer: '{}'", String::from_utf8_lossy(data).trim());
         true
     });
-    
+
     callbacks
 }
