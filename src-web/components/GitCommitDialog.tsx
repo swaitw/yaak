@@ -12,7 +12,7 @@ import classNames from 'classnames';
 
 import { useMemo, useState } from 'react';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
-import {showErrorToast, showToast} from '../lib/toast';
+import { showErrorToast, showToast } from '../lib/toast';
 import { Banner } from './core/Banner';
 import { Button } from './core/Button';
 import type { CheckboxProps } from './core/Checkbox';
@@ -43,19 +43,23 @@ export function GitCommitDialog({ syncDir, onDone, workspace }: Props) {
   const [message, setMessage] = useState<string>('');
 
   const handleCreateCommit = async () => {
-    await commit.mutateAsync({ message });
-    onDone();
+    try {
+      await commit.mutateAsync({ message });
+      onDone();
+    } catch (err) {
+      showErrorToast('git-commit-error', String(err));
+    }
   };
 
   const handleCreateCommitAndPush = async () => {
-    await commit.mutateAsync({ message });
-    await push.mutateAsync(undefined, {
-      onError(err) {
-        showErrorToast('git-push-error', String(err));
-      }
-    });
-    showToast({ id: 'git-push-success', message: 'Pushed changes', color: 'success' });
-    onDone();
+    try {
+      await commit.mutateAsync({ message });
+      await push.mutateAsync();
+      showToast({ id: 'git-push-success', message: 'Pushed changes', color: 'success' });
+      onDone();
+    } catch (err) {
+      showErrorToast('git-commit-and-push-error', String(err));
+    }
   };
 
   const { internalEntries, externalEntries, allEntries } = useMemo(() => {
@@ -145,16 +149,18 @@ export function GitCommitDialog({ syncDir, onDone, workspace }: Props) {
         firstSlot={({ style }) => (
           <div style={style} className="h-full overflow-y-auto -ml-1 pb-3">
             <TreeNodeChildren node={tree} depth={0} onCheck={checkNode} />
-            {externalEntries.length > 0 && (
-              <Separator className="mt-3 mb-1">External file changes</Separator>
+            {externalEntries.find((e) => e.status !== 'current') && (
+              <>
+                <Separator className="mt-3 mb-1">External file changes</Separator>
+                {externalEntries.map((entry) => (
+                  <ExternalTreeNode
+                    key={entry.relaPath + entry.status}
+                    entry={entry}
+                    onCheck={checkEntry}
+                  />
+                ))}
+              </>
             )}
-            {externalEntries.map((entry) => (
-              <ExternalTreeNode
-                key={entry.relaPath + entry.status}
-                entry={entry}
-                onCheck={checkEntry}
-              />
-            ))}
           </div>
         )}
         secondSlot={({ style }) => (
