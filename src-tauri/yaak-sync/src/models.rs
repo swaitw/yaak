@@ -1,4 +1,4 @@
-use crate::error::Error::{InvalidSyncFile, UnknownModel};
+use crate::error::Error::UnknownModel;
 use crate::error::Result;
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
@@ -23,26 +23,29 @@ pub enum SyncModel {
 }
 
 impl SyncModel {
-    pub fn from_bytes(
-        content: Vec<u8>,
-        file_path: &Path,
-    ) -> Result<Option<(SyncModel, Vec<u8>, String)>> {
+    pub fn from_bytes(content: Vec<u8>, file_path: &Path) -> Result<Option<(SyncModel, String)>> {
         let mut hasher = Sha1::new();
         hasher.update(&content);
         let checksum = hex::encode(hasher.finalize());
+        let content_str = String::from_utf8(content.clone()).unwrap_or_default();
+
+        // Check for some strings that will be in a model file for sure. If these strings
+        // don't exist, then it's probably not a Yaak file.
+        if !content_str.contains("model") || !content_str.contains("id") {
+            return Ok(None);
+        }
 
         let ext = file_path.extension().unwrap_or_default();
         if ext == "yml" || ext == "yaml" {
-            Ok(Some((serde_yaml::from_slice(content.as_slice())?, content, checksum)))
+            Ok(Some((serde_yaml::from_str(&content_str)?, checksum)))
         } else if ext == "json" {
-            Ok(Some((serde_json::from_reader(content.as_slice())?, content, checksum)))
+            Ok(Some((serde_json::from_str(&content_str)?, checksum)))
         } else {
-            let p = file_path.to_str().unwrap().to_string();
-            Err(InvalidSyncFile(format!("Unknown file extension {p}")))
+            Ok(None)
         }
     }
 
-    pub fn from_file(file_path: &Path) -> Result<Option<(SyncModel, Vec<u8>, String)>> {
+    pub fn from_file(file_path: &Path) -> Result<Option<(SyncModel, String)>> {
         let content = match fs::read(file_path) {
             Ok(c) => c,
             Err(_) => return Ok(None),

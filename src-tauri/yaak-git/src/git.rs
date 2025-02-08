@@ -38,7 +38,7 @@ pub struct GitStatusEntry {
 #[serde(rename_all = "snake_case")]
 #[ts(export, export_to = "gen_git.ts")]
 pub enum GitStatus {
-    Added,
+    Untracked,
     Conflict,
     Current,
     Modified,
@@ -217,7 +217,7 @@ pub fn git_status(dir: &Path) -> Result<GitStatusSummary> {
         let index_status = match status {
             // Note: order matters here, since we're checking a bitmap!
             s if s.contains(git2::Status::CONFLICTED) => GitStatus::Conflict,
-            s if s.contains(git2::Status::INDEX_NEW) => GitStatus::Added,
+            s if s.contains(git2::Status::INDEX_NEW) => GitStatus::Untracked,
             s if s.contains(git2::Status::INDEX_MODIFIED) => GitStatus::Modified,
             s if s.contains(git2::Status::INDEX_DELETED) => GitStatus::Removed,
             s if s.contains(git2::Status::INDEX_RENAMED) => GitStatus::Renamed,
@@ -232,7 +232,7 @@ pub fn git_status(dir: &Path) -> Result<GitStatusSummary> {
         let worktree_status = match status {
             // Note: order matters here, since we're checking a bitmap!
             s if s.contains(git2::Status::CONFLICTED) => GitStatus::Conflict,
-            s if s.contains(git2::Status::WT_NEW) => GitStatus::Added,
+            s if s.contains(git2::Status::WT_NEW) => GitStatus::Untracked,
             s if s.contains(git2::Status::WT_MODIFIED) => GitStatus::Modified,
             s if s.contains(git2::Status::WT_DELETED) => GitStatus::Removed,
             s if s.contains(git2::Status::WT_RENAMED) => GitStatus::Renamed,

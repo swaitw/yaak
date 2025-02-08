@@ -163,7 +163,7 @@ pub(crate) async fn get_fs_candidates(dir: &Path) -> Result<Vec<FsCandidate>> {
         };
 
         let path = dir_entry.path();
-        let (model, _, checksum) = match SyncModel::from_file(&path) {
+        let (model, checksum) = match SyncModel::from_file(&path) {
             Ok(Some(m)) => m,
             Ok(None) => continue,
             Err(e) => {

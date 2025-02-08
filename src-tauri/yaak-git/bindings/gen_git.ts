@@ -5,7 +5,7 @@ export type GitAuthor = { name: string | null, email: string | null, };
 
 export type GitCommit = { author: GitAuthor, when: string, message: string | null, };
 
-export type GitStatus = "added" | "conflict" | "current" | "modified" | "removed" | "renamed" | "type_change";
+export type GitStatus = "untracked" | "conflict" | "current" | "modified" | "removed" | "renamed" | "type_change";
 
 export type GitStatusEntry = { relaPath: string, status: GitStatus, staged: boolean, prev: SyncModel | null, next: SyncModel | null, };
 

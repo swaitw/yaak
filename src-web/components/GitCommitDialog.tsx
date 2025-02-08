@@ -20,6 +20,7 @@ import { Checkbox } from './core/Checkbox';
 import { Icon } from './core/Icon';
 import { InlineCode } from './core/InlineCode';
 import { Input } from './core/Input';
+import { Separator } from './core/Separator';
 import { SplitLayout } from './core/SplitLayout';
 import { HStack } from './core/Stacks';
 import { EmptyStateText } from './EmptyStateText';
@@ -53,18 +54,27 @@ export function GitCommitDialog({ syncDir, onDone, workspace }: Props) {
     onDone();
   };
 
-  const entries = status.data?.entries ?? null;
+  const { internalEntries, externalEntries, allEntries } = useMemo(() => {
+    const allEntries = [];
+    const yaakEntries = [];
+    const externalEntries = [];
+    for (const entry of status.data?.entries ?? []) {
+      allEntries.push(entry);
+      if (entry.next == null && entry.prev == null) {
+        externalEntries.push(entry);
+      } else {
+        yaakEntries.push(entry);
+      }
+    }
+    return { internalEntries: yaakEntries, externalEntries, allEntries };
+  }, [status.data?.entries]);
 
-  const hasAddedAnything = entries?.find((s) => s.staged) != null;
-  const hasAnythingToAdd = entries?.find((s) => s.status !== 'current') != null;
+  const hasAddedAnything = allEntries.find((e) => e.staged) != null;
+  const hasAnythingToAdd = allEntries.find((e) => e.status !== 'current') != null;
 
   const tree: TreeNode | null = useMemo(() => {
-    if (entries == null) {
-      return null;
-    }
-
     const next = (model: TreeNode['model'], ancestors: TreeNode[]): TreeNode | null => {
-      const statusEntry = entries?.find((s) => s.relaPath.includes(model.id));
+      const statusEntry = internalEntries?.find((s) => s.relaPath.includes(model.id));
       if (statusEntry == null) {
         return null;
       }
@@ -76,9 +86,11 @@ export function GitCommitDialog({ syncDir, onDone, workspace }: Props) {
         ancestors,
       };
 
-      for (const entry of entries) {
+      for (const entry of internalEntries) {
         const childModel = entry.next ?? entry.prev;
-        if (childModel == null) return null; // TODO: Is this right?
+
+        // Should never happen because we're iterating internalEntries
+        if (childModel == null) continue;
 
         // TODO: Figure out why not all of these show up
         if ('folderId' in childModel && childModel.folderId != null) {
@@ -96,8 +108,9 @@ export function GitCommitDialog({ syncDir, onDone, workspace }: Props) {
 
       return node;
     };
+
     return next(workspace, []);
-  }, [entries, workspace]);
+  }, [workspace, internalEntries]);
 
   if (tree == null) {
     return null;
@@ -114,6 +127,11 @@ export function GitCommitDialog({ syncDir, onDone, workspace }: Props) {
     // TODO: Also ensure parents are added properly
   };
 
+  const checkEntry = (entry: GitStatusEntry) => {
+    if (entry.staged) unstage.mutate({ relaPaths: [entry.relaPath] });
+    else add.mutate({ relaPaths: [entry.relaPath] });
+  };
+
   return (
     <div className="grid grid-rows-1 h-full">
       <SplitLayout
@@ -123,6 +141,16 @@ export function GitCommitDialog({ syncDir, onDone, workspace }: Props) {
         firstSlot={({ style }) => (
           <div style={style} className="h-full overflow-y-auto -ml-1 pb-3">
             <TreeNodeChildren node={tree} depth={0} onCheck={checkNode} />
+            {externalEntries.length > 0 && (
+              <Separator className="mt-3 mb-1">External file changes</Separator>
+            )}
+            {externalEntries.map((entry) => (
+              <ExternalTreeNode
+                key={entry.relaPath + entry.status}
+                entry={entry}
+                onCheck={checkEntry}
+              />
+            ))}
           </div>
         )}
         secondSlot={({ style }) => (
@@ -211,17 +239,13 @@ function TreeNodeChildren({
               ) : (
                 <span aria-hidden />
               )}
-              <div className="truncate">
-                {fallbackRequestName(node.model)}
-                {/*({node.model.model})*/}
-                {/*({node.status.staged ? 'Y' : 'N'})*/}
-              </div>
+              <div className="truncate">{fallbackRequestName(node.model)}</div>
               {node.status.status !== 'current' && (
                 <InlineCode
                   className={classNames(
                     'py-0 ml-auto bg-transparent w-[6rem] text-center',
                     node.status.status === 'modified' && 'text-info',
-                    node.status.status === 'added' && 'text-success',
+                    node.status.status === 'untracked' && 'text-success',
                     node.status.status === 'removed' && 'text-danger',
                   )}
                 >
@@ -244,6 +268,41 @@ function TreeNodeChildren({
         );
       })}
     </div>
+  );
+}
+
+function ExternalTreeNode({
+  entry,
+  onCheck,
+}: {
+  entry: GitStatusEntry;
+  onCheck: (entry: GitStatusEntry) => void;
+}) {
+  return (
+    <Checkbox
+      fullWidth
+      className="h-xs w-full hover:bg-surface-highlight rounded px-1 group"
+      checked={entry.staged}
+      onChange={() => onCheck(entry)}
+      title={
+        <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] gap-1 w-full items-center">
+          <Icon color="secondary" icon="file_code" />
+          <div className="truncate">{entry.relaPath}</div>
+          {entry.status !== 'current' && (
+            <InlineCode
+              className={classNames(
+                'py-0 ml-auto bg-transparent w-[6rem] text-center',
+                entry.status === 'modified' && 'text-info',
+                entry.status === 'untracked' && 'text-success',
+                entry.status === 'removed' && 'text-danger',
+              )}
+            >
+              {entry.status}
+            </InlineCode>
+          )}
+        </div>
+      }
+    />
   );
 }
 

@@ -10,6 +10,7 @@ import { jotaiStore } from '../lib/jotai';
 export function initSync() {
   initModelListeners();
   initFileChangeListeners();
+  sync().catch(console.error);
 }
 
 export async function sync({ force }: { force?: boolean } = {}) {
@@ -53,6 +54,7 @@ function initFileChangeListeners() {
     await unsub?.(); // Unsub to previous
     const workspaceMeta = jotaiStore.get(workspaceMetaAtom);
     if (workspaceMeta == null || workspaceMeta.settingSyncDir == null) return;
+    debouncedSync(); // Perform an initial sync when switching workspace
     unsub = watchWorkspaceFiles(
       workspaceMeta.workspaceId,
       workspaceMeta.settingSyncDir,

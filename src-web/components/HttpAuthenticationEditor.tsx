@@ -58,7 +58,7 @@ export function HttpAuthenticationEditor({ request }: Props) {
           onChange={(disabled) => handleChange({ ...request.authentication, disabled: !disabled })}
           title="Enabled"
         />
-        {authConfig.data.actions && (
+        {authConfig.data.actions && authConfig.data.actions.length > 0 && (
           <Dropdown
             items={authConfig.data.actions.map(
               (a): DropdownItem => ({
