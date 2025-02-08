@@ -12,7 +12,7 @@ import classNames from 'classnames';
 
 import { useMemo, useState } from 'react';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
-import { showToast } from '../lib/toast';
+import {showErrorToast, showToast} from '../lib/toast';
 import { Banner } from './core/Banner';
 import { Button } from './core/Button';
 import type { CheckboxProps } from './core/Checkbox';
@@ -49,7 +49,11 @@ export function GitCommitDialog({ syncDir, onDone, workspace }: Props) {
 
   const handleCreateCommitAndPush = async () => {
     await commit.mutateAsync({ message });
-    await push.mutateAsync();
+    await push.mutateAsync(undefined, {
+      onError(err) {
+        showErrorToast('git-push-error', String(err));
+      }
+    });
     showToast({ id: 'git-push-success', message: 'Pushed changes', color: 'success' });
     onDone();
   };
@@ -278,6 +282,10 @@ function ExternalTreeNode({
   entry: GitStatusEntry;
   onCheck: (entry: GitStatusEntry) => void;
 }) {
+  if (entry.status === 'current') {
+    return null;
+  }
+
   return (
     <Checkbox
       fullWidth
@@ -288,18 +296,16 @@ function ExternalTreeNode({
         <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] gap-1 w-full items-center">
           <Icon color="secondary" icon="file_code" />
           <div className="truncate">{entry.relaPath}</div>
-          {entry.status !== 'current' && (
-            <InlineCode
-              className={classNames(
-                'py-0 ml-auto bg-transparent w-[6rem] text-center',
-                entry.status === 'modified' && 'text-info',
-                entry.status === 'untracked' && 'text-success',
-                entry.status === 'removed' && 'text-danger',
-              )}
-            >
-              {entry.status}
-            </InlineCode>
-          )}
+          <InlineCode
+            className={classNames(
+              'py-0 ml-auto bg-transparent w-[6rem] text-center',
+              entry.status === 'modified' && 'text-info',
+              entry.status === 'untracked' && 'text-success',
+              entry.status === 'removed' && 'text-danger',
+            )}
+          >
+            {entry.status}
+          </InlineCode>
         </div>
       }
     />
