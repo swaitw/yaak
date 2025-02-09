@@ -1,6 +1,8 @@
 import type { AnyModel } from '@yaakapp-internal/models';
+import { foldersAtom } from '../hooks/useFolders';
+import { jotaiStore } from './jotai';
 
-export function fallbackRequestName(r: AnyModel | null): string {
+export function resolvedModelName(r: AnyModel | null): string {
   if (r == null) return '';
 
   if (!('url' in r) || r.model === 'plugin') {
@@ -32,4 +34,22 @@ export function fallbackRequestName(r: AnyModel | null): string {
   const withoutProto = withoutVariables.replace(/^https?:\/\//, '');
 
   return withoutProto;
+}
+
+export function resolvedModelNameWithFolders(model: AnyModel | null): string {
+  if (model == null) return '';
+  const folders = jotaiStore.get(foldersAtom) ?? [];
+
+  const getParents = (m: AnyModel, names: string[]) => {
+    names = [...names, resolvedModelName(m)];
+    if ('folderId' in m) {
+      const parent = folders.find((f) => f.id === m.folderId);
+      if (parent) {
+        names = [resolvedModelName(parent), ...names];
+      }
+    }
+    return names;
+  };
+
+  return getParents(model, []).join(' / ');
 }

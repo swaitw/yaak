@@ -28,7 +28,7 @@ import { useSendAnyHttpRequest } from '../hooks/useSendAnyHttpRequest';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import { showDialog, toggleDialog } from '../lib/dialog';
-import { fallbackRequestName } from '../lib/fallbackRequestName';
+import { resolvedModelNameWithFolders } from '../lib/resolvedModelName';
 import { router } from '../lib/router';
 import { setWorkspaceSearchParams } from '../lib/setWorkspaceSearchParams';
 import { CookieDialog } from './CookieDialog';
@@ -270,11 +270,11 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
     for (const r of sortedRequests) {
       requestGroup.items.push({
         key: `switch-request-${r.id}`,
-        searchText: fallbackRequestName(r),
+        searchText: resolvedModelNameWithFolders(r),
         label: (
           <HStack space={2}>
             <HttpMethodTag className="text-text-subtlest" request={r} />
-            <div className="truncate">{fallbackRequestName(r)}</div>
+            <div className="truncate">{resolvedModelNameWithFolders(r)}</div>
           </HStack>
         ),
         onSelect: async () => {

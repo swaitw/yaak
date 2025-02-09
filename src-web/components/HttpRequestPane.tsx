@@ -20,7 +20,7 @@ import { useSendAnyHttpRequest } from '../hooks/useSendAnyHttpRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
 import { deepEqualAtom } from '../lib/atoms';
 import { languageFromContentType } from '../lib/contentType';
-import { fallbackRequestName } from '../lib/fallbackRequestName';
+import { resolvedModelName } from '../lib/resolvedModelName';
 import { generateId } from '../lib/generateId';
 import {
   BODY_TYPE_BINARY,
@@ -468,7 +468,7 @@ export function HttpRequestPane({ style, fullHeight, className, activeRequest }:
                   defaultValue={activeRequest.name}
                   className="font-sans !text-xl !px-0"
                   containerClassName="border-0"
-                  placeholder={fallbackRequestName(activeRequest)}
+                  placeholder={resolvedModelName(activeRequest)}
                   onChange={(name) => updateRequest({ id: activeRequestId, update: { name } })}
                 />
                 <MarkdownEditor

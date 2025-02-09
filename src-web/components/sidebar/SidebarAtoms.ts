@@ -6,7 +6,7 @@ import { activeWorkspaceAtom } from '../../hooks/useActiveWorkspace';
 import { foldersAtom } from '../../hooks/useFolders';
 import { requestsAtom } from '../../hooks/useRequests';
 import { deepEqualAtom } from '../../lib/atoms';
-import { fallbackRequestName } from '../../lib/fallbackRequestName';
+import { resolvedModelName } from '../../lib/resolvedModelName';
 import type { SidebarTreeNode } from './Sidebar';
 
 export const sidebarSelectedIdAtom = atom<string | null>(null);
@@ -18,7 +18,7 @@ const allPotentialChildrenAtom = atom((get) => {
     id: v.id,
     model: v.model,
     folderId: v.folderId,
-    name: fallbackRequestName(v),
+    name: resolvedModelName(v),
     workspaceId: v.workspaceId,
     sortPriority: v.sortPriority,
   }));

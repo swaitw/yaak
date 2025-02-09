@@ -2,7 +2,7 @@ import type { GrpcRequest } from '@yaakapp-internal/models';
 import { InlineCode } from '../components/core/InlineCode';
 import { trackEvent } from '../lib/analytics';
 import { showConfirmDelete } from '../lib/confirm';
-import { fallbackRequestName } from '../lib/fallbackRequestName';
+import { resolvedModelName } from '../lib/resolvedModelName';
 import { invokeCmd } from '../lib/tauri';
 import { useFastMutation } from './useFastMutation';
 
@@ -15,7 +15,7 @@ export function useDeleteAnyGrpcRequest() {
         title: 'Delete Request',
         description: (
           <>
-            Permanently delete <InlineCode>{fallbackRequestName(request)}</InlineCode>?
+            Permanently delete <InlineCode>{resolvedModelName(request)}</InlineCode>?
           </>
         ),
       });

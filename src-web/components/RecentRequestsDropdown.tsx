@@ -6,7 +6,7 @@ import { useHotKey } from '../hooks/useHotKey';
 import { useKeyboardEvent } from '../hooks/useKeyboardEvent';
 import { useRecentRequests } from '../hooks/useRecentRequests';
 import { requestsAtom } from '../hooks/useRequests';
-import { fallbackRequestName } from '../lib/fallbackRequestName';
+import { resolvedModelName } from '../lib/resolvedModelName';
 import { jotaiStore } from '../lib/jotai';
 import { router } from '../lib/router';
 import { Button } from './core/Button';
@@ -57,7 +57,7 @@ export function RecentRequestsDropdown({ className }: Props) {
       if (request === undefined) continue;
 
       recentRequestItems.push({
-        label: fallbackRequestName(request),
+        label: resolvedModelName(request),
         leftSlot: <HttpMethodTag request={request} />,
         onSelect: async () => {
           await router.navigate({
@@ -94,7 +94,7 @@ export function RecentRequestsDropdown({ className }: Props) {
           activeRequest == null && 'text-text-subtlest italic',
         )}
       >
-        {fallbackRequestName(activeRequest)}
+        {resolvedModelName(activeRequest)}
       </Button>
     </Dropdown>
   );

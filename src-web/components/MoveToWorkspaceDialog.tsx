@@ -4,7 +4,7 @@ import { upsertWebsocketRequest } from '../commands/upsertWebsocketRequest';
 import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
 import { useWorkspaces } from '../hooks/useWorkspaces';
-import { fallbackRequestName } from '../lib/fallbackRequestName';
+import { resolvedModelName } from '../lib/resolvedModelName';
 import { router } from '../lib/router';
 import { showToast } from '../lib/toast';
 import { Button } from './core/Button';
@@ -59,7 +59,7 @@ export function MoveToWorkspaceDialog({ onDone, request, activeWorkspaceId }: Pr
             id: 'workspace-moved',
             message: (
               <>
-                <InlineCode>{fallbackRequestName(request)}</InlineCode> moved to{' '}
+                <InlineCode>{resolvedModelName(request)}</InlineCode> moved to{' '}
                 <InlineCode>
                   {workspaces.find((w) => w.id === selectedWorkspaceId)?.name ?? 'unknown'}
                 </InlineCode>

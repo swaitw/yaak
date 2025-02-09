@@ -4,7 +4,7 @@ import { InlineCode } from '../components/core/InlineCode';
 import { createFastMutation } from '../hooks/useFastMutation';
 import { trackEvent } from '../lib/analytics';
 import { showConfirmDelete } from '../lib/confirm';
-import { fallbackRequestName } from '../lib/fallbackRequestName';
+import { resolvedModelName } from '../lib/resolvedModelName';
 
 export const deleteWebsocketRequest = createFastMutation({
   mutationKey: ['delete_websocket_request'],
@@ -14,7 +14,7 @@ export const deleteWebsocketRequest = createFastMutation({
       title: 'Delete WebSocket Request',
       description: (
         <>
-          Permanently delete <InlineCode>{fallbackRequestName(request)}</InlineCode>?
+          Permanently delete <InlineCode>{resolvedModelName(request)}</InlineCode>?
         </>
       ),
     });

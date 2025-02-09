@@ -7,7 +7,7 @@ import { getActiveWorkspaceId } from '../hooks/useActiveWorkspace';
 import { createFastMutation } from '../hooks/useFastMutation';
 import { trackEvent } from '../lib/analytics';
 import { showConfirm } from '../lib/confirm';
-import { fallbackRequestName } from '../lib/fallbackRequestName';
+import { resolvedModelNameWithFolders } from '../lib/resolvedModelName';
 import { pluralizeCount } from '../lib/pluralize';
 import { showPrompt } from '../lib/prompt';
 import { invokeCmd } from '../lib/tauri';
@@ -70,14 +70,15 @@ export const syncWorkspace = createFastMutation<
       (o) => o.type === 'dbDelete' && o.model.model === 'workspace',
     );
 
-    console.log('Filesystem changes detected', { dbOps, ops });
+    console.log('Directory changes detected', { dbOps, ops });
 
     const confirmed = force
       ? true
       : await showConfirm({
           id: 'commit-sync',
-          title: 'Filesystem Changes Detected',
+          title: 'Changes Detected',
           confirmText: 'Apply Changes',
+          color: isDeletingWorkspace ? 'danger' : 'primary',
           description: (
             <VStack space={3}>
               {isDeletingWorkspace && (
@@ -86,8 +87,8 @@ export const syncWorkspace = createFastMutation<
                 </Banner>
               )}
               <p>
-                {pluralizeCount('file', dbOps.length)} in the directory have changed. Do you want to
-                apply the updates to your workspace?
+                {pluralizeCount('file', dbOps.length)} in the directory{' '}
+                {dbOps.length === 1 ? 'has' : 'have'} changed. Do you want to update your workspace?
               </p>
               <div className="overflow-y-auto max-h-[10rem]">
                 <table className="w-full text-sm mb-auto min-w-full max-w-full divide-y divide-surface-highlight">
@@ -105,15 +106,15 @@ export const syncWorkspace = createFastMutation<
 
                       if (op.type === 'dbCreate') {
                         label = 'create';
-                        name = fallbackRequestName(op.fs.model);
+                        name = resolvedModelNameWithFolders(op.fs.model);
                         color = 'text-success';
                       } else if (op.type === 'dbUpdate') {
                         label = 'update';
-                        name = fallbackRequestName(op.fs.model);
+                        name = resolvedModelNameWithFolders(op.fs.model);
                         color = 'text-info';
                       } else if (op.type === 'dbDelete') {
                         label = 'delete';
-                        name = fallbackRequestName(op.model);
+                        name = resolvedModelNameWithFolders(op.model);
                         color = 'text-danger';
                       } else {
                         return null;

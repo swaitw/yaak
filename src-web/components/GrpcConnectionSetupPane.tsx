@@ -9,7 +9,7 @@ import type { ReflectResponseService } from '../hooks/useGrpc';
 import { useHttpAuthenticationSummaries } from '../hooks/useHttpAuthentication';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
-import { fallbackRequestName } from '../lib/fallbackRequestName';
+import { resolvedModelName } from '../lib/resolvedModelName';
 import { Button } from './core/Button';
 import { CountBadge } from './core/CountBadge';
 import { Icon } from './core/Icon';
@@ -343,7 +343,7 @@ export function GrpcConnectionSetupPane({
               defaultValue={activeRequest.name}
               className="font-sans !text-xl !px-0"
               containerClassName="border-0"
-              placeholder={fallbackRequestName(activeRequest)}
+              placeholder={resolvedModelName(activeRequest)}
               onChange={(name) => updateRequest.mutate({ id: activeRequest.id, update: { name } })}
             />
             <MarkdownEditor

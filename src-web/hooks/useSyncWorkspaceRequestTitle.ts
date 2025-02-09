@@ -1,7 +1,7 @@
 import { emit } from '@tauri-apps/api/event';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { useEffect } from 'react';
-import { fallbackRequestName } from '../lib/fallbackRequestName';
+import { resolvedModelName } from '../lib/resolvedModelName';
 import { useActiveEnvironment } from './useActiveEnvironment';
 import { getActiveRequest } from './useActiveRequest';
 import { useActiveWorkspace } from './useActiveWorkspace';
@@ -26,7 +26,7 @@ export function useSyncWorkspaceRequestTitle() {
     const activeRequest = getActiveRequest();
     if (activeRequest) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      newTitle += ` › ${fallbackRequestName(activeRequest)}`;
+      newTitle += ` › ${resolvedModelName(activeRequest)}`;
     }
 
     if (appInfo.isDev) {

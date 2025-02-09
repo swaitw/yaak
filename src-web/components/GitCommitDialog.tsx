@@ -11,7 +11,7 @@ import type {
 import classNames from 'classnames';
 
 import { useMemo, useState } from 'react';
-import { fallbackRequestName } from '../lib/fallbackRequestName';
+import { resolvedModelName } from '../lib/resolvedModelName';
 import { showErrorToast, showToast } from '../lib/toast';
 import { Banner } from './core/Banner';
 import { Button } from './core/Button';
@@ -249,7 +249,7 @@ function TreeNodeChildren({
               ) : (
                 <span aria-hidden />
               )}
-              <div className="truncate">{fallbackRequestName(node.model)}</div>
+              <div className="truncate">{resolvedModelName(node.model)}</div>
               {node.status.status !== 'current' && (
                 <InlineCode
                   className={classNames(

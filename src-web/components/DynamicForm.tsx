@@ -15,7 +15,7 @@ import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useFolders } from '../hooks/useFolders';
 import { useHttpRequests } from '../hooks/useHttpRequests';
 import { capitalize } from '../lib/capitalize';
-import { fallbackRequestName } from '../lib/fallbackRequestName';
+import { resolvedModelName } from '../lib/resolvedModelName';
 import { Banner } from './core/Banner';
 import { Checkbox } from './core/Checkbox';
 import { Editor } from './core/Editor/Editor';
@@ -386,7 +386,7 @@ function buildRequestBreadcrumbs(request: HttpRequest, folders: Folder[]): strin
   };
   next();
 
-  return ancestors.map((a) => (a.model === 'folder' ? a.name : fallbackRequestName(a)));
+  return ancestors.map((a) => (a.model === 'folder' ? a.name : resolvedModelName(a)));
 }
 
 function CheckboxArg({
