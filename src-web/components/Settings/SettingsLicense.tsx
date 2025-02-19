@@ -1,5 +1,5 @@
 import { useLicense } from '@yaakapp-internal/license';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNowStrict } from 'date-fns';
 import React, { useState } from 'react';
 import { useToggle } from '../../hooks/useToggle';
 import { Banner } from '../core/Banner';
@@ -30,7 +30,7 @@ export function SettingsLicense() {
           {check.data?.type === 'trialing' && (
             <p className="select-text">
               <strong>
-                You have {formatDistanceToNow(check.data.end)} remaining on your trial.
+                You have {formatDistanceToNowStrict(check.data.end)} remaining on your trial.
               </strong>
             </p>
           )}
@@ -40,11 +40,6 @@ export function SettingsLicense() {
               Learn More
             </Link>
           </p>
-          <p className="select-text">
-            This supports future development and ensures continued growth and improvement. Personal
-            use and running the open-source code directly require no license.
-          </p>
-          <p>~ Gregory</p>
         </Banner>
       )}
 

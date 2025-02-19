@@ -53,7 +53,7 @@ export function RecentGrpcConnectionsDropdown({
       <IconButton
         title="Show connection history"
         icon={activeConnection?.id === latestConnectionId ? 'chevron_down' : 'pin'}
-        className="m-0.5"
+        className="m-0.5 text-text-subtle"
         size="sm"
         iconSize="md"
       />

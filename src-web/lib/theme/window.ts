@@ -113,8 +113,8 @@ function bannerColorVariables(color: YaakColor): Partial<CSSVariables> {
     text: color.lift(0.8),
     textSubtle: color.translucify(0.3),
     textSubtlest: color,
-    surface: color.translucify(0.9),
-    border: color.lift(0.3).translucify(0.4),
+    surface: color.translucify(0.95),
+    border: color.lift(0.3).translucify(0.8),
   };
 }
 
