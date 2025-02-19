@@ -39,7 +39,7 @@ interface TreeNode {
 }
 
 export function GitCommitDialog({ syncDir, onDone, workspace }: Props) {
-  const [{ status }, { commit, add, unstage, push }] = useGit(syncDir);
+  const [{ status }, { commit, commitAndPush, add, unstage, push }] = useGit(syncDir);
   const [message, setMessage] = useState<string>('');
 
   const handleCreateCommit = async () => {
@@ -53,8 +53,7 @@ export function GitCommitDialog({ syncDir, onDone, workspace }: Props) {
 
   const handleCreateCommitAndPush = async () => {
     try {
-      await commit.mutateAsync({ message });
-      await push.mutateAsync();
+      await commitAndPush.mutateAsync({ message });
       showToast({ id: 'git-push-success', message: 'Pushed changes', color: 'success' });
       onDone();
     } catch (err) {
@@ -66,9 +65,12 @@ export function GitCommitDialog({ syncDir, onDone, workspace }: Props) {
     const allEntries = [];
     const yaakEntries = [];
     const externalEntries = [];
+
     for (const entry of status.data?.entries ?? []) {
       allEntries.push(entry);
       if (entry.next == null && entry.prev == null) {
+        externalEntries.push(entry);
+      } else if (entry.next?.model === 'environment' || entry.prev?.model === 'environment') {
         externalEntries.push(entry);
       } else {
         yaakEntries.push(entry);
@@ -184,7 +186,7 @@ export function GitCommitDialog({ syncDir, onDone, workspace }: Props) {
                   size="sm"
                   onClick={handleCreateCommit}
                   disabled={!hasAddedAnything}
-                  isLoading={push.isPending || commit.isPending}
+                  isLoading={push.isPending || commitAndPush.isPending || commit.isPending}
                 >
                   Commit
                 </Button>
@@ -193,7 +195,7 @@ export function GitCommitDialog({ syncDir, onDone, workspace }: Props) {
                   size="sm"
                   disabled={!hasAddedAnything}
                   onClick={handleCreateCommitAndPush}
-                  isLoading={push.isPending || commit.isPending}
+                  isLoading={push.isPending || commitAndPush.isPending || commit.isPending}
                 >
                   Commit and Push
                 </Button>

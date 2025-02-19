@@ -51,6 +51,14 @@ export function useGit(dir: string) {
         mutationFn: (args) => invoke('plugin:yaak-git|commit', { dir, ...args }),
         onSuccess,
       }),
+      commitAndPush: useMutation<PushResult, string, { message: string }>({
+        mutationKey: ['git', 'commitpush', dir],
+        mutationFn: async (args) => {
+          await invoke('plugin:yaak-git|commit', { dir, ...args });
+          return invoke('plugin:yaak-git|push', { dir });
+        },
+        onSuccess,
+      }),
       fetchAll: useMutation<string, string, void>({
         mutationKey: ['git', 'checkout', dir],
         mutationFn: () => invoke('plugin:yaak-git|fetch_all', { dir }),
