@@ -25,6 +25,7 @@ export function SyncToFilesystemSetting({
       <VStack className="my-2" space={3}>
         <Banner color="info">
           Sync workspace data to folder as plain text files, ideal for backup and Git collaboration.
+          Environments are excluded in order to keep your secrets private.
         </Banner>
         {error && <div className="text-danger">{error}</div>}
 
