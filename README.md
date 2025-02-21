@@ -33,9 +33,5 @@ All feedback, bug reports, questions, and feature requests should be reported to
 
 ## Contribution Policy
 
-Yaak is open source, but only accepting contributions for bug fixes. See the
-[`good first issue`](https://github.com/yaakapp/app/labels/good%20first%20issue) label for
-issues that are more approachable for contribution.
-
-To get started, visit [`DEVELOPMENT.md`](DEVELOPMENT.md) for tips on setting up your
-environment.
+Yaak is open source, but only accepting contributions for bug fixes. To get started, 
+visit [`DEVELOPMENT.md`](DEVELOPMENT.md) for tips on setting up your environment.
