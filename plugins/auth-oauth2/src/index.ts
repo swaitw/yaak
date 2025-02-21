@@ -103,19 +103,27 @@ export const plugin: PluginDefinition = {
         defaultValue: defaultGrantType,
         options: grantTypes,
       },
+
       // Always-present fields
-      { type: 'text', name: 'clientId', label: 'Client ID' },
+      {
+        type: 'text',
+        name: 'clientId',
+        label: 'Client ID',
+        optional: true,
+      },
 
       {
         type: 'text',
         name: 'clientSecret',
         label: 'Client Secret',
+        optional: true,
         password: true,
         dynamic: hiddenIfNot(['authorization_code', 'password', 'client_credentials']),
       },
       {
         type: 'text',
         name: 'authorizationUrl',
+        optional: true,
         label: 'Authorization URL',
         dynamic: hiddenIfNot(['authorization_code', 'implicit']),
         placeholder: authorizationUrls[0],
@@ -124,6 +132,7 @@ export const plugin: PluginDefinition = {
       {
         type: 'text',
         name: 'accessTokenUrl',
+        optional: true,
         label: 'Access Token URL',
         placeholder: accessTokenUrls[0],
         dynamic: hiddenIfNot(['authorization_code', 'password', 'client_credentials']),
