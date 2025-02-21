@@ -21,6 +21,7 @@ import {
 import { lintKeymap } from '@codemirror/lint';
 
 import { searchKeymap } from '@codemirror/search';
+import type { Extension } from '@codemirror/state';
 import { EditorState } from '@codemirror/state';
 import {
   crosshairCursor,
@@ -73,6 +74,8 @@ export const syntaxHighlightStyle = HighlightStyle.define([
 
 const syntaxTheme = EditorView.theme({}, { dark: true });
 
+const closeBracketsExts: Extension = [closeBrackets(), keymap.of([...closeBracketsKeymap])];
+
 const syntaxExtensions: Record<NonNullable<EditorProps['language']>, LanguageSupport | null> = {
   graphql: null,
   json: json(),
@@ -84,6 +87,8 @@ const syntaxExtensions: Record<NonNullable<EditorProps['language']>, LanguageSup
   text: text(),
   markdown: markdown(),
 };
+
+const closeBracketsFor: (keyof typeof syntaxExtensions)[] = ['json', 'javascript'];
 
 export function getLanguageExtension({
   language,
@@ -110,7 +115,13 @@ export function getLanguageExtension({
     return base;
   }
 
-  const extraExtensions = language === 'url' ? [pathParametersPlugin(onClickPathParameter)] : [];
+  const extraExtensions: Extension[] =
+    language === 'url' ? [pathParametersPlugin(onClickPathParameter)] : [];
+
+  // Only close brackets on languages that need it
+  if (language && closeBracketsFor.includes(language)) {
+    extraExtensions.push(closeBracketsExts);
+  }
 
   return twig({
     base,
@@ -209,9 +220,8 @@ export const multiLineExtensions = ({ hideGutter }: { hideGutter?: boolean }) =>
   }),
   EditorState.allowMultipleSelections.of(true),
   indentOnInput(),
-  closeBrackets(),
   rectangularSelection(),
   crosshairCursor(),
   highlightActiveLineGutter(),
-  keymap.of([...closeBracketsKeymap, ...searchKeymap, ...foldKeymap, ...lintKeymap]),
+  keymap.of([...searchKeymap, ...foldKeymap, ...lintKeymap]),
 ];
