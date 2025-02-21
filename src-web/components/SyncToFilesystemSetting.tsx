@@ -20,7 +20,7 @@ export function SyncToFilesystemSetting({
 }: SyncToFilesystemSettingProps) {
   const [error, setError] = useState<string | null>(null);
   return (
-    <details open={forceOpen || value != null} className="w-full">
+    <details open={forceOpen || !!value.filePath} className="w-full">
       <summary>Data directory {typeof value.initGit === 'boolean' && ' and Git'}</summary>
       <VStack className="my-2" space={3}>
         <Banner color="info">
