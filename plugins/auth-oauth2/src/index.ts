@@ -239,56 +239,56 @@ export const plugin: PluginDefinition = {
       },
     ],
     async onApply(ctx, { values, contextId }) {
-      const headerPrefix = optionalString(values, 'headerPrefix') ?? '';
-      const grantType = requiredString(values, 'grantType') as GrantType;
+      const headerPrefix = stringArg(values, 'headerPrefix');
+      const grantType = stringArg(values, 'grantType') as GrantType;
       const credentialsInBody = values.credentials === 'body';
 
       let token: AccessToken;
       if (grantType === 'authorization_code') {
-        const authorizationUrl = requiredString(values, 'authorizationUrl');
-        const accessTokenUrl = requiredString(values, 'accessTokenUrl');
+        const authorizationUrl = stringArg(values, 'authorizationUrl');
+        const accessTokenUrl = stringArg(values, 'accessTokenUrl');
         token = await getAuthorizationCode(ctx, contextId, {
           accessTokenUrl: accessTokenUrl.match(/^https?:\/\//) ? accessTokenUrl : `https://${accessTokenUrl}`,
           authorizationUrl: authorizationUrl.match(/^https?:\/\//) ? authorizationUrl : `https://${authorizationUrl}`,
-          clientId: requiredString(values, 'clientId'),
-          clientSecret: requiredString(values, 'clientSecret'),
-          redirectUri: optionalString(values, 'redirectUri'),
-          scope: optionalString(values, 'scope'),
-          state: optionalString(values, 'state'),
+          clientId: stringArg(values, 'clientId'),
+          clientSecret: stringArg(values, 'clientSecret'),
+          redirectUri: stringArgOrNull(values, 'redirectUri'),
+          scope: stringArgOrNull(values, 'scope'),
+          state: stringArgOrNull(values, 'state'),
           credentialsInBody,
           pkce: values.usePkce ? {
-            challengeMethod: requiredString(values, 'pkceChallengeMethod'),
-            codeVerifier: optionalString(values, 'pkceCodeVerifier'),
+            challengeMethod: stringArg(values, 'pkceChallengeMethod'),
+            codeVerifier: stringArgOrNull(values, 'pkceCodeVerifier'),
           } : null,
         });
       } else if (grantType === 'implicit') {
-        const authorizationUrl = requiredString(values, 'authorizationUrl');
+        const authorizationUrl = stringArg(values, 'authorizationUrl');
         token = await getImplicit(ctx, contextId, {
           authorizationUrl: authorizationUrl.match(/^https?:\/\//) ? authorizationUrl : `https://${authorizationUrl}`,
-          clientId: requiredString(values, 'clientId'),
-          redirectUri: optionalString(values, 'redirectUri'),
-          responseType: requiredString(values, 'responseType'),
-          scope: optionalString(values, 'scope'),
-          state: optionalString(values, 'state'),
+          clientId: stringArg(values, 'clientId'),
+          redirectUri: stringArgOrNull(values, 'redirectUri'),
+          responseType: stringArg(values, 'responseType'),
+          scope: stringArgOrNull(values, 'scope'),
+          state: stringArgOrNull(values, 'state'),
         });
       } else if (grantType === 'client_credentials') {
-        const accessTokenUrl = requiredString(values, 'accessTokenUrl');
+        const accessTokenUrl = stringArg(values, 'accessTokenUrl');
         token = await getClientCredentials(ctx, contextId, {
           accessTokenUrl: accessTokenUrl.match(/^https?:\/\//) ? accessTokenUrl : `https://${accessTokenUrl}`,
-          clientId: requiredString(values, 'clientId'),
-          clientSecret: requiredString(values, 'clientSecret'),
-          scope: optionalString(values, 'scope'),
+          clientId: stringArg(values, 'clientId'),
+          clientSecret: stringArg(values, 'clientSecret'),
+          scope: stringArgOrNull(values, 'scope'),
           credentialsInBody,
         });
       } else if (grantType === 'password') {
-        const accessTokenUrl = requiredString(values, 'accessTokenUrl');
+        const accessTokenUrl = stringArg(values, 'accessTokenUrl');
         token = await getPassword(ctx, contextId, {
           accessTokenUrl: accessTokenUrl.match(/^https?:\/\//) ? accessTokenUrl : `https://${accessTokenUrl}`,
-          clientId: requiredString(values, 'clientId'),
-          clientSecret: requiredString(values, 'clientSecret'),
-          username: requiredString(values, 'username'),
-          password: requiredString(values, 'password'),
-          scope: optionalString(values, 'scope'),
+          clientId: stringArg(values, 'clientId'),
+          clientSecret: stringArg(values, 'clientSecret'),
+          username: stringArg(values, 'username'),
+          password: stringArg(values, 'password'),
+          scope: stringArgOrNull(values, 'scope'),
           credentialsInBody,
         });
       } else {
@@ -306,14 +306,14 @@ export const plugin: PluginDefinition = {
   },
 };
 
-function optionalString(values: Record<string, JsonPrimitive | undefined>, name: string): string | null {
+function stringArgOrNull(values: Record<string, JsonPrimitive | undefined>, name: string): string | null {
   const arg = values[name];
   if (arg == null || arg == '') return null;
   return `${arg}`;
 }
 
-function requiredString(values: Record<string, JsonPrimitive | undefined>, name: string): string {
-  const arg = optionalString(values, name);
-  if (!arg) throw new Error(`Missing required argument ${name}`);
+function stringArg(values: Record<string, JsonPrimitive | undefined>, name: string): string {
+  const arg = stringArgOrNull(values, name);
+  if (!arg) return '';
   return arg;
 }
