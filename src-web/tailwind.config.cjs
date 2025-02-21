@@ -42,7 +42,21 @@ module.exports = {
       },
     },
     fontFamily: {
-      mono: ['JetBrains Mono', 'Menlo', 'monospace'],
+      mono: [
+        'JetBrains Mono',
+        'ui-monospace',
+        'SFMono-Regular',
+        'Menlo',
+        'Monaco',
+        'Fira Code',
+        'Ubuntu Mono',
+        'Consolas',
+        'Liberation Mono',
+        'Courier New',
+        'DejaVu Sans Mono',
+        'Hack',
+        'monospace',
+      ],
       sans: [
         'Inter UI',
         '-apple-system',
