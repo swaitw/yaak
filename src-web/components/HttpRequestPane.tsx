@@ -12,7 +12,6 @@ import { grpcRequestsAtom } from '../hooks/useGrpcRequests';
 import { useHttpAuthenticationSummaries } from '../hooks/useHttpAuthentication';
 import { httpRequestsAtom } from '../hooks/useHttpRequests';
 import { useImportCurl } from '../hooks/useImportCurl';
-import { useImportQuerystring } from '../hooks/useImportQuerystring';
 import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
 import { useRequestEditor, useRequestEditorEvent } from '../hooks/useRequestEditor';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
@@ -20,7 +19,6 @@ import { useSendAnyHttpRequest } from '../hooks/useSendAnyHttpRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
 import { deepEqualAtom } from '../lib/atoms';
 import { languageFromContentType } from '../lib/contentType';
-import { resolvedModelName } from '../lib/resolvedModelName';
 import { generateId } from '../lib/generateId';
 import {
   BODY_TYPE_BINARY,
@@ -32,6 +30,8 @@ import {
   BODY_TYPE_OTHER,
   BODY_TYPE_XML,
 } from '../lib/model_util';
+import { prepareImportQuerystring } from '../lib/prepareImportQuerystring';
+import { resolvedModelName } from '../lib/resolvedModelName';
 import { showToast } from '../lib/toast';
 import { BinaryFileEditor } from './BinaryFileEditor';
 import { CountBadge } from './core/CountBadge';
@@ -83,7 +83,7 @@ export function HttpRequestPane({ style, fullHeight, className, activeRequest }:
   const [activeTabs, setActiveTabs] = useAtom(tabsAtom);
   const [forceUpdateHeaderEditorKey, setForceUpdateHeaderEditorKey] = useState<number>(0);
   const { updateKey: forceUpdateKey } = useRequestUpdateKey(activeRequest.id ?? null);
-  const [{ urlKey }] = useRequestEditor();
+  const [{ urlKey }, { focusParamsTab, forceUrlRefresh, forceParamsRefresh }] = useRequestEditor();
   const contentType = useContentTypeFromHeaders(activeRequest.headers);
   const authentication = useHttpAuthenticationSummaries();
 
@@ -273,7 +273,6 @@ export function HttpRequestPane({ style, fullHeight, className, activeRequest }:
   const { mutate: cancelResponse } = useCancelHttpResponse(activeResponse?.id ?? null);
   const { updateKey } = useRequestUpdateKey(activeRequestId);
   const { mutate: importCurl } = useImportCurl();
-  const { mutate: importQuerystring } = useImportQuerystring(activeRequestId);
 
   const handleBodyChange = useCallback(
     (body: HttpRequest['body']) => updateRequest({ id: activeRequestId, update: { body } }),
@@ -314,17 +313,35 @@ export function HttpRequestPane({ style, fullHeight, className, activeRequest }:
   );
 
   const handlePaste = useCallback(
-    (text: string) => {
+    (e: ClipboardEvent, text: string) => {
       if (text.startsWith('curl ')) {
         importCurl({ overwriteRequestId: activeRequestId, command: text });
       } else {
-        // Only import query if pasted text contains entire querystring
-        importQuerystring(text);
+        const data = prepareImportQuerystring(text);
+        if (data != null) {
+          e.preventDefault(); // Prevent input onChange
+
+          updateRequest({ id: activeRequestId, update: data });
+          focusParamsTab();
+
+          // Wait for request to update, then refresh the UI
+          // TODO: Somehow make this deterministic
+          setTimeout(() => {
+            forceUrlRefresh();
+            forceParamsRefresh();
+          }, 100);
+        }
       }
     },
-    [activeRequestId, importCurl, importQuerystring],
+    [
+      activeRequestId,
+      focusParamsTab,
+      forceParamsRefresh,
+      forceUrlRefresh,
+      importCurl,
+      updateRequest,
+    ],
   );
-
   const handleSend = useCallback(
     () => sendRequest(activeRequest.id ?? null),
     [activeRequest.id, sendRequest],

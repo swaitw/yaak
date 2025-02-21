@@ -12,17 +12,18 @@ import { getActiveEnvironment } from '../hooks/useActiveEnvironment';
 import { activeRequestIdAtom } from '../hooks/useActiveRequestId';
 import { useCancelHttpResponse } from '../hooks/useCancelHttpResponse';
 import { useHttpAuthenticationSummaries } from '../hooks/useHttpAuthentication';
-import { useImportQuerystring } from '../hooks/useImportQuerystring';
 import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
 import { useRequestEditor, useRequestEditorEvent } from '../hooks/useRequestEditor';
 import { requestsAtom } from '../hooks/useRequests';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
+import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
 import { useLatestWebsocketConnection } from '../hooks/useWebsocketConnections';
 import { trackEvent } from '../lib/analytics';
 import { deepEqualAtom } from '../lib/atoms';
 import { languageFromContentType } from '../lib/contentType';
-import { resolvedModelName } from '../lib/resolvedModelName';
 import { generateId } from '../lib/generateId';
+import { prepareImportQuerystring } from '../lib/prepareImportQuerystring';
+import { resolvedModelName } from '../lib/resolvedModelName';
 import { CountBadge } from './core/CountBadge';
 import { Editor } from './core/Editor/Editor';
 import type { GenericCompletionConfig } from './core/Editor/genericCompletion';
@@ -66,7 +67,7 @@ export function WebsocketRequestPane({ style, fullHeight, className, activeReque
   const activeRequestId = activeRequest.id;
   const [activeTabs, setActiveTabs] = useAtom(tabsAtom);
   const { updateKey: forceUpdateKey } = useRequestUpdateKey(activeRequest.id ?? null);
-  const [{ urlKey }] = useRequestEditor();
+  const [{ urlKey }, { focusParamsTab, forceUrlRefresh, forceParamsRefresh }] = useRequestEditor();
   const authentication = useHttpAuthenticationSummaries();
 
   const { urlParameterPairs, urlParametersKey } = useMemo(() => {
@@ -151,8 +152,8 @@ export function WebsocketRequestPane({ style, fullHeight, className, activeReque
 
   const { activeResponse } = usePinnedHttpResponse(activeRequestId);
   const { mutate: cancelResponse } = useCancelHttpResponse(activeResponse?.id ?? null);
+  const { mutate: updateRequest } = useUpdateAnyHttpRequest();
   const { updateKey } = useRequestUpdateKey(activeRequestId);
-  const { mutate: importQuerystring } = useImportQuerystring(activeRequestId);
   const connection = useLatestWebsocketConnection(activeRequestId);
 
   const activeTab = activeTabs?.[activeRequestId];
@@ -212,6 +213,26 @@ export function WebsocketRequestPane({ style, fullHeight, className, activeReque
     [activeRequest],
   );
 
+  const handlePaste = useCallback(
+    (e: ClipboardEvent, text: string) => {
+      const data = prepareImportQuerystring(text);
+      if (data != null) {
+        e.preventDefault(); // Prevent input onChange
+
+        updateRequest({ id: activeRequestId, update: data });
+        focusParamsTab();
+
+        // Wait for request to update, then refresh the UI
+        // TODO: Somehow make this deterministic
+        setTimeout(() => {
+          forceUrlRefresh();
+          forceParamsRefresh();
+        }, 100);
+      }
+    },
+    [activeRequestId, focusParamsTab, forceParamsRefresh, forceUrlRefresh, updateRequest],
+  );
+
   const messageLanguage = languageFromContentType(null, activeRequest.message);
 
   const isLoading = connection !== null && connection.state !== 'closed';
@@ -242,7 +263,7 @@ export function WebsocketRequestPane({ style, fullHeight, className, activeReque
                 )
               }
               placeholder="wss://example.com"
-              onPasteOverwrite={importQuerystring}
+              onPasteOverwrite={handlePaste}
               autocomplete={autocomplete}
               onSend={isLoading ? handleSend : handleConnect}
               onCancel={cancelResponse}

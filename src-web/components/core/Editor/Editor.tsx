@@ -71,7 +71,7 @@ export interface EditorProps {
   useTemplating?: boolean;
   onChange?: (value: string) => void;
   onPaste?: (value: string) => void;
-  onPasteOverwrite?: (value: string) => void;
+  onPasteOverwrite?: (e: ClipboardEvent, value: string) => void;
   onFocus?: () => void;
   onBlur?: () => void;
   onKeyDown?: (e: KeyboardEvent) => void;
@@ -173,7 +173,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
   }, [onPaste]);
 
   // Use ref so we can update the handler without re-initializing the editor
-  const handlePasteOverwrite = useRef<EditorProps['onPasteOverwrite']>(onPaste);
+  const handlePasteOverwrite = useRef<EditorProps['onPasteOverwrite']>(onPasteOverwrite);
   useEffect(() => {
     handlePasteOverwrite.current = onPasteOverwrite;
   }, [onPasteOverwrite]);
@@ -606,7 +606,7 @@ function getExtensions({
         const textData = e.clipboardData?.getData('text/plain') ?? '';
         onPaste.current?.(textData);
         if (v.state.selection.main.from === 0 && v.state.selection.main.to === v.state.doc.length) {
-          onPasteOverwrite.current?.(textData);
+          onPasteOverwrite.current?.(e, textData);
         }
       },
     }),

@@ -18,7 +18,7 @@ type Props = Pick<HttpRequest, 'url'> & {
   onSend: () => void;
   onUrlChange: (url: string) => void;
   onPaste?: (v: string) => void;
-  onPasteOverwrite?: (v: string) => void;
+  onPasteOverwrite?: InputProps['onPasteOverwrite'];
   onCancel: () => void;
   submitIcon?: IconProps['icon'] | null;
   onMethodChange?: (method: string) => void;

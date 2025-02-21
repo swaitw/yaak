@@ -35,7 +35,7 @@ export type InputProps = Pick<
   onFocus?: () => void;
   onBlur?: () => void;
   onPaste?: (value: string) => void;
-  onPasteOverwrite?: (value: string) => void;
+  onPasteOverwrite?: EditorProps['onPasteOverwrite'];
   defaultValue?: string;
   leftSlot?: ReactNode;
   rightSlot?: ReactNode;
