@@ -175,6 +175,8 @@ function FormInputs<T extends Record<string, JsonPrimitive>>({
                       inputs={input.inputs}
                       setDataAttr={setDataAttr}
                       stateKey={stateKey}
+                      useTemplating={useTemplating}
+                      autocompleteVariables={autocompleteVariables}
                     />
                   </div>
                 </details>
@@ -193,6 +195,8 @@ function FormInputs<T extends Record<string, JsonPrimitive>>({
                   inputs={input.inputs}
                   setDataAttr={setDataAttr}
                   stateKey={stateKey}
+                  useTemplating={useTemplating}
+                  autocompleteVariables={autocompleteVariables}
                 />
               </Banner>
             );
