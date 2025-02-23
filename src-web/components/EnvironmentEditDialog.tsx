@@ -32,10 +32,13 @@ export const EnvironmentEditDialog = function ({ initialEnvironment }: Props) {
   const { baseEnvironment, subEnvironments, allEnvironments } = useEnvironments();
 
   const [selectedEnvironmentId, setSelectedEnvironmentId] = useState<string | null>(
-    initialEnvironment?.id ?? baseEnvironment?.id ?? null,
+    initialEnvironment?.id ?? null,
   );
 
-  const selectedEnvironment = allEnvironments.find((e) => e.id === selectedEnvironmentId);
+  const selectedEnvironment =
+    selectedEnvironmentId != null
+      ? allEnvironments.find((e) => e.id === selectedEnvironmentId)
+      : baseEnvironment;
 
   const handleCreateEnvironment = async () => {
     if (baseEnvironment == null) return;
@@ -55,7 +58,7 @@ export const EnvironmentEditDialog = function ({ initialEnvironment }: Props) {
           <div className="min-w-0 h-full overflow-y-auto pt-1">
             <SidebarButton
               active={selectedEnvironment?.id == baseEnvironment?.id}
-              onClick={() => setSelectedEnvironmentId(baseEnvironment?.id ?? null)}
+              onClick={() => setSelectedEnvironmentId(null)}
               environment={null}
               rightSlot={
                 <IconButton
@@ -82,6 +85,11 @@ export const EnvironmentEditDialog = function ({ initialEnvironment }: Props) {
                 active={selectedEnvironment?.id === e.id}
                 environment={e}
                 onClick={() => setSelectedEnvironmentId(e.id)}
+                onDelete={() => {
+                  if (e.id === selectedEnvironmentId) {
+                    setSelectedEnvironmentId(null);
+                  }
+                }}
               >
                 {e.name}
               </SidebarButton>
@@ -90,11 +98,7 @@ export const EnvironmentEditDialog = function ({ initialEnvironment }: Props) {
         </aside>
       )}
       secondSlot={() =>
-        selectedEnvironmentId == null ? (
-          <div className="p-3 mt-10">
-            <Banner color="danger">No selected environment</Banner>
-          </div>
-        ) : selectedEnvironment == null ? (
+        selectedEnvironment == null ? (
           <div className="p-3 mt-10">
             <Banner color="danger">
               Failed to find selected environment <InlineCode>{selectedEnvironmentId}</InlineCode>
@@ -198,6 +202,7 @@ function SidebarButton({
   className,
   active,
   onClick,
+  onDelete,
   rightSlot,
   environment,
 }: {
@@ -205,6 +210,7 @@ function SidebarButton({
   children: ReactNode;
   active: boolean;
   onClick: () => void;
+  onDelete?: () => void;
   rightSlot?: ReactNode;
   environment: Environment | null;
 }) {
@@ -275,7 +281,11 @@ function SidebarButton({
               color: 'danger',
               label: 'Delete',
               leftSlot: <Icon icon="trash" size="sm" />,
-              onSelect: () => deleteEnvironment.mutate(),
+              onSelect: () => {
+                deleteEnvironment.mutate(undefined, {
+                  onSuccess: onDelete,
+                });
+              },
             },
           ]}
         />
