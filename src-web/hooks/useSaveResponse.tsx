@@ -3,7 +3,7 @@ import type { HttpResponse } from '@yaakapp-internal/models';
 import mime from 'mime';
 import slugify from 'slugify';
 import { InlineCode } from '../components/core/InlineCode';
-import { getContentTypeHeader } from '../lib/model_util';
+import { getContentTypeFromHeaders } from '../lib/model_util';
 import { invokeCmd } from '../lib/tauri';
 import { showToast } from '../lib/toast';
 import { useFastMutation } from './useFastMutation';
@@ -13,10 +13,10 @@ export function useSaveResponse(response: HttpResponse) {
   return useFastMutation({
     mutationKey: ['save_response', response.id],
     mutationFn: async () => {
-      const request = await getHttpRequest(response.requestId);
+      const request = getHttpRequest(response.requestId);
       if (request == null) return null;
 
-      const contentType = getContentTypeHeader(response.headers) ?? 'unknown';
+      const contentType = getContentTypeFromHeaders(response.headers) ?? 'unknown';
       const ext = mime.getExtension(contentType);
       const slug = slugify(request.name || 'response', { lower: true });
       const filepath = await save({

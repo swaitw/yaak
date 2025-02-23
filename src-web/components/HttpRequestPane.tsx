@@ -7,7 +7,6 @@ import type { CSSProperties } from 'react';
 import React, { useCallback, useMemo, useState } from 'react';
 import { activeRequestIdAtom } from '../hooks/useActiveRequestId';
 import { useCancelHttpResponse } from '../hooks/useCancelHttpResponse';
-import { useContentTypeFromHeaders } from '../hooks/useContentTypeFromHeaders';
 import { grpcRequestsAtom } from '../hooks/useGrpcRequests';
 import { useHttpAuthenticationSummaries } from '../hooks/useHttpAuthentication';
 import { httpRequestsAtom } from '../hooks/useHttpRequests';
@@ -28,7 +27,7 @@ import {
   BODY_TYPE_JSON,
   BODY_TYPE_NONE,
   BODY_TYPE_OTHER,
-  BODY_TYPE_XML,
+  BODY_TYPE_XML, getContentTypeFromHeaders,
 } from '../lib/model_util';
 import { prepareImportQuerystring } from '../lib/prepareImportQuerystring';
 import { resolvedModelName } from '../lib/resolvedModelName';
@@ -84,7 +83,7 @@ export function HttpRequestPane({ style, fullHeight, className, activeRequest }:
   const [forceUpdateHeaderEditorKey, setForceUpdateHeaderEditorKey] = useState<number>(0);
   const { updateKey: forceUpdateKey } = useRequestUpdateKey(activeRequest.id ?? null);
   const [{ urlKey }, { focusParamsTab, forceUrlRefresh, forceParamsRefresh }] = useRequestEditor();
-  const contentType = useContentTypeFromHeaders(activeRequest.headers);
+  const contentType = getContentTypeFromHeaders(activeRequest.headers);
   const authentication = useHttpAuthenticationSummaries();
 
   const handleContentTypeChange = useCallback(

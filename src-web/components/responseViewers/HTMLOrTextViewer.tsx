@@ -1,7 +1,7 @@
 import type { HttpResponse } from '@yaakapp-internal/models';
-import { useContentTypeFromHeaders } from '../../hooks/useContentTypeFromHeaders';
 import { useResponseBodyText } from '../../hooks/useResponseBodyText';
 import { languageFromContentType } from '../../lib/contentType';
+import { getContentTypeFromHeaders } from '../../lib/model_util';
 import { BinaryViewer } from './BinaryViewer';
 import { TextViewer } from './TextViewer';
 import { WebPageViewer } from './WebPageViewer';
@@ -14,10 +14,8 @@ interface Props {
 
 export function HTMLOrTextViewer({ response, pretty, textViewerClassName }: Props) {
   const rawTextBody = useResponseBodyText(response);
-  const language = languageFromContentType(
-    useContentTypeFromHeaders(response.headers),
-    rawTextBody.data ?? '',
-  );
+  const contentType = getContentTypeFromHeaders(response.headers);
+  const language = languageFromContentType(contentType, rawTextBody.data ?? '');
 
   if (rawTextBody.isLoading || response.state === 'initialized') {
     return null;

@@ -3,7 +3,7 @@ import { useMemo, type ReactNode } from 'react';
 import { useSaveResponse } from '../hooks/useSaveResponse';
 import { useToggle } from '../hooks/useToggle';
 import { isProbablyTextContentType } from '../lib/contentType';
-import { getContentTypeHeader } from '../lib/model_util';
+import { getContentTypeFromHeaders } from '../lib/model_util';
 import { getResponseBodyText } from '../lib/responseBody';
 import { CopyButton } from './CopyButton';
 import { Banner } from './core/Banner';
@@ -24,7 +24,7 @@ export function ConfirmLargeResponse({ children, response }: Props) {
   const { mutate: saveResponse } = useSaveResponse(response);
   const [showLargeResponse, toggleShowLargeResponse] = useToggle();
   const isProbablyText = useMemo(() => {
-    const contentType = getContentTypeHeader(response.headers);
+    const contentType = getContentTypeFromHeaders(response.headers);
     return isProbablyTextContentType(contentType);
   }, [response.headers]);
 

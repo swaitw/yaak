@@ -36,12 +36,12 @@ export function modelsEq(a: AnyModel, b: AnyModel) {
   return false;
 }
 
-export function getContentTypeHeader(headers: HttpResponseHeader[]): string | null {
-  return headers.find((h) => h.name.toLowerCase() === 'content-type')?.value ?? null;
+export function getContentTypeFromHeaders(headers: HttpResponseHeader[] | null): string | null {
+  return headers?.find((h) => h.name.toLowerCase() === 'content-type')?.value ?? null;
 }
 
 export function getCharsetFromContentType(headers: HttpResponseHeader[]): string | null {
-  const contentType = getContentTypeHeader(headers);
+  const contentType = getContentTypeFromHeaders(headers);
   if (contentType == null) return null;
 
   const mimeType = getMimeTypeFromContentType(contentType);

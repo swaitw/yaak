@@ -1,6 +1,6 @@
 import type { HttpResponse } from '@yaakapp-internal/models';
 import { useSaveResponse } from '../../hooks/useSaveResponse';
-import { getContentTypeHeader } from '../../lib/model_util';
+import { getContentTypeFromHeaders } from '../../lib/model_util';
 import { Banner } from '../core/Banner';
 import { Button } from '../core/Button';
 import { InlineCode } from '../core/InlineCode';
@@ -13,7 +13,7 @@ interface Props {
 
 export function BinaryViewer({ response }: Props) {
   const saveResponse = useSaveResponse(response);
-  const contentType = getContentTypeHeader(response.headers) ?? 'unknown';
+  const contentType = getContentTypeFromHeaders(response.headers) ?? 'unknown';
 
   // Wait until the response has been fully-downloaded
   if (response.state === 'closed') {

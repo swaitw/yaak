@@ -3,9 +3,9 @@ import classNames from 'classnames';
 import type { CSSProperties, ReactNode } from 'react';
 import React, { useCallback, useMemo } from 'react';
 import { useLocalStorage } from 'react-use';
-import { useContentTypeFromHeaders } from '../hooks/useContentTypeFromHeaders';
 import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
 import { useResponseViewMode } from '../hooks/useResponseViewMode';
+import { getContentTypeFromHeaders } from '../lib/model_util';
 import { ConfirmLargeResponse } from './ConfirmLargeResponse';
 import { Banner } from './core/Banner';
 import { CountBadge } from './core/CountBadge';
@@ -47,7 +47,7 @@ export function HttpResponsePane({ style, className, activeRequestId }: Props) {
     'responsePaneActiveTabs',
     {},
   );
-  const contentType = useContentTypeFromHeaders(activeResponse?.headers ?? null);
+  const contentType = getContentTypeFromHeaders(activeResponse?.headers ?? null);
 
   const tabs = useMemo<TabItem[]>(
     () => [
