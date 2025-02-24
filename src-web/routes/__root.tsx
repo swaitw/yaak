@@ -1,7 +1,7 @@
 import { QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createRootRoute, Outlet } from '@tanstack/react-router';
 import classNames from 'classnames';
-import { MotionConfig } from 'framer-motion';
+import { domAnimation, LazyMotion, MotionConfig } from 'motion/react';
 import { Provider as JotaiProvider } from 'jotai';
 import React, { Suspense } from 'react';
 import { DndProvider } from 'react-dnd';
@@ -61,25 +61,27 @@ function RouteComponent() {
   return (
     <JotaiProvider store={jotaiStore}>
       <QueryClientProvider client={queryClient}>
-        <MotionConfig transition={{ duration: 0.1 }}>
-          <HelmetProvider>
-            <DndProvider backend={HTML5Backend}>
-              <Suspense>
-                <GlobalHooks />
-                <Toasts />
-                <Dialogs />
-                <div
-                  className={classNames(
-                    'w-full h-full',
-                    osInfo?.osType === 'linux' && 'border border-border-subtle',
-                  )}
-                >
-                  <Outlet />
-                </div>
-              </Suspense>
-            </DndProvider>
-          </HelmetProvider>
-        </MotionConfig>
+        <LazyMotion features={domAnimation}>
+          <MotionConfig transition={{ duration: 0.1 }}>
+            <HelmetProvider>
+              <DndProvider backend={HTML5Backend}>
+                <Suspense>
+                  <GlobalHooks />
+                  <Toasts />
+                  <Dialogs />
+                  <div
+                    className={classNames(
+                      'w-full h-full',
+                      osInfo?.osType === 'linux' && 'border border-border-subtle',
+                    )}
+                  >
+                    <Outlet />
+                  </div>
+                </Suspense>
+              </DndProvider>
+            </HelmetProvider>
+          </MotionConfig>
+        </LazyMotion>
         {/*<ReactQueryDevtools initialIsOpen />*/}
         {/*<TanStackRouterDevtools initialIsOpen />*/}
       </QueryClientProvider>

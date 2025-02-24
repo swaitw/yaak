@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { motion } from 'framer-motion';
+import * as m from 'motion/react-m';
 import type { ReactNode } from 'react';
 import { useMemo } from 'react';
 import { useKey } from 'react-use';
@@ -65,7 +65,7 @@ export function Dialog({
         aria-labelledby={titleId}
         aria-describedby={descriptionId}
       >
-        <motion.div
+        <m.div
           initial={{ top: 5, scale: 0.97 }}
           animate={{ top: 0, scale: 1 }}
           className={classNames(
@@ -122,7 +122,7 @@ export function Dialog({
               />
             </div>
           )}
-        </motion.div>
+        </m.div>
       </div>
     </Overlay>
   );

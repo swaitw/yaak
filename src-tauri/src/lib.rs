@@ -11,7 +11,6 @@ use eventsource_client::{EventParser, SSE};
 use log::{debug, error, warn};
 use rand::random;
 use regex::Regex;
-use serde_json::{json, Value};
 use std::collections::{BTreeMap, HashMap};
 use std::fs::{create_dir_all, File};
 use std::path::PathBuf;

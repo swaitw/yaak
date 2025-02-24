@@ -82,7 +82,7 @@ export function SettingsGeneral() {
         checked={false}
         title="Send Usage Statistics (all tracking was removed in 2025.1.2)"
         disabled
-        onChange={(telemetry) => updateSettings.mutate({ telemetry })}
+        onChange={() => {}}
       />
 
       <Separator className="my-4" />

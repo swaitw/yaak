@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import FocusTrap from 'focus-trap-react';
-import { motion } from 'framer-motion';
+import * as m from 'motion/react-m';
 import type { ReactNode } from 'react';
 import React from 'react';
 import { Portal } from './Portal';
@@ -48,7 +48,7 @@ export function Overlay({
     <Portal name={portalName}>
       {open && (
         <FocusTrap>
-          <motion.div
+          <m.div
             className={classNames('fixed inset-0', zIndexes[zIndex])}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -68,7 +68,7 @@ export function Overlay({
               <div data-tauri-drag-region className="absolute top-0 left-0 h-md right-0" />
             )}
             {children}
-          </motion.div>
+          </m.div>
         </FocusTrap>
       )}
     </Portal>

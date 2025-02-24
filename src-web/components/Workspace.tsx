@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { motion } from 'framer-motion';
+import * as m from 'motion/react-m';
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import {duplicateWebsocketRequest} from "../commands/duplicateWebsocketRequest";
@@ -137,7 +137,7 @@ export function Workspace() {
           portalName="sidebar"
           onClose={() => setFloatingSidebarHidden(true)}
         >
-          <motion.div
+          <m.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             className={classNames(
@@ -150,7 +150,7 @@ export function Workspace() {
               <SidebarActions />
             </HeaderSize>
             <Sidebar />
-          </motion.div>
+          </m.div>
         </Overlay>
       ) : (
         <>

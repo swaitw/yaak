@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { motion } from 'framer-motion';
+import * as m from 'motion/react-m';
 import { atom } from 'jotai';
 import type {
   CSSProperties,
@@ -497,7 +497,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle' | 'items'
         )}
         {isOpen && (
           <Overlay noBackdrop open={isOpen} portalName="dropdown-menu">
-            <motion.div
+            <m.div
               ref={menuRef}
               tabIndex={0}
               onKeyDown={handleMenuKeyDown}
@@ -574,7 +574,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle' | 'items'
                   );
                 })}
               </VStack>
-            </motion.div>
+            </m.div>
           </Overlay>
         )}
       </>

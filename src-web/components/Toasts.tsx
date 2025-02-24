@@ -1,4 +1,4 @@
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'motion/react';
 import { useAtomValue } from 'jotai';
 import React, { type ReactNode } from 'react';
 import { hideToast, toastsAtom } from '../lib/toast';

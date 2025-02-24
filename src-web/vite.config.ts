@@ -27,6 +27,7 @@ export default defineConfig(async () => ({
     TanStackRouterVite({
       routesDirectory: './routes',
       generatedRouteTree: './routeTree.gen.ts',
+      autoCodeSplitting: true,
     }),
     svgr(),
     react(),

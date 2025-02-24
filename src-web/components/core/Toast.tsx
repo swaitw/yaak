@@ -1,6 +1,6 @@
 import type { ShowToastRequest } from '@yaakapp-internal/plugins';
 import classNames from 'classnames';
-import { motion } from 'framer-motion';
+import * as m from 'motion/react-m';
 import type { ReactNode } from 'react';
 import React from 'react';
 import { useKey } from 'react-use';
@@ -45,7 +45,7 @@ export function Toast({ children, open, onClose, timeout, action, icon, color }:
   const toastIcon = icon ?? (color && color in ICONS && ICONS[color]);
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, right: '-10%' }}
       animate={{ opacity: 100, right: 0 }}
       exit={{ opacity: 0, right: '-100%' }}
@@ -80,7 +80,7 @@ export function Toast({ children, open, onClose, timeout, action, icon, color }:
 
         {timeout != null && (
           <div className="w-full absolute bottom-0 left-0 right-0">
-            <motion.div
+            <m.div
               className="bg-surface-highlight h-[3px]"
               initial={{ width: '100%' }}
               animate={{ width: '0%', opacity: 0.2 }}
@@ -89,6 +89,6 @@ export function Toast({ children, open, onClose, timeout, action, icon, color }:
           </div>
         )}
       </div>
-    </motion.div>
+    </m.div>
   );
 }
