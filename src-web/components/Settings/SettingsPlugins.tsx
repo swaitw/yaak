@@ -66,7 +66,6 @@ export function SettingsPlugins() {
                 type="submit"
                 color="primary"
                 className="ml-auto"
-                event="plugin.add"
               >
                 Add Plugin
               </Button>
@@ -76,14 +75,12 @@ export function SettingsPlugins() {
               icon="refresh"
               title="Reload plugins"
               spin={refreshPlugins.isPending}
-              event="plugin.reload"
               onClick={() => refreshPlugins.mutate()}
             />
             <IconButton
               size="sm"
               icon="help"
               title="View documentation"
-              event="plugin.docs"
               onClick={() => openUrl('https://feedback.yaak.app/help/articles/6911763-quick-start')}
             />
           </HStack>
@@ -107,7 +104,6 @@ function PluginInfo({ plugin }: { plugin: Plugin }) {
           size="sm"
           icon="trash"
           title="Uninstall plugin"
-          event="plugin.delete"
           onClick={() => deletePlugin.mutate()}
         />
       </td>

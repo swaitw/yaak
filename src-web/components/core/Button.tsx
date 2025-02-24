@@ -4,7 +4,6 @@ import type { HTMLAttributes, ReactNode } from 'react';
 import { forwardRef, useImperativeHandle, useRef } from 'react';
 import type { HotkeyAction } from '../../hooks/useHotKey';
 import { useFormattedHotkey, useHotKey } from '../../hooks/useHotKey';
-import { trackEvent } from '../../lib/analytics';
 import { Icon } from './Icon';
 import { LoadingIcon } from './LoadingIcon';
 
@@ -22,7 +21,6 @@ export type ButtonProps = Omit<HTMLAttributes<HTMLButtonElement>, 'color' | 'onC
   leftSlot?: ReactNode;
   rightSlot?: ReactNode;
   hotkeyAction?: HotkeyAction;
-  event?: string | { id: string; [attr: string]: number | string };
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
@@ -43,7 +41,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     hotkeyAction,
     title,
     onClick,
-    event,
     ...props
   }: ButtonProps,
   ref,
@@ -107,12 +104,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       type={type}
       className={classes}
       disabled={disabled}
-      onClick={(e) => {
-        onClick?.(e);
-        if (event != null) {
-          trackEvent('button', 'click', typeof event === 'string' ? { id: event } : event);
-        }
-      }}
+      onClick={onClick}
       onDoubleClick={(e) => {
         // Kind of a hack? This prevents double-clicks from going through buttons. For example, when
         // double-clicking the workspace header to toggle window maximization

@@ -70,7 +70,6 @@ type TauriCmd =
   | 'cmd_set_update_mode'
   | 'cmd_template_functions'
   | 'cmd_template_tokens_to_string'
-  | 'cmd_track_event'
   | 'cmd_uninstall_plugin'
   | 'cmd_update_cookie_jar'
   | 'cmd_update_environment'

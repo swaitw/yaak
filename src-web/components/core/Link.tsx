@@ -1,15 +1,13 @@
+import { Link as RouterLink } from '@tanstack/react-router';
 import classNames from 'classnames';
 import type { HTMLAttributes } from 'react';
-import { Link as RouterLink } from '@tanstack/react-router';
-import { trackEvent } from '../../lib/analytics';
 import { Icon } from './Icon';
 
 interface Props extends HTMLAttributes<HTMLAnchorElement> {
   href: string;
-  event?: string;
 }
 
-export function Link({ href, children, className, event, ...other }: Props) {
+export function Link({ href, children, className, ...other }: Props) {
   const isExternal = href.match(/^https?:\/\//);
 
   className = classNames(className, 'relative underline hover:text-violet-600');
@@ -23,9 +21,6 @@ export function Link({ href, children, className, event, ...other }: Props) {
         className={classNames(className, 'pr-4 inline-flex items-center')}
         onClick={(e) => {
           e.preventDefault();
-          if (event != null) {
-            trackEvent('link', 'click', { id: event });
-          }
         }}
         {...other}
       >

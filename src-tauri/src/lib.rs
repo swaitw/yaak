@@ -1,13 +1,12 @@
 extern crate core;
 #[cfg(target_os = "macos")]
 extern crate objc;
-use crate::analytics::{AnalyticsAction, AnalyticsResource};
 use crate::encoding::read_response_body;
 use crate::grpc::metadata_to_map;
 use crate::http_request::send_http_request;
 use crate::notifications::YaakNotifier;
 use crate::render::{render_grpc_request, render_template};
-use crate::updates::{UpdateMode, YaakUpdater};
+use crate::updates::{UpdateMode, UpdateTrigger, YaakUpdater};
 use eventsource_client::{EventParser, SSE};
 use log::{debug, error, warn};
 use rand::random;
@@ -30,8 +29,30 @@ use tokio::sync::Mutex;
 use tokio::task::block_in_place;
 use yaak_grpc::manager::{DynamicMessage, GrpcHandle};
 use yaak_grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
-use yaak_models::models::{CookieJar, Environment, EnvironmentVariable, Folder, GrpcConnection, GrpcConnectionState, GrpcEvent, GrpcEventType, GrpcRequest, HttpRequest, HttpResponse, HttpResponseState, KeyValue, ModelType, Plugin, Settings, WebsocketRequest, Workspace, WorkspaceMeta};
-use yaak_models::queries::{batch_upsert, cancel_pending_grpc_connections, cancel_pending_responses, create_default_http_response, delete_all_grpc_connections, delete_all_grpc_connections_for_workspace, delete_all_http_responses_for_request, delete_all_http_responses_for_workspace, delete_all_websocket_connections_for_workspace, delete_cookie_jar, delete_environment, delete_folder, delete_grpc_connection, delete_grpc_request, delete_http_request, delete_http_response, delete_plugin, delete_workspace, duplicate_folder, duplicate_grpc_request, duplicate_http_request, ensure_base_environment, generate_model_id, get_base_environment, get_cookie_jar, get_environment, get_folder, get_grpc_connection, get_grpc_request, get_http_request, get_http_response, get_key_value_raw, get_or_create_settings, get_or_create_workspace_meta, get_plugin, get_workspace, get_workspace_export_resources, list_cookie_jars, list_environments, list_folders, list_grpc_connections_for_workspace, list_grpc_events, list_grpc_requests, list_http_requests, list_http_responses_for_workspace, list_key_values_raw, list_plugins, list_workspaces, set_key_value_raw, update_response_if_id, update_settings, upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection, upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_plugin, upsert_workspace, upsert_workspace_meta, BatchUpsertResult, UpdateSource};
+use yaak_models::models::{
+    CookieJar, Environment, EnvironmentVariable, Folder, GrpcConnection, GrpcConnectionState,
+    GrpcEvent, GrpcEventType, GrpcRequest, HttpRequest, HttpResponse, HttpResponseState, KeyValue,
+    ModelType, Plugin, Settings, WebsocketRequest, Workspace, WorkspaceMeta,
+};
+use yaak_models::queries::{
+    batch_upsert, cancel_pending_grpc_connections, cancel_pending_responses,
+    create_default_http_response, delete_all_grpc_connections,
+    delete_all_grpc_connections_for_workspace, delete_all_http_responses_for_request,
+    delete_all_http_responses_for_workspace, delete_all_websocket_connections_for_workspace,
+    delete_cookie_jar, delete_environment, delete_folder, delete_grpc_connection,
+    delete_grpc_request, delete_http_request, delete_http_response, delete_plugin,
+    delete_workspace, duplicate_folder, duplicate_grpc_request, duplicate_http_request,
+    ensure_base_environment, generate_model_id, get_base_environment, get_cookie_jar,
+    get_environment, get_folder, get_grpc_connection, get_grpc_request, get_http_request,
+    get_http_response, get_key_value_raw, get_or_create_settings, get_or_create_workspace_meta,
+    get_plugin, get_workspace, get_workspace_export_resources, list_cookie_jars, list_environments,
+    list_folders, list_grpc_connections_for_workspace, list_grpc_events, list_grpc_requests,
+    list_http_requests, list_http_responses_for_workspace, list_key_values_raw, list_plugins,
+    list_workspaces, set_key_value_raw, update_response_if_id, update_settings, upsert_cookie_jar,
+    upsert_environment, upsert_folder, upsert_grpc_connection, upsert_grpc_event,
+    upsert_grpc_request, upsert_http_request, upsert_plugin, upsert_workspace,
+    upsert_workspace_meta, BatchUpsertResult, UpdateSource,
+};
 use yaak_plugins::events::{
     BootResponse, CallHttpAuthenticationRequest, CallHttpRequestActionRequest, FilterResponse,
     GetHttpAuthenticationConfigResponse, GetHttpAuthenticationSummaryResponse,
@@ -44,9 +65,9 @@ use yaak_sse::sse::ServerSentEvent;
 use yaak_templates::format::format_json;
 use yaak_templates::{Parser, Tokens};
 
-mod analytics;
 mod encoding;
 mod grpc;
+mod history;
 mod http_request;
 mod notifications;
 mod plugin_events;
@@ -807,7 +828,7 @@ async fn cmd_import_data<R: Runtime>(
         .await
         .unwrap_or_else(|_| panic!("Unable to read file {}", file_path));
     let file_contents = file.as_str();
-    let (import_result, plugin_name) =
+    let import_result =
         plugin_manager.import_data(&window, file_contents).await.map_err(|e| e.to_string())?;
 
     let mut id_map: BTreeMap<String, String> = BTreeMap::new();
@@ -923,14 +944,6 @@ async fn cmd_import_data<R: Runtime>(
     .await
     .map_err(|e| e.to_string())?;
 
-    analytics::track_event(
-        &window,
-        AnalyticsResource::App,
-        AnalyticsAction::Import,
-        Some(json!({ "plugin": plugin_name })),
-    )
-    .await;
-
     Ok(upserted)
 }
 
@@ -1007,16 +1020,8 @@ async fn cmd_curl_to_request<R: Runtime>(
     plugin_manager: State<'_, PluginManager>,
     workspace_id: &str,
 ) -> Result<HttpRequest, String> {
-    let (import_result, plugin_name) =
+    let import_result =
         { plugin_manager.import_data(&window, command).await.map_err(|e| e.to_string())? };
-
-    analytics::track_event(
-        &window,
-        AnalyticsResource::App,
-        AnalyticsAction::Import,
-        Some(json!({ "plugin": plugin_name })),
-    )
-    .await;
 
     import_result.resources.http_requests.get(0).ok_or("No curl command found".to_string()).map(
         |r| {
@@ -1050,8 +1055,6 @@ async fn cmd_export_data(
         .expect("Failed to write");
 
     f.sync_all().expect("Failed to sync");
-
-    analytics::track_event(&window, AnalyticsResource::App, AnalyticsAction::Export, None).await;
 
     Ok(())
 }
@@ -1129,28 +1132,6 @@ async fn response_err<R: Runtime>(
         .await
         .expect("Failed to update response");
     response
-}
-
-#[tauri::command]
-async fn cmd_track_event(
-    window: WebviewWindow,
-    resource: &str,
-    action: &str,
-    attributes: Option<Value>,
-) -> Result<(), String> {
-    match (AnalyticsResource::from_str(resource), AnalyticsAction::from_str(action)) {
-        (Ok(resource), Ok(action)) => {
-            analytics::track_event(&window, resource, action, attributes).await;
-        }
-        (r, a) => {
-            error!(
-                "Invalid action/resource for track_event: {resource}.{action} = {:?}.{:?}",
-                r, a
-            );
-            return Err("Invalid analytics event".to_string());
-        }
-    };
-    Ok(())
 }
 
 #[tauri::command]
@@ -1739,7 +1720,12 @@ async fn cmd_check_for_updates(
     yaak_updater: State<'_, Mutex<YaakUpdater>>,
 ) -> Result<bool, String> {
     let update_mode = get_update_mode(&app_handle).await;
-    yaak_updater.lock().await.force_check(&app_handle, update_mode).await.map_err(|e| e.to_string())
+    yaak_updater
+        .lock()
+        .await
+        .check_now(&app_handle, update_mode, UpdateTrigger::User)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -1918,7 +1904,6 @@ pub fn run() {
             cmd_set_update_mode,
             cmd_template_functions,
             cmd_template_tokens_to_string,
-            cmd_track_event,
             cmd_uninstall_plugin,
             cmd_update_cookie_jar,
             cmd_update_environment,
@@ -1941,7 +1926,7 @@ pub fn run() {
                 RunEvent::Ready => {
                     let w = create_main_window(app_handle, "/");
                     tauri::async_runtime::spawn(async move {
-                        let info = analytics::track_launch_event(&w).await;
+                        let info = history::store_launch_history(&w).await;
                         debug!("Launched Yaak {:?}", info);
                     });
 
@@ -1961,7 +1946,7 @@ pub fn run() {
                     tauri::async_runtime::spawn(async move {
                         let val: State<'_, Mutex<YaakUpdater>> = h.state();
                         let update_mode = get_update_mode(&h).await;
-                        if let Err(e) = val.lock().await.check(&h, update_mode).await {
+                        if let Err(e) = val.lock().await.maybe_check(&h, update_mode).await {
                             warn!("Failed to check for updates {e:?}");
                         };
                     });
@@ -2070,7 +2055,7 @@ fn monitor_plugin_events<R: Runtime>(app_handle: &AppHandle<R>) {
             // We might have recursive back-and-forth calls between app and plugin, so we don't
             // want to block here
             tauri::async_runtime::spawn(async move {
-                crate::plugin_events::handle_plugin_event(&app_handle, &event, &plugin).await;
+                plugin_events::handle_plugin_event(&app_handle, &event, &plugin).await;
             });
         }
         plugin_manager.unsubscribe(rx_id.as_str()).await;

@@ -2,7 +2,6 @@ import type { WebsocketRequest } from '@yaakapp-internal/models';
 import { deleteWebsocketRequest as cmdDeleteWebsocketRequest } from '@yaakapp-internal/ws';
 import { InlineCode } from '../components/core/InlineCode';
 import { createFastMutation } from '../hooks/useFastMutation';
-import { trackEvent } from '../lib/analytics';
 import { showConfirmDelete } from '../lib/confirm';
 import { resolvedModelName } from '../lib/resolvedModelName';
 
@@ -23,8 +22,5 @@ export const deleteWebsocketRequest = createFastMutation({
     }
 
     return cmdDeleteWebsocketRequest(request.id);
-  },
-  onSuccess: async () => {
-    trackEvent('websocket_request', 'delete');
   },
 });

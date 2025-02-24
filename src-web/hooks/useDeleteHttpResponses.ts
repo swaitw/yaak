@@ -1,6 +1,5 @@
 import { useFastMutation } from './useFastMutation';
 import { useSetAtom } from 'jotai';
-import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
 import { httpResponsesAtom } from './useHttpResponses';
 
@@ -15,6 +14,5 @@ export function useDeleteHttpResponses(requestId?: string) {
     onSuccess: () => {
       setHttpResponses((all) => all.filter((r) => r.requestId !== requestId));
     },
-    onSettled: () => trackEvent('http_response', 'delete_many'),
   });
 }

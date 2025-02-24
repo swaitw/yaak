@@ -1,5 +1,4 @@
 import type { CookieJar } from '@yaakapp-internal/models';
-import { trackEvent } from '../lib/analytics';
 import { showPrompt } from '../lib/prompt';
 import { invokeCmd } from '../lib/tauri';
 import { getActiveWorkspaceId } from './useActiveWorkspace';
@@ -25,6 +24,5 @@ export function useCreateCookieJar() {
 
       return invokeCmd('cmd_create_cookie_jar', { workspaceId, name });
     },
-    onSettled: () => trackEvent('cookie_jar', 'create'),
   });
 }

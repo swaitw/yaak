@@ -1,5 +1,4 @@
 import type { HttpResponse } from '@yaakapp-internal/models';
-import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
 import { getActiveCookieJar } from './useActiveCookieJar';
 import { getActiveEnvironment } from './useActiveEnvironment';
@@ -21,6 +20,5 @@ export function useSendAnyHttpRequest() {
         cookieJarId: getActiveCookieJar()?.id,
       });
     },
-    onSettled: () => trackEvent('http_request', 'send'),
   });
 }

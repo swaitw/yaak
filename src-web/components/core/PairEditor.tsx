@@ -261,7 +261,6 @@ export const PairEditor = forwardRef<PairEditorRef, PairEditorProps>(function Pa
           variant="border"
           className="m-2"
           size="xs"
-          event="pairs.reveal-more"
         >
           Show {pairs.length - MAX_INITIAL_PAIRS} More
         </Button>

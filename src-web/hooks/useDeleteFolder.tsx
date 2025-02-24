@@ -1,7 +1,6 @@
 import type { Folder } from '@yaakapp-internal/models';
 import { useSetAtom } from 'jotai';
 import { InlineCode } from '../components/core/InlineCode';
-import { trackEvent } from '../lib/analytics';
 import { showConfirmDelete } from '../lib/confirm';
 import { invokeCmd } from '../lib/tauri';
 import { useFastMutation } from './useFastMutation';
@@ -27,7 +26,6 @@ export function useDeleteFolder(id: string | null) {
       if (!confirmed) return null;
       return invokeCmd('cmd_delete_folder', { folderId: id });
     },
-    onSettled: () => trackEvent('folder', 'delete'),
     onSuccess: (folder) => {
       if (folder == null) return;
 

@@ -1,7 +1,6 @@
 import type { CookieJar } from '@yaakapp-internal/models';
 import { useSetAtom } from 'jotai';
 import { InlineCode } from '../components/core/InlineCode';
-import { trackEvent } from '../lib/analytics';
 import { showConfirmDelete } from '../lib/confirm';
 import { invokeCmd } from '../lib/tauri';
 import { cookieJarsAtom } from './useCookieJars';
@@ -26,7 +25,6 @@ export function useDeleteCookieJar(cookieJar: CookieJar | null) {
       if (!confirmed) return null;
       return invokeCmd('cmd_delete_cookie_jar', { cookieJarId: cookieJar?.id });
     },
-    onSettled: () => trackEvent('cookie_jar', 'delete'),
     onSuccess: (cookieJar) => {
       if (cookieJar == null) return;
 

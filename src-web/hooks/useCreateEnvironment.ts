@@ -1,5 +1,4 @@
 import type { Environment } from '@yaakapp-internal/models';
-import { trackEvent } from '../lib/analytics';
 import { showPrompt } from '../lib/prompt';
 import { setWorkspaceSearchParams } from '../lib/setWorkspaceSearchParams';
 import { invokeCmd } from '../lib/tauri';
@@ -33,7 +32,6 @@ export function useCreateEnvironment() {
         environmentId: baseEnvironment.id,
       });
     },
-    onSettled: () => trackEvent('environment', 'create'),
     onSuccess: async (environment) => {
       if (environment == null) return;
       setWorkspaceSearchParams({ environment_id: environment.id });

@@ -1,6 +1,6 @@
 use std::time::SystemTime;
 
-use crate::analytics::{get_num_launches, get_os};
+use crate::history::{get_num_launches, get_os};
 use chrono::{DateTime, Duration, Utc};
 use log::debug;
 use reqwest::Method;

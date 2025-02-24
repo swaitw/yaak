@@ -6,6 +6,7 @@ use tauri::{AppHandle, Manager};
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
 use tauri_plugin_updater::UpdaterExt;
 use tokio::task::block_in_place;
+use yaak_models::queries::get_or_create_settings;
 use yaak_plugins::manager::PluginManager;
 
 use crate::is_dev;
@@ -46,6 +47,11 @@ impl UpdateMode {
     }
 }
 
+pub enum UpdateTrigger {
+    Background,
+    User,
+}
+
 impl YaakUpdater {
     pub fn new() -> Self {
         Self {
@@ -53,11 +59,14 @@ impl YaakUpdater {
         }
     }
 
-    pub async fn force_check(
+    pub async fn check_now(
         &mut self,
         app_handle: &AppHandle,
         mode: UpdateMode,
+        update_trigger: UpdateTrigger,
     ) -> Result<bool, tauri_plugin_updater::Error> {
+        let settings = get_or_create_settings(app_handle).await;
+        let update_key = format!("{:x}", md5::compute(settings.id));
         self.last_update_check = SystemTime::now();
 
         info!("Checking for updates mode={}", mode);
@@ -79,6 +88,14 @@ impl YaakUpdater {
                 });
             })
             .header("X-Update-Mode", mode.to_string())?
+            .header("X-Update-Key", update_key)?
+            .header(
+                "X-Update-Trigger",
+                match update_trigger {
+                    UpdateTrigger::Background => "background",
+                    UpdateTrigger::User => "user",
+                },
+            )?
             .build()?
             .check()
             .await;
@@ -129,7 +146,7 @@ impl YaakUpdater {
             Err(e) => Err(e),
         }
     }
-    pub async fn check(
+    pub async fn maybe_check(
         &mut self,
         app_handle: &AppHandle,
         mode: UpdateMode,
@@ -150,6 +167,6 @@ impl YaakUpdater {
             return Ok(false);
         }
 
-        self.force_check(app_handle, mode).await
+        self.check_now(app_handle, mode, UpdateTrigger::Background).await
     }
 }

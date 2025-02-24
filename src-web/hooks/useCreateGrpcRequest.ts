@@ -1,5 +1,4 @@
 import type { GrpcRequest } from '@yaakapp-internal/models';
-import { trackEvent } from '../lib/analytics';
 import { jotaiStore } from '../lib/jotai';
 import { invokeCmd } from '../lib/tauri';
 import { getActiveRequest } from './useActiveRequest';
@@ -36,7 +35,6 @@ export function useCreateGrpcRequest() {
         ...patch,
       });
     },
-    onSettled: () => trackEvent('grpc_request', 'create'),
     onSuccess: async (request) => {
       await router.navigate({
         to: '/workspaces/$workspaceId',

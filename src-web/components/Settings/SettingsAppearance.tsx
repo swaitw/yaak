@@ -96,7 +96,6 @@ export function SettingsAppearance() {
         value={`${settings.interfaceFontSize}`}
         options={fontSizeOptions}
         onChange={(v) => updateSettings.mutate({ interfaceFontSize: parseInt(v) })}
-        event="ui-font-size"
       />
       <Select
         size="sm"
@@ -106,7 +105,6 @@ export function SettingsAppearance() {
         value={`${settings.editorFontSize}`}
         options={fontSizeOptions}
         onChange={(v) => updateSettings.mutate({ editorFontSize: clamp(parseInt(v) || 14, 8, 30) })}
-        event="editor-font-size"
       />
       <Select
         size="sm"
@@ -116,13 +114,11 @@ export function SettingsAppearance() {
         value={`${settings.editorKeymap}`}
         options={keymaps}
         onChange={(v) => updateSettings.mutate({ editorKeymap: v })}
-        event="editor-keymap"
       />
       <Checkbox
         checked={settings.editorSoftWrap}
         title="Wrap Editor Lines"
         onChange={(editorSoftWrap) => updateSettings.mutate({ editorSoftWrap })}
-        event="editor-wrap-lines"
       />
 
       <Separator className="my-4" />
@@ -134,7 +130,6 @@ export function SettingsAppearance() {
         size="sm"
         value={settings.appearance}
         onChange={(appearance) => updateSettings.mutate({ appearance })}
-        event="appearance"
         options={[
           { label: 'Automatic', value: 'system' },
           { label: 'Light', value: 'light' },
@@ -152,7 +147,6 @@ export function SettingsAppearance() {
             className="flex-1"
             value={activeTheme.light.id}
             options={lightThemes}
-            event="theme.light"
             onChange={(themeLight) => updateSettings.mutate({ ...settings, themeLight })}
           />
         )}
@@ -166,7 +160,6 @@ export function SettingsAppearance() {
             size="sm"
             value={activeTheme.dark.id}
             options={darkThemes}
-            event="theme.dark"
             onChange={(themeDark) => updateSettings.mutate({ ...settings, themeDark })}
           />
         )}

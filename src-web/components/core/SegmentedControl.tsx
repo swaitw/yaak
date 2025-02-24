@@ -2,18 +2,17 @@ import classNames from 'classnames';
 import { useRef } from 'react';
 import { useStateWithDeps } from '../../hooks/useStateWithDeps';
 import type { IconProps } from './Icon';
-import type { IconButtonProps } from './IconButton';
 import { IconButton } from './IconButton';
 import { HStack } from './Stacks';
 
 interface Props<T extends string> {
-  options: { value: T; label: string; icon: IconProps['icon']; event?: IconButtonProps['event'] }[];
+  options: { value: T; label: string; icon: IconProps['icon'] }[];
   onChange: (value: T) => void;
   value: T;
   name: string;
 }
 
-export function SegmentedControl<T extends string>({ value, onChange, options, name }: Props<T>) {
+export function SegmentedControl<T extends string>({ value, onChange, options }: Props<T>) {
   const [selectedValue, setSelectedValue] = useStateWithDeps<T>(value, [value]);
   const containerRef = useRef<HTMLDivElement>(null);
   return (
@@ -45,14 +44,13 @@ export function SegmentedControl<T extends string>({ value, onChange, options, n
           <IconButton
             size="xs"
             variant="solid"
-            color={isActive ? "secondary" : undefined}
+            color={isActive ? 'secondary' : undefined}
             role="radio"
-            event={{ id: name, value: String(o.value) }}
             tabIndex={isSelected ? 0 : -1}
             className={classNames(
-                isActive && '!text-text',
-                '!px-1.5 !w-auto',
-                'focus:ring-border-focus',
+              isActive && '!text-text',
+              '!px-1.5 !w-auto',
+              'focus:ring-border-focus',
             )}
             key={i}
             title={o.label}

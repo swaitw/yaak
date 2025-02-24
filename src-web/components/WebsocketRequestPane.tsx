@@ -18,7 +18,6 @@ import { requestsAtom } from '../hooks/useRequests';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
 import { useLatestWebsocketConnection } from '../hooks/useWebsocketConnections';
-import { trackEvent } from '../lib/analytics';
 import { deepEqualAtom } from '../lib/atoms';
 import { languageFromContentType } from '../lib/contentType';
 import { generateId } from '../lib/generateId';
@@ -190,7 +189,6 @@ export function WebsocketRequestPane({ style, fullHeight, className, activeReque
       environmentId: getActiveEnvironment()?.id ?? null,
       cookieJarId: getActiveCookieJar()?.id ?? null,
     });
-    trackEvent('websocket_request', 'send');
   }, [activeRequest.id]);
 
   const handleSend = useCallback(async () => {
@@ -199,13 +197,11 @@ export function WebsocketRequestPane({ style, fullHeight, className, activeReque
       connectionId: connection?.id,
       environmentId: getActiveEnvironment()?.id ?? null,
     });
-    trackEvent('websocket_connection', 'send');
   }, [connection]);
 
   const handleCancel = useCallback(async () => {
     if (connection == null) return;
     await closeWebsocket({ connectionId: connection?.id });
-    trackEvent('websocket_connection', 'cancel');
   }, [connection]);
 
   const handleUrlChange = useCallback(

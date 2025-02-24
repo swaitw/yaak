@@ -1,7 +1,6 @@
 import type { Environment } from '@yaakapp-internal/models';
 import { useSetAtom } from 'jotai';
 import { InlineCode } from '../components/core/InlineCode';
-import { trackEvent } from '../lib/analytics';
 import { showConfirmDelete } from '../lib/confirm';
 import { invokeCmd } from '../lib/tauri';
 import { environmentsAtom } from './useEnvironments';
@@ -26,7 +25,6 @@ export function useDeleteEnvironment(environment: Environment | null) {
       if (!confirmed) return null;
       return invokeCmd('cmd_delete_environment', { environmentId: environment?.id });
     },
-    onSettled: () => trackEvent('environment', 'delete'),
     onSuccess: (environment) => {
       if (environment == null) return;
 

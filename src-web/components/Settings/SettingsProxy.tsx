@@ -19,7 +19,6 @@ export function SettingsProxy() {
         hideLabel
         size="sm"
         value={settings.proxy?.type ?? 'automatic'}
-        event="proxy"
         onChange={(v) => {
           if (v === 'automatic') {
             updateSettings.mutate({ proxy: undefined });

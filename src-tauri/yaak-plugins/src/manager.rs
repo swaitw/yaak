@@ -559,7 +559,7 @@ impl PluginManager {
             Some(JsonPrimitive::Boolean(v)) => v.clone(),
             _ => false,
         };
-        
+
         // Auth is disabled, so don't do anything
         if disabled {
             info!("Not applying disabled auth {:?}", auth_name);
@@ -623,7 +623,7 @@ impl PluginManager {
         &self,
         window: &WebviewWindow<R>,
         content: &str,
-    ) -> Result<(ImportResponse, String)> {
+    ) -> Result<ImportResponse> {
         let reply_events = self
             .send_and_wait(
                 &WindowContext::from_window(window),
@@ -635,19 +635,13 @@ impl PluginManager {
 
         // TODO: Don't just return the first valid response
         let result = reply_events.into_iter().find_map(|e| match e.payload {
-            InternalEventPayload::ImportResponse(resp) => Some((resp, e.plugin_ref_id)),
+            InternalEventPayload::ImportResponse(resp) => Some(resp),
             _ => None,
         });
 
         match result {
             None => Err(PluginErr("No importers found for file contents".to_string())),
-            Some((resp, ref_id)) => {
-                let plugin = self
-                    .get_plugin_by_ref_id(ref_id.as_str())
-                    .await
-                    .ok_or(PluginNotFoundErr(ref_id))?;
-                Ok((resp, plugin.info().await.name))
-            }
+            Some(resp) => Ok(resp),
         }
     }
 

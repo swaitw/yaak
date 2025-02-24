@@ -1,7 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { emit } from '@tauri-apps/api/event';
 import type { GrpcConnection, GrpcRequest } from '@yaakapp-internal/models';
-import { trackEvent } from '../lib/analytics';
 import { minPromiseMillis } from '../lib/minPromiseMillis';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveEnvironment } from './useActiveEnvironment';
@@ -24,26 +23,22 @@ export function useGrpc(
     mutationKey: ['grpc_go', conn?.id],
     mutationFn: () =>
       invokeCmd<void>('cmd_grpc_go', { requestId, environmentId: environment?.id, protoFiles }),
-    onSettled: () => trackEvent('grpc_request', 'send'),
   });
 
   const send = useMutation({
     mutationKey: ['grpc_send', conn?.id],
     mutationFn: ({ message }: { message: string }) =>
       emit(`grpc_client_msg_${conn?.id ?? 'none'}`, { Message: message }),
-    onSettled: () => trackEvent('grpc_connection', 'send'),
   });
 
   const cancel = useMutation({
     mutationKey: ['grpc_cancel', conn?.id ?? 'n/a'],
     mutationFn: () => emit(`grpc_client_msg_${conn?.id ?? 'none'}`, 'Cancel'),
-    onSettled: () => trackEvent('grpc_connection', 'cancel'),
   });
 
   const commit = useMutation({
     mutationKey: ['grpc_commit', conn?.id ?? 'n/a'],
     mutationFn: () => emit(`grpc_client_msg_${conn?.id ?? 'none'}`, 'Commit'),
-    onSettled: () => trackEvent('grpc_connection', 'commit'),
   });
 
   const debouncedUrl = useDebouncedValue<string>(req?.url ?? '', 1000);

@@ -1,5 +1,4 @@
 import type { HttpRequest } from '@yaakapp-internal/models';
-import { trackEvent } from '../lib/analytics';
 import { router } from '../lib/router';
 import { invokeCmd } from '../lib/tauri';
 import { getActiveRequest } from './useActiveRequest';
@@ -30,7 +29,6 @@ export function useCreateHttpRequest() {
         request: { workspaceId, ...patch },
       });
     },
-    onSettled: () => trackEvent('http_request', 'create'),
     onSuccess: async (request) => {
       await router.navigate({
         to: '/workspaces/$workspaceId',

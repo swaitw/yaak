@@ -66,18 +66,8 @@ export function MarkdownEditor({
         onChange={setViewMode}
         value={viewMode}
         options={[
-          {
-            event: { id: 'md_mode', mode: 'preview' },
-            icon: 'eye',
-            label: 'Preview mode',
-            value: 'preview',
-          },
-          {
-            event: { id: 'md_mode', mode: 'edit' },
-            icon: 'pencil',
-            label: 'Edit mode',
-            value: 'edit',
-          },
+          { icon: 'eye', label: 'Preview mode', value: 'preview' },
+          { icon: 'pencil', label: 'Edit mode', value: 'edit' },
         ]}
       />
     </div>

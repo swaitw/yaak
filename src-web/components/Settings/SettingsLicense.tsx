@@ -81,7 +81,6 @@ export function SettingsLicense() {
             color="secondary"
             size="sm"
             onClick={toggleActivateFormVisible}
-            event="license.another"
           >
             Activate Another License
           </Button>
@@ -90,7 +89,6 @@ export function SettingsLicense() {
             size="sm"
             onClick={() => openUrl('https://yaak.app/dashboard')}
             rightSlot={<Icon icon="external_link" />}
-            event="license.support"
           >
             Direct Support
           </Button>
@@ -101,7 +99,6 @@ export function SettingsLicense() {
             color="primary"
             size="sm"
             onClick={toggleActivateFormVisible}
-            event="license.activate"
           >
             Activate
           </Button>
@@ -110,7 +107,6 @@ export function SettingsLicense() {
             size="sm"
             onClick={() => openUrl('https://yaak.app/pricing?ref=app.yaak.desktop')}
             rightSlot={<Icon icon="external_link" />}
-            event="license.purchase"
           >
             Purchase
           </Button>
@@ -140,7 +136,6 @@ export function SettingsLicense() {
             color="primary"
             size="sm"
             isLoading={activate.isPending}
-            event="license.submit"
           >
             Submit
           </Button>

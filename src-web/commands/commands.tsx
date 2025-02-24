@@ -5,7 +5,6 @@ import { InlineCode } from '../components/core/InlineCode';
 import { VStack } from '../components/core/Stacks';
 import { getActiveWorkspaceId } from '../hooks/useActiveWorkspace';
 import { createFastMutation } from '../hooks/useFastMutation';
-import { trackEvent } from '../lib/analytics';
 import { showConfirm } from '../lib/confirm';
 import { resolvedModelNameWithFolders } from '../lib/resolvedModelName';
 import { pluralizeCount } from '../lib/pluralize';
@@ -42,7 +41,6 @@ export const createFolder = createFastMutation<
     patch.sortPriority = patch.sortPriority || -Date.now();
     return invokeCmd<Folder>('cmd_update_folder', { folder: { workspaceId, ...patch } });
   },
-  onSettled: () => trackEvent('folder', 'create'),
 });
 
 export const syncWorkspace = createFastMutation<

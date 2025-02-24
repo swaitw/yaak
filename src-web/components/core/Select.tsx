@@ -2,7 +2,6 @@ import classNames from 'classnames';
 import type { CSSProperties, ReactNode } from 'react';
 import { useState } from 'react';
 import { useOsInfo } from '../../hooks/useOsInfo';
-import { trackEvent } from '../../lib/analytics';
 import type { ButtonProps } from './Button';
 import { Button } from './Button';
 import { Label } from './Label';
@@ -22,7 +21,6 @@ export interface SelectProps<T extends string> {
   onChange: (value: T) => void;
   size?: ButtonProps['size'];
   className?: string;
-  event?: string;
   disabled?: boolean;
 }
 
@@ -38,7 +36,6 @@ export function Select<T extends string>({
   leftSlot,
   onChange,
   className,
-  event,
   size = 'md',
 }: SelectProps<T>) {
   const osInfo = useOsInfo();
@@ -48,9 +45,6 @@ export function Select<T extends string>({
 
   const handleChange = (value: T) => {
     onChange?.(value);
-    if (event != null) {
-      trackEvent('select', 'click', { id: event, value });
-    }
   };
 
   return (

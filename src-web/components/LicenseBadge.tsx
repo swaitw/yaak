@@ -60,6 +60,7 @@ export function LicenseBadge() {
       size="2xs"
       variant="border"
       className="!rounded-full mx-1"
+      color={detail.color}
       onClick={async () => {
         if (check.data.type === 'trialing') {
           await setLicenseDetails((v) => ({
@@ -69,8 +70,6 @@ export function LicenseBadge() {
         }
         openSettings.mutate(SettingsTab.License);
       }}
-      color={detail.color}
-      event={{ id: 'license-badge', status: check.data.type }}
     >
       {detail.label}
     </Button>

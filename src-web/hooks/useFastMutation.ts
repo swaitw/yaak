@@ -1,7 +1,6 @@
 import type { MutationKey } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { showToast } from '../lib/toast';
-import { trackEvent } from '../lib/analytics';
 
 interface MutationOptions<TData, TError, TVariables> {
   mutationKey: MutationKey;
@@ -36,7 +35,6 @@ export function createFastMutation<TData = unknown, TError = unknown, TVariables
       const stringKey = mutationKey.join('.');
       const e = err as TError;
       console.log('mutation error', stringKey, e);
-      trackEvent('mutation', 'error', { key: stringKey });
       if (!disableToastError) {
         showToast({
           id: stringKey,

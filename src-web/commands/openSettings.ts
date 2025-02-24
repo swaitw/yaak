@@ -1,7 +1,6 @@
 import { SettingsTab } from '../components/Settings/SettingsTab';
 import { getActiveWorkspaceId } from '../hooks/useActiveWorkspace';
 import { createFastMutation } from '../hooks/useFastMutation';
-import { trackEvent } from '../lib/analytics';
 import { router } from '../lib/router';
 import { invokeCmd } from '../lib/tauri';
 
@@ -11,7 +10,6 @@ export const openSettings = createFastMutation<void, string, SettingsTab | null>
     const workspaceId = getActiveWorkspaceId();
     if (workspaceId == null) return;
 
-    trackEvent('dialog', 'show', { id: 'settings', tab: `${tab}` });
     const location = router.buildLocation({
       to: '/workspaces/$workspaceId/settings',
       params: { workspaceId },

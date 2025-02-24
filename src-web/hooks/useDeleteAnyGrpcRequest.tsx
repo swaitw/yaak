@@ -1,6 +1,5 @@
 import type { GrpcRequest } from '@yaakapp-internal/models';
 import { InlineCode } from '../components/core/InlineCode';
-import { trackEvent } from '../lib/analytics';
 import { showConfirmDelete } from '../lib/confirm';
 import { resolvedModelName } from '../lib/resolvedModelName';
 import { invokeCmd } from '../lib/tauri';
@@ -24,6 +23,5 @@ export function useDeleteAnyGrpcRequest() {
       }
       return invokeCmd('cmd_delete_grpc_request', { requestId: request.id });
     },
-    onSuccess: () => trackEvent('grpc_request', 'delete'),
   });
 }

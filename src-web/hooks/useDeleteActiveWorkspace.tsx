@@ -1,6 +1,5 @@
 import type { Workspace } from '@yaakapp-internal/models';
 import { InlineCode } from '../components/core/InlineCode';
-import { trackEvent } from '../lib/analytics';
 import { showConfirmDelete } from '../lib/confirm';
 import { router } from '../lib/router';
 import { invokeCmd } from '../lib/tauri';
@@ -24,7 +23,6 @@ export function useDeleteActiveWorkspace() {
       if (!confirmed) return null;
       return invokeCmd('cmd_delete_workspace', { workspaceId: workspace?.id });
     },
-    onSettled: () => trackEvent('workspace', 'delete'),
     onSuccess: async (workspace) => {
       if (workspace === null) return;
       await router.navigate({ to: '/workspaces' });
