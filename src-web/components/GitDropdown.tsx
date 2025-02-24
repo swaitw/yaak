@@ -336,12 +336,14 @@ function SetupSyncDropdown({ workspaceMeta }: { workspaceMeta: WorkspaceMeta }) 
           label: banner,
         },
         {
+          color: 'success',
           label: 'Open Workspace Settings',
           leftSlot: <Icon icon="settings" />,
           onSelect() {
             openWorkspaceSettings.mutate({ openSyncMenu: true });
           },
         },
+        { type: 'separator' },
         {
           label: 'Hide This Message',
           leftSlot: <Icon icon="eye_closed" />,
@@ -396,8 +398,8 @@ function SetupGitDropdown({
           leftSlot: <Icon icon="magic_wand" />,
           onSelect: initRepo,
         },
+        { type: 'separator' },
         {
-          color: 'warning',
           label: 'Hide This Message',
           leftSlot: <Icon icon="eye_closed" />,
           async onSelect() {

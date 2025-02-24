@@ -55,7 +55,7 @@ export type DropdownItemDefault = {
   label: ReactNode;
   hotKeyAction?: HotkeyAction;
   hotKeyLabelOnly?: boolean;
-  color?: 'default' | 'danger' | 'info' | 'warning' | 'notice';
+  color?: 'default' | 'danger' | 'info' | 'warning' | 'notice' | 'success';
   disabled?: boolean;
   hidden?: boolean;
   leftSlot?: ReactNode;
@@ -111,20 +111,23 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<Omit<DropdownRef, 'open'>>(null);
 
-  const setIsOpen = useCallback((o: SetStateAction<boolean>) => {
-    jotaiStore.set(openAtom, (prevId) => {
-      const prevIsOpen = prevId === id.current;
-      const newIsOpen = typeof o === 'function' ? o(prevIsOpen) : o;
-      // Persist background color of button until we close the dropdown
-      if (newIsOpen) {
-        onOpen?.();
-        buttonRef.current!.style.backgroundColor = window
-          .getComputedStyle(buttonRef.current!)
-          .getPropertyValue('background-color');
-      }
-      return newIsOpen ? id.current : null; // Set global atom to current ID to signify open state
-    });
-  }, [onOpen]);
+  const setIsOpen = useCallback(
+    (o: SetStateAction<boolean>) => {
+      jotaiStore.set(openAtom, (prevId) => {
+        const prevIsOpen = prevId === id.current;
+        const newIsOpen = typeof o === 'function' ? o(prevIsOpen) : o;
+        // Persist background color of button until we close the dropdown
+        if (newIsOpen) {
+          onOpen?.();
+          buttonRef.current!.style.backgroundColor = window
+            .getComputedStyle(buttonRef.current!)
+            .getPropertyValue('background-color');
+        }
+        return newIsOpen ? id.current : null; // Set global atom to current ID to signify open state
+      });
+    },
+    [onOpen],
+  );
 
   // Because a different dropdown can cause ours to close, a useEffect([isOpen]) is the only method
   // we have of detecting the dropdown closed, to do cleanup.
@@ -642,6 +645,7 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
         'min-w-[8rem] outline-none px-2 mx-1.5 flex whitespace-nowrap',
         'focus:bg-surface-highlight focus:text rounded',
         item.color === 'danger' && '!text-danger',
+        item.color === 'success' && '!text-success',
         item.color === 'warning' && '!text-warning',
         item.color === 'notice' && '!text-notice',
         item.color === 'info' && '!text-info',

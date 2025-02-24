@@ -1,47 +1,75 @@
+import { openUrl } from '@tauri-apps/plugin-opener';
 import { useLicense } from '@yaakapp-internal/license';
 import { formatDistanceToNowStrict } from 'date-fns';
 import React, { useState } from 'react';
+import { useLicenseConfirmation } from '../../hooks/useLicenseConfirmation';
 import { useToggle } from '../../hooks/useToggle';
 import { Banner } from '../core/Banner';
 import { Button } from '../core/Button';
+import { Checkbox } from '../core/Checkbox';
 import { Icon } from '../core/Icon';
 import { Link } from '../core/Link';
 import { PlainInput } from '../core/PlainInput';
 import { HStack, VStack } from '../core/Stacks';
-import { openUrl } from '@tauri-apps/plugin-opener';
 
 export function SettingsLicense() {
   const { check, activate } = useLicense();
   const [key, setKey] = useState<string>('');
   const [activateFormVisible, toggleActivateFormVisible] = useToggle(false);
+  const [licenseDetails, setLicenseDetails] = useLicenseConfirmation();
+  const [checked, setChecked] = useState<boolean>(false);
 
   if (check.isPending) {
     return null;
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 max-w-lg">
       {check.data?.type === 'commercial_use' ? (
         <Banner color="success">
           <strong>License active!</strong> Enjoy using Yaak for commercial use.
         </Banner>
-      ) : (
-        <Banner color="primary" className="flex flex-col gap-3 max-w-lg">
-          {check.data?.type === 'trialing' && (
-            <p className="select-text">
-              <strong>
-                You have {formatDistanceToNowStrict(check.data.end)} remaining on your trial.
-              </strong>
-            </p>
-          )}
+      ) : check.data?.type == 'trialing' ? (
+        <Banner color="success" className="flex flex-col gap-3 max-w-lg">
           <p className="select-text">
-            A commercial license is required if using Yaak within a for-profit organization.{' '}
-            <Link href="https://yaak.app/pricing" className="text-notice">
-              Learn More
-            </Link>
+            <strong>{formatDistanceToNowStrict(check.data.end)} days remaining</strong> on your
+            commercial use trial
           </p>
         </Banner>
-      )}
+      ) : check.data?.type == 'personal_use' && !licenseDetails?.confirmedPersonalUse ? (
+        <Banner color="success" className="flex flex-col gap-3 max-w-lg">
+          <p className="select-text">
+            Your 30-day trial has ended. Please activate a license or confirm how you&apos;re using
+            Yaak.
+          </p>
+          <form
+            className="flex flex-col gap-3 items-start"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              await setLicenseDetails((v) => ({
+                ...v,
+                confirmedPersonalUse: true,
+              }));
+            }}
+          >
+            <Checkbox
+              checked={checked}
+              onChange={setChecked}
+              title="I am only using Yaak for personal use"
+            />
+            <Button type="submit" disabled={!checked} size="xs" variant="border" color="success">
+              Confirm
+            </Button>
+          </form>
+        </Banner>
+      ) : null}
+
+      <p className="select-text">
+        A commercial license is required if using Yaak within a for-profit organization.{' '}
+        <Link href="https://yaak.app/pricing" className="text-notice">
+          Learn More
+        </Link>
+      </p>
 
       {check.error && <Banner color="danger">{check.error}</Banner>}
       {activate.error && <Banner color="danger">{activate.error}</Banner>}
@@ -80,7 +108,7 @@ export function SettingsLicense() {
           <Button
             color="secondary"
             size="sm"
-            onClick={() => open('https://yaak.app/pricing?ref=app.yaak.desktop')}
+            onClick={() => openUrl('https://yaak.app/pricing?ref=app.yaak.desktop')}
             rightSlot={<Icon icon="external_link" />}
             event="license.purchase"
           >
