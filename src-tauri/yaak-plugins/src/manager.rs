@@ -206,7 +206,7 @@ impl PluginManager {
 
         // Boot the plugin
         let event = timeout(
-            Duration::from_secs(1),
+            Duration::from_secs(2),
             self.send_to_plugin_and_wait(
                 window_context,
                 &plugin_handle,

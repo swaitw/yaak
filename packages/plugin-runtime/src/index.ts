@@ -8,7 +8,7 @@ if (!port) {
   throw new Error('Plugin runtime missing PORT')
 }
 
-const events = new EventChannel();
+const pluginToAppEvents = new EventChannel();
 const plugins: Record<string, PluginHandle> = {};
 
 const ws = new WebSocket(`ws://localhost:${port}`);
@@ -25,7 +25,7 @@ ws.on('error', (err: any) => console.error('Plugin runtime websocket error', err
 ws.on('close', (code: number) => console.log('Plugin runtime websocket closed', code));
 
 // Listen for incoming events from plugins
-events.listen((e) => {
+pluginToAppEvents.listen((e) => {
   const eventStr = JSON.stringify(e);
   ws.send(eventStr);
 });
@@ -34,7 +34,7 @@ async function handleIncoming(msg: string) {
   const pluginEvent: InternalEvent = JSON.parse(msg);
   // Handle special event to bootstrap plugin
   if (pluginEvent.payload.type === 'boot_request') {
-    const plugin = new PluginHandle(pluginEvent.pluginRefId, pluginEvent.payload, events);
+    const plugin = new PluginHandle(pluginEvent.pluginRefId, pluginEvent.payload, pluginToAppEvents);
     plugins[pluginEvent.pluginRefId] = plugin;
   }
 
@@ -46,7 +46,7 @@ async function handleIncoming(msg: string) {
   }
 
   if (pluginEvent.payload.type === 'terminate_request') {
-    await plugin.terminate();
+    plugin.terminate();
     console.log('Terminated plugin worker', pluginEvent.pluginRefId);
     delete plugins[pluginEvent.pluginRefId];
   }

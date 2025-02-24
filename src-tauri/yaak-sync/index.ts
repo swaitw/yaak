@@ -77,5 +77,7 @@ function removeWatchKey(key: string) {
 
 // On page load, unlisten to all zombie watchers
 const keys = getWatchKeys();
-console.log('Unsubscribing to zombie file watchers', keys);
-keys.forEach(unlistenToWatcher);
+if (keys.length > 0) {
+  console.log('Unsubscribing to zombie file watchers', keys);
+  keys.forEach(unlistenToWatcher);
+}
