@@ -102,8 +102,18 @@ async function getToken(ctx, contextId) {
 async function deleteToken(ctx, contextId) {
   return ctx.store.delete(tokenStoreKey(contextId));
 }
+async function resetDataDirKey(ctx, contextId) {
+  const key = (/* @__PURE__ */ new Date()).toISOString();
+  return ctx.store.set(dataDirStoreKey(contextId), key);
+}
+async function getDataDirKey(ctx, contextId) {
+  return ctx.store.get(dataDirStoreKey(contextId));
+}
 function tokenStoreKey(context_id) {
   return ["token", context_id].join("::");
+}
+function dataDirStoreKey(context_id) {
+  return ["data_dir", context_id].join("::");
 }
 
 // src/getOrRefreshAccessToken.ts
@@ -218,9 +228,16 @@ async function getAuthorizationCode(ctx, contextId, {
   return new Promise(async (resolve, reject) => {
     const authorizationUrlStr = authorizationUrl.toString();
     console.log("Authorizing", authorizationUrlStr);
+    let foundCode = false;
     let { close } = await ctx.window.openUrl({
       url: authorizationUrlStr,
       label: "oauth-authorization-url",
+      dataDirKey: await getDataDirKey(ctx, contextId),
+      async onClose() {
+        if (!foundCode) {
+          reject(new Error("Authorization window closed"));
+        }
+      },
       async onNavigate({ url: urlStr }) {
         const url = new URL(urlStr);
         if (url.searchParams.has("error")) {
@@ -230,6 +247,7 @@ async function getAuthorizationCode(ctx, contextId, {
         if (!code) {
           return;
         }
+        foundCode = true;
         close();
         const response = await getAccessToken(ctx, {
           grantType: "authorization_code",
@@ -428,7 +446,6 @@ var plugin = {
     actions: [
       {
         label: "Copy Current Token",
-        icon: "copy",
         async onSelect(ctx, { contextId }) {
           const token = await getToken(ctx, contextId);
           if (token == null) {
@@ -441,13 +458,18 @@ var plugin = {
       },
       {
         label: "Delete Token",
-        icon: "trash",
         async onSelect(ctx, { contextId }) {
           if (await deleteToken(ctx, contextId)) {
             await ctx.toast.show({ message: "Token deleted", color: "success" });
           } else {
             await ctx.toast.show({ message: "No token to delete", color: "warning" });
           }
+        }
+      },
+      {
+        label: "Clear Window Session",
+        async onSelect(ctx, { contextId }) {
+          await resetDataDirKey(ctx, contextId);
         }
       }
     ],

@@ -1,14 +1,19 @@
-import type { InternalEvent } from "@yaakapp/api";
-import EventEmitter from "node:events";
+import type { InternalEvent } from '@yaakapp/api';
 
 export class EventChannel {
-  emitter: EventEmitter = new EventEmitter();
+  #listeners = new Set<(event: InternalEvent) => void>();
 
   emit(e: InternalEvent) {
-    this.emitter.emit("__plugin_event__", e);
+    for (const l of this.#listeners) {
+      l(e);
+    }
   }
 
   listen(cb: (e: InternalEvent) => void) {
-    this.emitter.on("__plugin_event__", cb);
+    this.#listeners.add(cb);
+  }
+
+  unlisten(cb: (e: InternalEvent) => void) {
+    this.#listeners.delete(cb);
   }
 }

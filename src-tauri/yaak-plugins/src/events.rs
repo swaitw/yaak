@@ -3,7 +3,9 @@ use std::collections::HashMap;
 use tauri::{Runtime, WebviewWindow};
 use ts_rs::TS;
 
-use yaak_models::models::{Environment, Folder, GrpcRequest, HttpRequest, HttpResponse, WebsocketRequest, Workspace};
+use yaak_models::models::{
+    Environment, Folder, GrpcRequest, HttpRequest, HttpResponse, WebsocketRequest, Workspace,
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -108,6 +110,7 @@ pub enum InternalEventPayload {
 
     OpenWindowRequest(OpenWindowRequest),
     WindowNavigateEvent(WindowNavigateEvent),
+    WindowCloseEvent,
     CloseWindowRequest(CloseWindowRequest),
 
     TemplateRenderRequest(TemplateRenderRequest),
@@ -262,10 +265,15 @@ pub struct OpenWindowRequest {
     pub url: String,
     /// Label for the window. If not provided, a random one will be generated.
     pub label: String,
+
     #[ts(optional)]
     pub title: Option<String>,
+
     #[ts(optional)]
     pub size: Option<WindowSize>,
+
+    #[ts(optional)]
+    pub data_dir_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]

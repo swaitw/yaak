@@ -3,7 +3,7 @@ use crate::{DEFAULT_WINDOW_HEIGHT, DEFAULT_WINDOW_WIDTH, MIN_WINDOW_HEIGHT, MIN_
 use log::{info, warn};
 use std::process::exit;
 use tauri::{
-    AppHandle, Emitter, LogicalSize, Manager, Runtime, WebviewUrl, WebviewWindow,
+    AppHandle, Emitter, LogicalSize, Manager, Runtime, WebviewUrl, WebviewWindow, WindowEvent,
 };
 use tauri_plugin_opener::OpenerExt;
 use tokio::sync::mpsc;
@@ -16,6 +16,8 @@ pub(crate) struct CreateWindowConfig<'s> {
     pub inner_size: Option<(f64, f64)>,
     pub position: Option<(f64, f64)>,
     pub navigation_tx: Option<mpsc::Sender<String>>,
+    pub close_tx: Option<mpsc::Sender<()>>,
+    pub data_dir_key: Option<String>,
     pub hide_titlebar: bool,
 }
 
@@ -40,6 +42,22 @@ pub(crate) fn create_window<R: Runtime>(
             .fullscreen(false)
             .disable_drag_drop_handler() // Required for frontend Dnd on windows
             .min_inner_size(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT);
+
+    if let Some(key) = config.data_dir_key {
+        #[cfg(not(target_os = "macos"))]
+        {
+            use std::fs;
+            let dir = handle.path().temp_dir().unwrap().join("yaak_sessions").join(key);
+            fs::create_dir_all(dir.clone()).unwrap();
+            win_builder = win_builder.data_directory(dir);
+        }
+
+        // macOS doesn't support data dir so must use this fn instead
+        #[cfg(target_os = "macos")]
+        {
+            win_builder = win_builder.data_store_identifier(to_fixed_hash(&key));
+        }
+    }
 
     if let Some((w, h)) = config.inner_size {
         win_builder = win_builder.inner_size(w, h);
@@ -85,6 +103,18 @@ pub(crate) fn create_window<R: Runtime>(
 
     let win = win_builder.build().unwrap();
 
+    if let Some(tx) = config.close_tx {
+        win.on_window_event(move |event| match event {
+            WindowEvent::CloseRequested { .. } => {
+                let tx = tx.clone();
+                tauri::async_runtime::block_on(async move {
+                    tx.send(()).await.unwrap();
+                });
+            }
+            _ => {}
+        });
+    }
+
     let webview_window = win.clone();
     win.on_menu_event(move |w, event| {
         if !w.is_focused().unwrap() {
@@ -127,4 +157,11 @@ pub(crate) fn create_window<R: Runtime>(
     });
 
     win
+}
+
+fn to_fixed_hash(s: &str) -> [u8; 16] {
+    let hash = md5::compute(s.as_bytes());
+    let mut fixed = [0u8; 16];
+    fixed.copy_from_slice(&hash[..16]); // Take the first 16 bytes of the hash
+    fixed
 }

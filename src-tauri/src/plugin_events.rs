@@ -204,32 +204,55 @@ pub(crate) async fn handle_plugin_event<R: Runtime>(
         }
         InternalEventPayload::OpenWindowRequest(req) => {
             let label = req.label;
-            let (tx, mut rx) = tokio::sync::mpsc::channel(128);
+            let (navigation_tx, mut navigation_rx) = tokio::sync::mpsc::channel(128);
+            let (close_tx, mut close_rx) = tokio::sync::mpsc::channel(128);
             let win_config = CreateWindowConfig {
                 url: &req.url,
                 label: &label.clone(),
                 title: &req.title.unwrap_or_default(),
-                navigation_tx: Some(tx),
+                navigation_tx: Some(navigation_tx),
+                close_tx: Some(close_tx),
                 inner_size: req.size.map(|s| (s.width, s.height)),
-                position: None,
-                hide_titlebar: false,
+                data_dir_key: req.data_dir_key,
+                ..Default::default()
             };
             create_window(app_handle, win_config);
 
-            let event_id = event.id.clone();
-            let plugin_handle = plugin_handle.clone();
-            tauri::async_runtime::spawn(async move {
-                while let Some(url) = rx.recv().await {
-                    let label = label.clone();
-                    let url = url.to_string();
-                    let event_to_send = plugin_handle.build_event_to_send(
-                        &WindowContext::Label { label },
-                        &InternalEventPayload::WindowNavigateEvent(WindowNavigateEvent { url }),
-                        Some(event_id.clone()),
-                    );
-                    plugin_handle.send(&event_to_send).await.unwrap();
-                }
-            });
+            {
+                let event_id = event.id.clone();
+                let plugin_handle = plugin_handle.clone();
+                let label = label.clone();
+                tauri::async_runtime::spawn(async move {
+                    while let Some(url) = navigation_rx.recv().await {
+                        let url = url.to_string();
+                        let label = label.clone();
+                        let event_to_send = plugin_handle.build_event_to_send(
+                            &WindowContext::Label { label },
+                            &InternalEventPayload::WindowNavigateEvent(WindowNavigateEvent { url }),
+                            Some(event_id.clone()),
+                        );
+                        plugin_handle.send(&event_to_send).await.unwrap();
+                    }
+                });
+            }
+
+            {
+                let event_id = event.id.clone();
+                let plugin_handle = plugin_handle.clone();
+                let label = label.clone();
+                tauri::async_runtime::spawn(async move {
+                    while let Some(_) = close_rx.recv().await {
+                        let label = label.clone();
+                        let event_to_send = plugin_handle.build_event_to_send(
+                            &WindowContext::Label { label },
+                            &InternalEventPayload::WindowCloseEvent,
+                            Some(event_id.clone()),
+                        );
+                        plugin_handle.send(&event_to_send).await.unwrap();
+                    }
+                });
+            }
+
             None
         }
         InternalEventPayload::CloseWindowRequest(req) => {

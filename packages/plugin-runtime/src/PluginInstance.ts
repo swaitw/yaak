@@ -342,9 +342,9 @@ export class PluginInstance {
   }
 
   #sendEvent(event: InternalEvent) {
-    if (event.payload.type !== 'empty_response') {
-      console.log('Sending event to app', event.id, event.payload.type);
-    }
+    // if (event.payload.type !== 'empty_response') {
+    //   console.log('Sending event to app', this.#pkg.name, event.id, event.payload.type);
+    // }
     this.#pluginToAppEvents.emit(event);
   }
 
@@ -363,7 +363,7 @@ export class PluginInstance {
     const promise = new Promise<T>((resolve) => {
       const cb = (event: InternalEvent) => {
         if (event.replyId === eventToSend.id) {
-          this.#appToPluginEvents.listen(cb); // Unlisten, now that we're done
+          this.#appToPluginEvents.unlisten(cb); // Unlisten, now that we're done
           const { type: _, ...payload } = event.payload;
           resolve(payload as T);
         }
@@ -372,7 +372,6 @@ export class PluginInstance {
     });
 
     // 3. Send the event after we start listening (to prevent race)
-    console.log("SENDING EVENT FOR REPLY", eventToSend);
     this.#sendEvent(eventToSend);
 
     // 4. Return the listener promise
@@ -417,12 +416,14 @@ export class PluginInstance {
         },
       },
       window: {
-        openUrl: async ({ onNavigate, ...args }) => {
+        openUrl: async ({ onNavigate, onClose, ...args }) => {
           args.label = args.label || `${Math.random()}`;
           const payload: InternalEventPayload = { type: 'open_window_request', ...args };
           const onEvent = (event: InternalEventPayload) => {
             if (event.type === 'window_navigate_event') {
               onNavigate?.(event);
+            } else if (event.type === 'window_close_event') {
+              onClose?.();
             }
           };
           this.#sendAndListenForEvents(event.windowContext, payload, onEvent);

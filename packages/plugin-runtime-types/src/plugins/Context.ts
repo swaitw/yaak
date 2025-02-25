@@ -32,7 +32,10 @@ export interface Context {
   };
   window: {
     openUrl(
-      args: OpenWindowRequest & { onNavigate?: (args: { url: string }) => void },
+      args: OpenWindowRequest & {
+        onNavigate?: (args: { url: string }) => void;
+        onClose: () => void;
+      },
     ): Promise<{ close: () => void }>;
   };
   httpRequest: {

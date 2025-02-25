@@ -1658,8 +1658,8 @@ async fn cmd_new_child_window(
         url,
         inner_size: Some(inner_size),
         position: Some(position),
-        navigation_tx: None,
         hide_titlebar: true,
+        ..Default::default()
     };
 
     let child_window = window::create_window(&app_handle, config);
@@ -2014,8 +2014,8 @@ fn create_main_window(handle: &AppHandle, url: &str) -> WebviewWindow {
             100.0 + random::<f64>() * 20.0,
             100.0 + random::<f64>() * 20.0,
         )),
-        navigation_tx: None,
         hide_titlebar: true,
+        ..Default::default()
     };
 
     window::create_window(handle, config)
