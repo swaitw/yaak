@@ -2,7 +2,7 @@ import { Context } from '@yaakapp/api';
 import { createHash, randomBytes } from 'node:crypto';
 import { getAccessToken } from '../getAccessToken';
 import { getOrRefreshAccessToken } from '../getOrRefreshAccessToken';
-import { AccessToken, storeToken } from '../store';
+import { AccessToken, getDataDirKey, storeToken } from '../store';
 
 export const PKCE_SHA256 = 'S256';
 export const PKCE_PLAIN = 'plain';
@@ -63,9 +63,18 @@ export async function getAuthorizationCode(
   return new Promise(async (resolve, reject) => {
     const authorizationUrlStr = authorizationUrl.toString();
     console.log('Authorizing', authorizationUrlStr);
+
+    let foundCode = false;
+
     let { close } = await ctx.window.openUrl({
       url: authorizationUrlStr,
       label: 'oauth-authorization-url',
+      dataDirKey: await getDataDirKey(ctx, contextId),
+      async onClose() {
+        if (!foundCode) {
+          reject(new Error('Authorization window closed'));
+        }
+      },
       async onNavigate({ url: urlStr }) {
         const url = new URL(urlStr);
         if (url.searchParams.has('error')) {
@@ -77,6 +86,7 @@ export async function getAuthorizationCode(
         }
 
         // Close the window here, because we don't need it anymore!
+        foundCode = true;
         close();
 
         const response = await getAccessToken(ctx, {

@@ -9,7 +9,7 @@ import { DEFAULT_PKCE_METHOD, getAuthorizationCode, PKCE_PLAIN, PKCE_SHA256 } fr
 import { getClientCredentials } from './grants/clientCredentials';
 import { getImplicit } from './grants/implicit';
 import { getPassword } from './grants/password';
-import { AccessToken, deleteToken, getToken } from './store';
+import { AccessToken, deleteToken, getToken, resetDataDirKey } from './store';
 
 type GrantType = 'authorization_code' | 'implicit' | 'password' | 'client_credentials';
 
@@ -71,7 +71,6 @@ export const plugin: PluginDefinition = {
     actions: [
       {
         label: 'Copy Current Token',
-        icon: 'copy',
         async onSelect(ctx, { contextId }) {
           const token = await getToken(ctx, contextId);
           if (token == null) {
@@ -84,13 +83,18 @@ export const plugin: PluginDefinition = {
       },
       {
         label: 'Delete Token',
-        icon: 'trash',
         async onSelect(ctx, { contextId }) {
           if (await deleteToken(ctx, contextId)) {
             await ctx.toast.show({ message: 'Token deleted', color: 'success' });
           } else {
             await ctx.toast.show({ message: 'No token to delete', color: 'warning' });
           }
+        },
+      },
+      {
+        label: 'Clear Window Session',
+        async onSelect(ctx, { contextId }) {
+          await resetDataDirKey(ctx, contextId);
         },
       },
     ],

@@ -22,8 +22,22 @@ export async function deleteToken(ctx: Context, contextId: string) {
   return ctx.store.delete(tokenStoreKey(contextId));
 }
 
+export async function resetDataDirKey(ctx: Context, contextId: string) {
+  const key = new Date().toISOString();
+  return ctx.store.set<string>(dataDirStoreKey(contextId), key);
+}
+
+export async function getDataDirKey(ctx: Context, contextId: string) {
+  const key = (await ctx.store.get<string>(dataDirStoreKey(contextId))) ?? 'default';
+  return `${contextId}::${key}`;
+}
+
 function tokenStoreKey(context_id: string) {
   return ['token', context_id].join('::');
+}
+
+function dataDirStoreKey(context_id: string) {
+  return ['data_dir', context_id].join('::');
 }
 
 export interface AccessToken {
