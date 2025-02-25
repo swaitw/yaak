@@ -107,7 +107,8 @@ async function resetDataDirKey(ctx, contextId) {
   return ctx.store.set(dataDirStoreKey(contextId), key);
 }
 async function getDataDirKey(ctx, contextId) {
-  return ctx.store.get(dataDirStoreKey(contextId));
+  const key = await ctx.store.get(dataDirStoreKey(contextId)) ?? "default";
+  return `${contextId}::${key}`;
 }
 function tokenStoreKey(context_id) {
   return ["token", context_id].join("::");
