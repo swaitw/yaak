@@ -20,7 +20,7 @@ export function CreateWorkspaceDialog({ hide }: Props) {
   const [syncConfig, setSyncConfig] = useState<{
     filePath: string | null;
     initGit?: boolean;
-  }>({ filePath: null, initGit: true });
+  }>({ filePath: null, initGit: false });
 
   return (
     <VStack
@@ -62,8 +62,8 @@ export function CreateWorkspaceDialog({ hide }: Props) {
 
       <SyncToFilesystemSetting
         onChange={setSyncConfig}
+        onCreateNewWorkspace={hide}
         value={syncConfig}
-        allowNonEmptyDirectory // Will do initial import when the workspace is created
       />
       <Button type="submit" color="primary" className="ml-auto mt-3">
         Create Workspace

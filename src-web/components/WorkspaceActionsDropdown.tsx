@@ -1,3 +1,4 @@
+import {open} from "@tauri-apps/plugin-dialog";
 import { revealItemInDir } from '@tauri-apps/plugin-opener';
 import classNames from 'classnames';
 import { memo, useCallback, useMemo } from 'react';
@@ -75,7 +76,16 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
       {
         label: 'Open Existing Workspace',
         leftSlot: <Icon icon="folder_open" />,
-        onSelect: openWorkspaceFromSyncDir.mutate,
+        onSelect: async () => {
+          const dir = await open({
+            title: 'Select Workspace Directory',
+            directory: true,
+            multiple: false,
+          });
+
+          if (dir == null) return;
+          openWorkspaceFromSyncDir.mutate(dir);
+        },
       },
     ];
 

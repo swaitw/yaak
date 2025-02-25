@@ -1,20 +1,11 @@
-import { open } from '@tauri-apps/plugin-dialog';
 import { applySync, calculateSyncFsOnly } from '@yaakapp-internal/sync';
 import { createFastMutation } from '../hooks/useFastMutation';
 import { showSimpleAlert } from '../lib/alert';
 import { router } from '../lib/router';
 
-export const openWorkspaceFromSyncDir = createFastMutation<void>({
+export const openWorkspaceFromSyncDir = createFastMutation<void, void, string>({
   mutationKey: [],
-  mutationFn: async () => {
-    const dir = await open({
-      title: 'Select Workspace Directory',
-      directory: true,
-      multiple: false,
-    });
-
-    if (dir == null) return;
-
+  mutationFn: async (dir) => {
     const ops = await calculateSyncFsOnly(dir);
 
     const workspace = ops

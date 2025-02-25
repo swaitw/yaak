@@ -1,33 +1,54 @@
 import { readDir } from '@tauri-apps/plugin-fs';
 import { useState } from 'react';
+import { openWorkspaceFromSyncDir } from '../commands/openWorkspaceFromSyncDir';
 import { Banner } from './core/Banner';
+import { Button } from './core/Button';
 import { Checkbox } from './core/Checkbox';
 import { VStack } from './core/Stacks';
 import { SelectFile } from './SelectFile';
 
 export interface SyncToFilesystemSettingProps {
   onChange: (args: { filePath: string | null; initGit?: boolean }) => void;
+  onCreateNewWorkspace: () => void;
   value: { filePath: string | null; initGit?: boolean };
-  allowNonEmptyDirectory?: boolean;
   forceOpen?: boolean;
 }
 
 export function SyncToFilesystemSetting({
   onChange,
+  onCreateNewWorkspace,
   value,
-  allowNonEmptyDirectory,
   forceOpen,
 }: SyncToFilesystemSettingProps) {
-  const [error, setError] = useState<string | null>(null);
+  const [isNonEmpty, setIsNonEmpty] = useState<string | null>(null);
   return (
     <details open={forceOpen || !!value.filePath} className="w-full">
       <summary>Data directory {typeof value.initGit === 'boolean' && ' and Git'}</summary>
       <VStack className="my-2" space={3}>
-        <Banner color="info">
-          Sync workspace data to folder as plain text files, ideal for backup and Git collaboration.
-          Environments are excluded in order to keep your secrets private.
-        </Banner>
-        {error && <div className="text-danger">{error}</div>}
+        {isNonEmpty ? (
+          <Banner color="notice" className="flex flex-col gap-1.5">
+            <p>The selected directory must be empty. Did you want to open it instead?</p>
+            <div>
+              <Button
+                variant="border"
+                color="notice"
+                size="xs"
+                type="button"
+                onClick={() => {
+                  openWorkspaceFromSyncDir.mutate(isNonEmpty);
+                  onCreateNewWorkspace();
+                }}
+              >
+                Open Workspace
+              </Button>
+            </div>
+          </Banner>
+        ) : (
+          <Banner color="info">
+            Sync workspace data to folder as plain text files, ideal for backup and Git
+            collaboration. Environments are excluded in order to keep your secrets private.
+          </Banner>
+        )}
 
         <SelectFile
           directory
@@ -37,12 +58,13 @@ export function SyncToFilesystemSetting({
           onChange={async ({ filePath }) => {
             if (filePath != null) {
               const files = await readDir(filePath);
-              if (files.length > 0 && !allowNonEmptyDirectory) {
-                setError('The directory must be empty');
+              if (files.length > 0) {
+                setIsNonEmpty(filePath);
                 return;
               }
             }
 
+            setIsNonEmpty(null);
             onChange({ ...value, filePath });
           }}
         />

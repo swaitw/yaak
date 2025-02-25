@@ -63,6 +63,7 @@ export function WorkspaceSettingsDialog({ workspaceId, hide, openSyncMenu }: Pro
         <SyncToFilesystemSetting
           value={{ filePath: workspaceMeta.settingSyncDir }}
           forceOpen={openSyncMenu}
+          onCreateNewWorkspace={hide}
           onChange={({ filePath }) => {
             upsertWorkspaceMeta.mutate({ ...workspaceMeta, settingSyncDir: filePath });
           }}
