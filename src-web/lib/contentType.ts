@@ -75,7 +75,10 @@ export function isProbablyTextContentType(contentType: string | null): boolean {
   ].some((textType) => normalized === textType || normalized.endsWith(textType));
 }
 
-export function getMimeTypeFromContentType(contentType: string) {
-  const mimeType = new MimeType(contentType);
-  return mimeType;
+export function getMimeTypeFromContentType(contentType: string): MimeType {
+  try {
+    return new MimeType(contentType);
+  } catch {
+    return new MimeType('text/plain');
+  }
 }
