@@ -261,7 +261,7 @@ function useGlobalWorkspaceHooks() {
     } else if (activeRequest.model === 'grpc_request') {
       await duplicateGrpcRequest.mutateAsync();
     } else if (activeRequest.model === 'websocket_request') {
-      await duplicateWebsocketRequest.mutateAsync(activeRequest);
+      await duplicateWebsocketRequest.mutateAsync(activeRequest.id);
     } else {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       throw new Error('Failed to duplicate invalid request model: ' + (activeRequest as any).model);

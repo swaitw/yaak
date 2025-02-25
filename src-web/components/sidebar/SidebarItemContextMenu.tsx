@@ -1,11 +1,13 @@
 import React, { useMemo } from 'react';
+import { duplicateWebsocketRequest } from '../../commands/duplicateWebsocketRequest';
 import { useCreateDropdownItems } from '../../hooks/useCreateDropdownItems';
-import { useDeleteFolder } from '../../hooks/useDeleteFolder';
 import { useDeleteAnyRequest } from '../../hooks/useDeleteAnyRequest';
+import { useDeleteFolder } from '../../hooks/useDeleteFolder';
 import { useDuplicateFolder } from '../../hooks/useDuplicateFolder';
 import { useDuplicateGrpcRequest } from '../../hooks/useDuplicateGrpcRequest';
 import { useDuplicateHttpRequest } from '../../hooks/useDuplicateHttpRequest';
 import { useHttpRequestActions } from '../../hooks/useHttpRequestActions';
+import { getHttpRequest } from '../../hooks/useHttpRequests';
 import { useMoveToWorkspace } from '../../hooks/useMoveToWorkspace';
 import { useRenameRequest } from '../../hooks/useRenameRequest';
 import { useSendAnyHttpRequest } from '../../hooks/useSendAnyHttpRequest';
@@ -18,7 +20,6 @@ import { ContextMenu } from '../core/Dropdown';
 import { Icon } from '../core/Icon';
 import { FolderSettingsDialog } from '../FolderSettingsDialog';
 import type { SidebarTreeNode } from './Sidebar';
-import { getHttpRequest } from '../../hooks/useHttpRequests';
 
 interface Props {
   child: SidebarTreeNode;
@@ -110,10 +111,17 @@ export function SidebarItemContextMenu({ child, show, close }: Props) {
           hotKeyAction: 'http_request.duplicate',
           hotKeyLabelOnly: true, // Would trigger for every request (bad)
           leftSlot: <Icon icon="copy" />,
-          onSelect: () =>
-            child.model === 'http_request'
-              ? duplicateHttpRequest.mutate()
-              : duplicateGrpcRequest.mutate(),
+          onSelect: () => {
+            if (child.model === 'http_request') {
+              duplicateHttpRequest.mutate();
+            } else if (child.model === 'grpc_request') {
+              duplicateGrpcRequest.mutate();
+            } else if (child.model === 'websocket_request') {
+              duplicateWebsocketRequest.mutate(child.id);
+            } else {
+              throw new Error('Cannot duplicate invalid model: ' + child.model);
+            }
+          },
         },
         {
           label: 'Move',
