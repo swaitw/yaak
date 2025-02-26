@@ -65,7 +65,7 @@ export function LicenseBadge() {
         if (check.data.type === 'trialing') {
           await setLicenseDetails((v) => ({
             ...v,
-            dismissedTrial: true,
+            hasDismissedTrial: true,
           }));
         }
         openSettings.mutate(SettingsTab.License);

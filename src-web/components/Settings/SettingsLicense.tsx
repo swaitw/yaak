@@ -1,9 +1,10 @@
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { useLicense } from '@yaakapp-internal/license';
-import { formatDistanceToNowStrict } from 'date-fns';
+import { differenceInDays } from 'date-fns';
 import React, { useState } from 'react';
 import { useLicenseConfirmation } from '../../hooks/useLicenseConfirmation';
 import { useToggle } from '../../hooks/useToggle';
+import { pluralizeCount } from '../../lib/pluralize';
 import { Banner } from '../core/Banner';
 import { Button } from '../core/Button';
 import { Checkbox } from '../core/Checkbox';
@@ -32,8 +33,12 @@ export function SettingsLicense() {
       ) : check.data?.type == 'trialing' ? (
         <Banner color="success" className="flex flex-col gap-3 max-w-lg">
           <p className="select-text">
-            <strong>{formatDistanceToNowStrict(check.data.end)} days remaining</strong> on your
-            commercial use trial
+            You have{' '}
+            <strong>
+              {pluralizeCount('day', differenceInDays(check.data.end, new Date()))} remaining
+            </strong>{' '}
+            on your commercial use trial. Once the trial ends, Yaak will be limited to personal use
+            until a license is activated.
           </p>
         </Banner>
       ) : check.data?.type == 'personal_use' && !licenseDetails?.confirmedPersonalUse ? (
@@ -76,12 +81,7 @@ export function SettingsLicense() {
 
       {check.data?.type === 'commercial_use' ? (
         <HStack space={2}>
-          <Button
-            variant="border"
-            color="secondary"
-            size="sm"
-            onClick={toggleActivateFormVisible}
-          >
+          <Button variant="border" color="secondary" size="sm" onClick={toggleActivateFormVisible}>
             Activate Another License
           </Button>
           <Button
@@ -95,11 +95,7 @@ export function SettingsLicense() {
         </HStack>
       ) : (
         <HStack space={2}>
-          <Button
-            color="primary"
-            size="sm"
-            onClick={toggleActivateFormVisible}
-          >
+          <Button color="primary" size="sm" onClick={toggleActivateFormVisible}>
             Activate
           </Button>
           <Button
@@ -131,12 +127,7 @@ export function SettingsLicense() {
             onChange={setKey}
             placeholder="YK1-XXXXX-XXXXX-XXXXX-XXXXX"
           />
-          <Button
-            type="submit"
-            color="primary"
-            size="sm"
-            isLoading={activate.isPending}
-          >
+          <Button type="submit" color="primary" size="sm" isLoading={activate.isPending}>
             Submit
           </Button>
         </VStack>

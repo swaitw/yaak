@@ -8,6 +8,7 @@ const icons = {
   alert_triangle: lucide.AlertTriangleIcon,
   archive: lucide.ArchiveIcon,
   arrow_big_down_dash: lucide.ArrowBigDownDashIcon,
+  circle_dollar_sign: lucide.CircleDollarSignIcon,
   arrow_right_circle: lucide.ArrowRightCircleIcon,
   arrow_big_left_dash: lucide.ArrowBigLeftDashIcon,
   arrow_big_right: lucide.ArrowBigRightIcon,

@@ -1,4 +1,5 @@
 import { openUrl } from '@tauri-apps/plugin-opener';
+import { useLicense } from '@yaakapp-internal/license';
 import { useRef } from 'react';
 import { openSettings } from '../commands/openSettings';
 import { useAppInfo } from '../hooks/useAppInfo';
@@ -12,6 +13,7 @@ import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { KeyboardShortcutsDialog } from './KeyboardShortcutsDialog';
+import { SettingsTab } from './Settings/SettingsTab';
 
 export function SettingsDropdown() {
   const importData = useImportData();
@@ -19,6 +21,7 @@ export function SettingsDropdown() {
   const appInfo = useAppInfo();
   const dropdownRef = useRef<DropdownRef>(null);
   const checkForUpdates = useCheckForUpdates();
+  const { check } = useLicense();
 
   useListenToTauriEvent('settings', () => openSettings.mutate(null));
 
@@ -56,6 +59,13 @@ export function SettingsDropdown() {
           onSelect: () => exportData.mutate(),
         },
         { type: 'separator', label: `Yaak v${appInfo.version}` },
+        {
+          label: 'Purchase License',
+          color: 'success',
+          hidden: check.data == null || check.data.type === 'commercial_use',
+          leftSlot: <Icon icon="circle_dollar_sign" />,
+          onSelect: () => openSettings.mutate(SettingsTab.License),
+        },
         {
           label: 'Check for Updates',
           leftSlot: <Icon icon="update" />,

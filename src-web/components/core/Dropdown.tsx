@@ -55,7 +55,7 @@ export type DropdownItemDefault = {
   label: ReactNode;
   hotKeyAction?: HotkeyAction;
   hotKeyLabelOnly?: boolean;
-  color?: 'default' | 'danger' | 'info' | 'warning' | 'notice' | 'success';
+  color?: 'default' | 'primary' | 'danger' | 'info' | 'warning' | 'notice' | 'success';
   disabled?: boolean;
   hidden?: boolean;
   leftSlot?: ReactNode;
@@ -645,6 +645,7 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
         'min-w-[8rem] outline-none px-2 mx-1.5 flex whitespace-nowrap',
         'focus:bg-surface-highlight focus:text rounded',
         item.color === 'danger' && '!text-danger',
+        item.color === 'primary' && '!text-primary',
         item.color === 'success' && '!text-success',
         item.color === 'warning' && '!text-warning',
         item.color === 'notice' && '!text-notice',

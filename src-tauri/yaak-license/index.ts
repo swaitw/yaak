@@ -26,6 +26,7 @@ export function useLicense() {
 
   const CHECK_QUERY_KEY = ['license.check'];
   const check = useQuery<void, string, LicenseCheckStatus>({
+    refetchInterval: 1000 * 60 * 60 * 12, // Refetch every 12 hours
     queryKey: CHECK_QUERY_KEY,
     queryFn: () => invoke('plugin:yaak-license|check'),
   });
