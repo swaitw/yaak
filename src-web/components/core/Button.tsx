@@ -128,7 +128,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         {children}
       </div>
       {rightSlot && <div className="ml-1">{rightSlot}</div>}
-      {forDropdown && <Icon icon="check" size={size} className="ml-1 -mr-1" />}
+      {forDropdown && <Icon icon="chevron_down" size={size} className="ml-1 -mr-1" />}
     </button>
   );
 });
