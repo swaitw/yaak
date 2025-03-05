@@ -1,5 +1,5 @@
-use crate::errors::Error::{ClientError, ServerError};
-use crate::errors::Result;
+use crate::error::Error::{ClientError, ServerError};
+use crate::error::Result;
 use chrono::{NaiveDateTime, Utc};
 use log::{debug, info, warn};
 use serde::{Deserialize, Serialize};

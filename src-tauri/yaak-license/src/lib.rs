@@ -5,7 +5,7 @@ use tauri::{
 };
 
 mod commands;
-mod errors;
+pub mod error;
 mod license;
 
 use crate::commands::{activate, check, deactivate};

@@ -1,5 +1,8 @@
-use crate::errors::Result;
-use crate::{activate_license, check_license, deactivate_license, get_activation_id, ActivateLicenseRequestPayload, CheckActivationRequestPayload, DeactivateLicenseRequestPayload, LicenseCheckStatus};
+use crate::error::Result;
+use crate::{
+    activate_license, check_license, deactivate_license, ActivateLicenseRequestPayload,
+    CheckActivationRequestPayload, DeactivateLicenseRequestPayload, LicenseCheckStatus,
+};
 use log::{debug, info};
 use std::string::ToString;
 use tauri::{command, AppHandle, Manager, Runtime, WebviewWindow};
@@ -7,10 +10,14 @@ use tauri::{command, AppHandle, Manager, Runtime, WebviewWindow};
 #[command]
 pub async fn check<R: Runtime>(app_handle: AppHandle<R>) -> Result<LicenseCheckStatus> {
     debug!("Checking license");
-    check_license(&app_handle, CheckActivationRequestPayload{
-        app_platform: get_os().to_string(),
-        app_version: app_handle.package_info().version.to_string(),
-    }).await
+    check_license(
+        &app_handle,
+        CheckActivationRequestPayload {
+            app_platform: get_os().to_string(),
+            app_version: app_handle.package_info().version.to_string(),
+        },
+    )
+    .await
 }
 
 #[command]
