@@ -1,4 +1,4 @@
-use crate::error::Error::RenderStackExceededError;
+use crate::error::Error::{RenderStackExceededError, VariableNotFound};
 use crate::error::Result;
 use crate::{FnArg, Parser, Token, Tokens, Val};
 use log::warn;
@@ -100,7 +100,7 @@ async fn render_tag<T: TemplateCallback>(
                 let r = Box::pin(parse_and_render_with_depth(v, vars, cb, depth)).await?;
                 r.to_string()
             }
-            None => "".into(),
+            None => return Err(VariableNotFound(name)),
         },
         Val::Bool { value } => value.to_string(),
         Val::Fn { name, args } => {
@@ -142,7 +142,7 @@ async fn render_tag<T: TemplateCallback>(
 
 #[cfg(test)]
 mod parse_and_render_tests {
-    use crate::error::Error::{RenderError, RenderStackExceededError};
+    use crate::error::Error::{RenderError, RenderStackExceededError, VariableNotFound};
     use crate::error::Result;
     use crate::renderer::TemplateCallback;
     use crate::*;
@@ -197,6 +197,19 @@ mod parse_and_render_tests {
 
         let result = "foo: bar: baz";
         assert_eq!(parse_and_render(template, &vars, &empty_cb).await?, result.to_string());
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn render_missing_var() -> Result<()> {
+        let empty_cb = EmptyCB {};
+        let template = "${[ foo ]}";
+        let vars = HashMap::new();
+
+        assert_eq!(
+            parse_and_render(template, &vars, &empty_cb).await,
+            Err(VariableNotFound("foo".to_string()))
+        );
         Ok(())
     }
 

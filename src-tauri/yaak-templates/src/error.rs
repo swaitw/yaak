@@ -6,6 +6,9 @@ pub enum Error {
     #[error("Render Error: {0}")]
     RenderError(String),
 
+    #[error("Render Error: Variable \"{0}\" is not defined in active environment")]
+    VariableNotFound(String),
+
     #[error("Render Error: Max recursion depth exceeded")]
     RenderStackExceededError,
 }
