@@ -22,7 +22,7 @@ export async function getOrRefreshAccessToken(ctx: Context, contextId: string, {
     return null;
   }
 
-  const now = (Date.now() / 1000);
+  const now = Date.now();
   const isExpired = token.expiresAt && now > token.expiresAt;
 
   // Return the current access token if it's still valid
