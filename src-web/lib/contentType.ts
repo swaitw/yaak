@@ -11,7 +11,13 @@ export function languageFromContentType(
   } else if (justContentType.includes('xml')) {
     return 'xml';
   } else if (justContentType.includes('html')) {
-    return detectFromContent(content, 'html');
+    const detected = detectFromContent(content, 'html');
+    if (detected === 'xml') {
+      // If it's detected as XML, but is already HTML, don't change it
+      return 'html';
+    } else {
+      return detected;
+    }
   } else if (justContentType.includes('javascript')) {
     return 'javascript';
   }
@@ -26,7 +32,6 @@ function detectFromContent(
   if (content == null) return 'text';
 
   const firstBytes = content.slice(0, 20).trim();
-  console.log("FIRST BYTES", firstBytes);
 
   if (firstBytes.startsWith('{') || firstBytes.startsWith('[')) {
     return 'json';
