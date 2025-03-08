@@ -6,9 +6,9 @@ use crate::models::{
     GrpcRequestIden, HttpRequest, HttpRequestIden, HttpResponse, HttpResponseHeader,
     HttpResponseIden, HttpResponseState, KeyValue, KeyValueIden, ModelType, Plugin, PluginIden,
     PluginKeyValue, PluginKeyValueIden, Settings, SettingsIden, SyncState, SyncStateIden,
-    WebsocketConnection, WebsocketConnectionIden, WebsocketEvent, WebsocketEventIden,
-    WebsocketRequest, WebsocketRequestIden, Workspace, WorkspaceIden, WorkspaceMeta,
-    WorkspaceMetaIden,
+    WebsocketConnection, WebsocketConnectionIden, WebsocketConnectionState, WebsocketEvent,
+    WebsocketEventIden, WebsocketRequest, WebsocketRequestIden, Workspace, WorkspaceIden,
+    WorkspaceMeta, WorkspaceMetaIden,
 };
 use crate::plugin::SqliteConnection;
 use chrono::{NaiveDateTime, Utc};
@@ -2143,6 +2143,21 @@ pub async fn create_http_response<R: Runtime>(
     Ok(m)
 }
 
+pub async fn cancel_pending_websocket_connections<R: Runtime>(mgr: &impl Manager<R>) -> Result<()> {
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
+
+    let closed = serde_json::to_value(&WebsocketConnectionState::Closed)?;
+    let (sql, params) = Query::update()
+        .table(WebsocketConnectionIden::Table)
+        .values([(WebsocketConnectionIden::State, closed.as_str().into())])
+        .cond_where(Expr::col(WebsocketConnectionIden::State).ne(closed.as_str()))
+        .build_rusqlite(SqliteQueryBuilder);
+    let mut stmt = db.prepare(sql.as_str())?;
+    stmt.execute(&*params.as_params())?;
+    Ok(())
+}
+
 pub async fn cancel_pending_grpc_connections(app: &AppHandle) -> Result<()> {
     let dbm = &*app.app_handle().state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
@@ -2158,7 +2173,7 @@ pub async fn cancel_pending_grpc_connections(app: &AppHandle) -> Result<()> {
     Ok(())
 }
 
-pub async fn cancel_pending_responses(app: &AppHandle) -> Result<()> {
+pub async fn cancel_pending_http_responses(app: &AppHandle) -> Result<()> {
     let dbm = &*app.app_handle().state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
 

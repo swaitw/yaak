@@ -19,7 +19,7 @@ import { LoadingIcon } from './core/LoadingIcon';
 import { Separator } from './core/Separator';
 import { SplitLayout } from './core/SplitLayout';
 import { HStack, VStack } from './core/Stacks';
-import { StatusTag } from './core/StatusTag';
+import { WebsocketStatusTag } from './core/WebsocketStatusTag';
 import { EmptyStateText } from './EmptyStateText';
 import { RecentWebsocketConnectionsDropdown } from './RecentWebsocketConnectionsDropdown';
 
@@ -69,12 +69,12 @@ export function WebsocketResponsePane({ activeRequest }: Props) {
       firstSlot={() =>
         activeConnection && (
           <div className="w-full grid grid-rows-[auto_minmax(0,1fr)] items-center">
-            <HStack className="pl-3 mb-1 font-mono text-sm">
+            <HStack className="pl-3 mb-1 font-mono text-sm text-text-subtle">
               <HStack space={2}>
                 {activeConnection.state !== 'closed' && (
                   <LoadingIcon size="sm" className="text-text-subtlest" />
                 )}
-                <StatusTag showReason response={activeConnection} />
+                <WebsocketStatusTag connection={activeConnection} />
                 <span>&bull;</span>
                 <span>{events.length} Messages</span>
               </HStack>
@@ -122,7 +122,9 @@ export function WebsocketResponsePane({ activeRequest }: Props) {
                 <div className="font-semibold">
                   {activeEvent.messageType === 'close'
                     ? 'Connection Closed'
-                    : `Message ${activeEvent.isServer ? 'Received' : 'Sent'}`}
+                    : activeEvent.messageType === 'open'
+                      ? 'Connection open'
+                      : `Message ${activeEvent.isServer ? 'Received' : 'Sent'}`}
                 </div>
                 {message != '' && (
                   <HStack space={1}>
@@ -212,9 +214,15 @@ function EventRow({
         )}
       >
         <Icon
-          color={messageType === 'close' ? 'secondary' : isServer ? 'info' : 'primary'}
+          color={
+            messageType === 'close' || messageType === 'open'
+              ? 'secondary'
+              : isServer
+                ? 'info'
+                : 'primary'
+          }
           icon={
-            messageType === 'close'
+            messageType === 'close' || messageType === 'open'
               ? 'info'
               : isServer
                 ? 'arrow_big_down_dash'
@@ -223,7 +231,9 @@ function EventRow({
         />
         <div className={classNames('w-full truncate text-xs')}>
           {messageType === 'close' ? (
-            'Connection closed by ' + (isServer ? 'server' : 'client')
+            'Disconnected from server'
+          ) : messageType === 'open' ? (
+            'Connected to server'
           ) : message === '' ? (
             <em className="italic text-text-subtlest">No content</em>
           ) : (
