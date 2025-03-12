@@ -93,11 +93,12 @@ impl YaakNotifier {
             let seen = get_kv(window).await?;
             if seen.contains(&notification.id) || (age > Duration::days(2)) {
                 debug!("Already seen notification {}", notification.id);
-                return Ok(());
+                continue;
             }
             debug!("Got notification {:?}", notification);
 
             let _ = window.emit_to(window.label(), "notification", notification.clone());
+            break; // Only show one notification
         }
 
         Ok(())
