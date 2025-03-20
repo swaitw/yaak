@@ -67,7 +67,6 @@ use yaak_sse::sse::ServerSentEvent;
 use yaak_templates::format::format_json;
 use yaak_templates::{Parser, Tokens};
 
-mod commands;
 mod encoding;
 mod error;
 mod grpc;
