@@ -78,8 +78,7 @@ type TauriCmd =
   | 'cmd_update_http_request'
   | 'cmd_update_settings'
   | 'cmd_update_workspace'
-  | 'cmd_update_workspace_meta'
-  | 'cmd_write_file_dev';
+  | 'cmd_update_workspace_meta';
 
 export async function invokeCmd<T>(cmd: TauriCmd, args?: InvokeArgs): Promise<T> {
   // console.log('RUN COMMAND', cmd, args);
