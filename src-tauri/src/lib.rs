@@ -1973,7 +1973,7 @@ pub fn run() {
         .run(|app_handle, event| {
             match event {
                 RunEvent::Ready => {
-                    let w = window::create_main_window(app_handle, "/");
+                    let _ = window::create_main_window(app_handle, "/");
                     let h = app_handle.clone();
                     tauri::async_runtime::spawn(async move {
                         let info = history::store_launch_history(&h).await;

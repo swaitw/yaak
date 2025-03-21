@@ -18,8 +18,8 @@ use yaak_models::queries::{
 use yaak_plugins::events::{
     Color, DeleteKeyValueResponse, EmptyPayload, FindHttpResponsesResponse,
     GetHttpRequestByIdResponse, GetKeyValueResponse, Icon, InternalEvent, InternalEventPayload,
-    RenderHttpRequestResponse, RenderPurpose, SendHttpRequestResponse, SetKeyValueResponse,
-    ShowToastRequest, TemplateRenderResponse, WindowContext, WindowNavigateEvent,
+    RenderHttpRequestResponse, SendHttpRequestResponse, SetKeyValueResponse, ShowToastRequest,
+    TemplateRenderResponse, WindowContext, WindowNavigateEvent,
 };
 use yaak_plugins::manager::PluginManager;
 use yaak_plugins::plugin_handle::PluginHandle;
