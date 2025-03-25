@@ -9,12 +9,9 @@ use chrono::Utc;
 use log::warn;
 use tauri::{AppHandle, Emitter, Manager, Runtime, State};
 use tauri_plugin_clipboard_manager::ClipboardExt;
+use yaak_models::manager::QueryManagerExt;
 use yaak_models::models::{HttpResponse, Plugin};
-use yaak_models::queries::{
-    create_default_http_response, delete_plugin_key_value, get_base_environment, get_http_request,
-    get_plugin_key_value, list_http_responses_for_request, list_plugins, set_plugin_key_value,
-    upsert_plugin, UpdateSource,
-};
+use yaak_models::queries_legacy::UpdateSource;
 use yaak_plugins::events::{
     Color, DeleteKeyValueResponse, EmptyPayload, FindHttpResponsesResponse,
     GetHttpRequestByIdResponse, GetKeyValueResponse, Icon, InternalEvent, InternalEventPayload,
@@ -55,19 +52,28 @@ pub(crate) async fn handle_plugin_event<R: Runtime>(
             call_frontend(window, event).await
         }
         InternalEventPayload::FindHttpResponsesRequest(req) => {
-            let http_responses = list_http_responses_for_request(
-                app_handle,
-                req.request_id.as_str(),
-                req.limit.map(|l| l as i64),
-            )
-            .await
-            .unwrap_or_default();
+            let http_responses = app_handle
+                .queries()
+                .connect()
+                .await
+                .unwrap()
+                .list_http_responses_for_request(
+                    req.request_id.as_str(),
+                    req.limit.map(|l| l as u64),
+                )
+                .unwrap_or_default();
             Some(InternalEventPayload::FindHttpResponsesResponse(FindHttpResponsesResponse {
                 http_responses,
             }))
         }
         InternalEventPayload::GetHttpRequestByIdRequest(req) => {
-            let http_request = get_http_request(app_handle, req.id.as_str()).await.unwrap();
+            let http_request = app_handle
+                .queries()
+                .connect()
+                .await
+                .unwrap()
+                .get_http_request(req.id.as_str())
+                .unwrap();
             Some(InternalEventPayload::GetHttpRequestByIdResponse(GetHttpRequestByIdResponse {
                 http_request,
             }))
@@ -80,8 +86,12 @@ pub(crate) async fn handle_plugin_event<R: Runtime>(
                 .await
                 .expect("Failed to get workspace_id from window URL");
             let environment = environment_from_window(&window).await;
-            let base_environment = get_base_environment(app_handle, workspace.id.as_str())
+            let base_environment = app_handle
+                .queries()
+                .connect()
                 .await
+                .unwrap()
+                .get_base_environment(&workspace.id)
                 .expect("Failed to get base environment");
             let cb = PluginTemplateCallback::new(app_handle, &window_context, req.purpose);
             let http_request = render_http_request(
@@ -104,8 +114,12 @@ pub(crate) async fn handle_plugin_event<R: Runtime>(
                 .await
                 .expect("Failed to get workspace_id from window URL");
             let environment = environment_from_window(&window).await;
-            let base_environment = get_base_environment(app_handle, workspace.id.as_str())
+            let base_environment = app_handle
+                .queries()
+                .connect()
                 .await
+                .unwrap()
+                .get_base_environment(&workspace.id)
                 .expect("Failed to get base environment");
             let cb = PluginTemplateCallback::new(app_handle, &window_context, req.purpose);
             let data = render_json_value(req.data, &base_environment, environment.as_ref(), &cb)
@@ -135,7 +149,7 @@ pub(crate) async fn handle_plugin_event<R: Runtime>(
         InternalEventPayload::ReloadResponse(_) => {
             let window = get_window_from_window_context(app_handle, &window_context)
                 .expect("Failed to find window for plugin reload");
-            let plugins = list_plugins(app_handle).await.unwrap();
+            let plugins = app_handle.queries().connect().await.unwrap().list_plugins().unwrap();
             for plugin in plugins {
                 if plugin.directory != plugin_handle.dir {
                     continue;
@@ -145,7 +159,13 @@ pub(crate) async fn handle_plugin_event<R: Runtime>(
                     updated_at: Utc::now().naive_utc(), // TODO: Add reloaded_at field to use instead
                     ..plugin
                 };
-                upsert_plugin(app_handle, new_plugin, &UpdateSource::Plugin).await.unwrap();
+                app_handle
+                    .queries()
+                    .connect()
+                    .await
+                    .unwrap()
+                    .upsert_plugin(&new_plugin, &UpdateSource::Plugin)
+                    .unwrap();
             }
             let toast_event = plugin_handle.build_event_to_send(
                 &WindowContext::from_window(&window),
@@ -173,22 +193,29 @@ pub(crate) async fn handle_plugin_event<R: Runtime>(
                 http_request.workspace_id = workspace.id;
             }
 
-            let resp = if http_request.id.is_empty() {
-                HttpResponse::new()
+            let http_response = if http_request.id.is_empty() {
+                HttpResponse::default()
             } else {
-                create_default_http_response(
-                    app_handle,
-                    http_request.id.as_str(),
-                    &UpdateSource::Plugin,
-                )
-                .await
-                .unwrap()
+                window
+                    .queries()
+                    .connect()
+                    .await
+                    .unwrap()
+                    .upsert_http_response(
+                        &HttpResponse {
+                            request_id: http_request.id.clone(),
+                            workspace_id: http_request.workspace_id.clone(),
+                            ..Default::default()
+                        },
+                        &UpdateSource::Plugin,
+                    )
+                    .unwrap()
             };
 
             let result = send_http_request(
                 &window,
                 &http_request,
-                &resp,
+                &http_response,
                 environment,
                 cookie_jar,
                 &mut tokio::sync::watch::channel(false).1, // No-op cancel channel
@@ -265,17 +292,34 @@ pub(crate) async fn handle_plugin_event<R: Runtime>(
         }
         InternalEventPayload::SetKeyValueRequest(req) => {
             let name = plugin_handle.name().await;
-            set_plugin_key_value(app_handle, &name, &req.key, &req.value).await;
+            app_handle
+                .queries()
+                .connect()
+                .await
+                .unwrap()
+                .set_plugin_key_value(&name, &req.key, &req.value);
             Some(InternalEventPayload::SetKeyValueResponse(SetKeyValueResponse {}))
         }
         InternalEventPayload::GetKeyValueRequest(req) => {
             let name = plugin_handle.name().await;
-            let value = get_plugin_key_value(app_handle, &name, &req.key).await.map(|v| v.value);
+            let value = app_handle
+                .queries()
+                .connect()
+                .await
+                .unwrap()
+                .get_plugin_key_value(&name, &req.key)
+                .map(|v| v.value);
             Some(InternalEventPayload::GetKeyValueResponse(GetKeyValueResponse { value }))
         }
         InternalEventPayload::DeleteKeyValueRequest(req) => {
             let name = plugin_handle.name().await;
-            let deleted = delete_plugin_key_value(app_handle, &name, &req.key).await;
+            let deleted = app_handle
+                .queries()
+                .connect()
+                .await
+                .unwrap()
+                .delete_plugin_key_value(&name, &req.key)
+                .unwrap();
             Some(InternalEventPayload::DeleteKeyValueResponse(DeleteKeyValueResponse { deleted }))
         }
         _ => None,
