@@ -140,21 +140,27 @@ export function SplitLayout({
     [width, height, vertical, minHeightPx, setHeight, minWidthPx, setWidth],
   );
 
+  const containerQueryReady = size.width > 0 || size.height > 0;
+
   return (
-    <div ref={containerRef} className={classNames(className, 'grid w-full h-full')} style={styles}>
-      {firstSlot({ style: areaL, orientation: vertical ? 'vertical' : 'horizontal' })}
-      {secondSlot && (
+    <div ref={containerRef} style={styles} className={classNames(className, 'grid w-full h-full')}>
+      {containerQueryReady && (
         <>
-          <ResizeHandle
-            style={areaD}
-            isResizing={isResizing}
-            className={classNames(vertical ? '-translate-y-1.5' : '-translate-x-1.5')}
-            onResizeStart={handleResizeStart}
-            onReset={handleReset}
-            side={vertical ? 'top' : 'left'}
-            justify="center"
-          />
-          {secondSlot({ style: areaR, orientation: vertical ? 'vertical' : 'horizontal' })}
+          {firstSlot({ style: areaL, orientation: vertical ? 'vertical' : 'horizontal' })}
+          {secondSlot && (
+            <>
+              <ResizeHandle
+                style={areaD}
+                isResizing={isResizing}
+                className={classNames(vertical ? '-translate-y-1.5' : '-translate-x-1.5')}
+                onResizeStart={handleResizeStart}
+                onReset={handleReset}
+                side={vertical ? 'top' : 'left'}
+                justify="center"
+              />
+              {secondSlot({ style: areaR, orientation: vertical ? 'vertical' : 'horizontal' })}
+            </>
+          )}
         </>
       )}
     </div>

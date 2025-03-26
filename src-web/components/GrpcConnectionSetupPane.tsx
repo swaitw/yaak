@@ -208,6 +208,7 @@ export function GrpcConnectionSetupPane({
         ref={urlContainerEl}
         className={classNames(
           'grid grid-cols-[minmax(0,1fr)_auto] gap-1.5',
+          paneWidth === 0 && 'opacity-0',
           paneWidth < 400 && '!grid-cols-1',
         )}
       >

@@ -2848,9 +2848,9 @@ dependencies = [
 
 [[package]]
 name = "log"
-version = "0.4.26"
+version = "0.4.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "30bde2b3dc3671ae49d8e2e9f044c7c005836e7a023ee57cffa25ab82764bb9e"
+checksum = "13dc2df351e3202783a1fe0d44375f7295ffb4049267b0f3018346dc122a1d94"
 dependencies = [
  "value-bag",
 ]
@@ -4680,9 +4680,9 @@ dependencies = [
 
 [[package]]
 name = "rustls"
-version = "0.23.22"
+version = "0.23.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9fb9263ab4eb695e42321db096e3b8fbd715a59b154d5c88d82db2175b681ba7"
+checksum = "822ee9188ac4ec04a2f0531e55d035fb2de73f18b41a63c70c2712503b6fb13c"
 dependencies = [
  "once_cell",
  "ring",
@@ -4717,15 +4717,15 @@ dependencies = [
 
 [[package]]
 name = "rustls-pki-types"
-version = "1.10.1"
+version = "1.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d2bf47e6ff922db3825eb750c4e2ff784c6ff8fb9e13046ef6a1d1c5401b0b37"
+checksum = "917ce264624a4b4db1c364dcc35bfca9ded014d0a958cd47ad3e960e988ea51c"
 
 [[package]]
 name = "rustls-platform-verifier"
-version = "0.5.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e012c45844a1790332c9386ed4ca3a06def221092eda277e6f079728f8ea99da"
+checksum = "4a5467026f437b4cb2a533865eaa73eb840019a0916f4b9ec563c6e617e086c9"
 dependencies = [
  "core-foundation 0.10.0",
  "core-foundation-sys",
@@ -4739,7 +4739,7 @@ dependencies = [
  "security-framework 3.2.0",
  "security-framework-sys",
  "webpki-root-certs",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -4750,9 +4750,9 @@ checksum = "f87165f0995f63a9fbeea62b64d10b4d9d8e78ec6d7d51fb2125fda7bb36788f"
 
 [[package]]
 name = "rustls-webpki"
-version = "0.102.8"
+version = "0.103.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "64ca1bc8749bd4cf37b5ce386cc146580777b4e8572c7b97baf22c83f444bee9"
+checksum = "fef8b8769aaccf73098557a87cd1816b4f9c7c16811c9c77142aa695c16f2c03"
 dependencies = [
  "ring",
  "rustls-pki-types",
@@ -7788,7 +7788,6 @@ dependencies = [
  "objc",
  "openssl-sys",
  "rand 0.9.0",
- "regex",
  "reqwest",
  "reqwest_cookie_store",
  "rustls",
@@ -7811,6 +7810,7 @@ dependencies = [
  "tokio",
  "tokio-stream",
  "uuid",
+ "yaak-common",
  "yaak-git",
  "yaak-grpc",
  "yaak-http",
@@ -7821,6 +7821,14 @@ dependencies = [
  "yaak-sync",
  "yaak-templates",
  "yaak-ws",
+]
+
+[[package]]
+name = "yaak-common"
+version = "0.1.0"
+dependencies = [
+ "regex",
+ "tauri",
 ]
 
 [[package]]
@@ -7972,7 +7980,6 @@ name = "yaak-templates"
 version = "0.1.0"
 dependencies = [
  "base64 0.22.1",
- "log",
  "serde",
  "serde_json",
  "thiserror 2.0.11",
@@ -7984,7 +7991,6 @@ dependencies = [
 name = "yaak-ws"
 version = "0.1.0"
 dependencies = [
- "chrono",
  "futures-util",
  "log",
  "md5",

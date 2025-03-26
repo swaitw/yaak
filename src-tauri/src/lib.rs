@@ -12,7 +12,6 @@ use crate::uri_scheme::handle_uri_scheme;
 use error::Result as YaakResult;
 use eventsource_client::{EventParser, SSE};
 use log::{debug, error, warn};
-use regex::Regex;
 use std::collections::{BTreeMap, HashMap};
 use std::fs::{create_dir_all, File};
 use std::path::PathBuf;
@@ -28,6 +27,7 @@ use tauri_plugin_window_state::{AppHandleExt, StateFlags};
 use tokio::fs::read_to_string;
 use tokio::sync::Mutex;
 use tokio::task::block_in_place;
+use yaak_common::window::WorkspaceWindowTrait;
 use yaak_grpc::manager::{DynamicMessage, GrpcHandle};
 use yaak_grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
 use yaak_models::models::{
@@ -1949,44 +1949,14 @@ fn get_window_from_window_context<R: Runtime>(
     window
 }
 
-fn workspace_id_from_window<R: Runtime>(window: &WebviewWindow<R>) -> Option<String> {
-    let url = window.url().unwrap();
-    let re = Regex::new(r"/workspaces/(?<wid>\w+)").unwrap();
-    match re.captures(url.as_str()) {
-        None => None,
-        Some(captures) => captures.name("wid").map(|c| c.as_str().to_string()),
-    }
-}
-
 fn workspace_from_window<R: Runtime>(window: &WebviewWindow<R>) -> Option<Workspace> {
-    match workspace_id_from_window(&window) {
-        None => None,
-        Some(id) => window.db().get_workspace(&id).ok(),
-    }
-}
-
-fn environment_id_from_window<R: Runtime>(window: &WebviewWindow<R>) -> Option<String> {
-    let url = window.url().unwrap();
-    let mut query_pairs = url.query_pairs();
-    query_pairs.find(|(k, _v)| k == "environment_id").map(|(_k, v)| v.to_string())
+    window.workspace_id().and_then(|id| window.db().get_workspace(&id).ok())
 }
 
 fn environment_from_window<R: Runtime>(window: &WebviewWindow<R>) -> Option<Environment> {
-    match environment_id_from_window(&window) {
-        None => None,
-        Some(id) => window.db().get_environment(&id).ok(),
-    }
-}
-
-fn cookie_jar_id_from_window<R: Runtime>(window: &WebviewWindow<R>) -> Option<String> {
-    let url = window.url().unwrap();
-    let mut query_pairs = url.query_pairs();
-    query_pairs.find(|(k, _v)| k == "cookie_jar_id").map(|(_k, v)| v.to_string())
+    window.environment_id().and_then(|id| window.db().get_environment(&id).ok())
 }
 
 fn cookie_jar_from_window<R: Runtime>(window: &WebviewWindow<R>) -> Option<CookieJar> {
-    match cookie_jar_id_from_window(&window) {
-        None => None,
-        Some(id) => window.db().get_cookie_jar(&id).ok(),
-    }
+    window.cookie_jar_id().and_then(|id| window.db().get_cookie_jar(&id).ok())
 }
