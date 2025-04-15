@@ -1,13 +1,17 @@
 import { useGitInit } from '@yaakapp-internal/git';
 import type { WorkspaceMeta } from '@yaakapp-internal/models';
-import { createGlobalModel, patchModel } from '@yaakapp-internal/models';
+import { createGlobalModel, updateModel } from '@yaakapp-internal/models';
 import { useState } from 'react';
 import { router } from '../lib/router';
+import { setupOrConfigureEncryption } from '../lib/setupOrConfigureEncryption';
 import { invokeCmd } from '../lib/tauri';
 import { showErrorToast } from '../lib/toast';
 import { Button } from './core/Button';
+import { Checkbox } from './core/Checkbox';
+import { Label } from './core/Label';
 import { PlainInput } from './core/PlainInput';
 import { VStack } from './core/Stacks';
+import { EncryptionHelp } from './EncryptionHelp';
 import { SyncToFilesystemSetting } from './SyncToFilesystemSetting';
 
 interface Props {
@@ -21,7 +25,7 @@ export function CreateWorkspaceDialog({ hide }: Props) {
     filePath: string | null;
     initGit?: boolean;
   }>({ filePath: null, initGit: false });
-
+  const [setupEncryption, setSetupEncryption] = useState<boolean>(false);
   return (
     <VStack
       as="form"
@@ -38,7 +42,8 @@ export function CreateWorkspaceDialog({ hide }: Props) {
         const workspaceMeta = await invokeCmd<WorkspaceMeta>('cmd_get_workspace_meta', {
           workspaceId,
         });
-        await patchModel(workspaceMeta, {
+        await updateModel({
+          ...workspaceMeta,
           settingSyncDir: syncConfig.filePath,
         });
 
@@ -55,6 +60,10 @@ export function CreateWorkspaceDialog({ hide }: Props) {
         });
 
         hide();
+
+        if (setupEncryption) {
+          setupOrConfigureEncryption();
+        }
       }}
     >
       <PlainInput required label="Name" defaultValue={name} onChange={setName} />
@@ -64,7 +73,17 @@ export function CreateWorkspaceDialog({ hide }: Props) {
         onCreateNewWorkspace={hide}
         value={syncConfig}
       />
-      <Button type="submit" color="primary" className="ml-auto mt-3">
+      <div>
+        <Label htmlFor={null} help={<EncryptionHelp />}>
+          Workspace encryption
+        </Label>
+        <Checkbox
+          checked={setupEncryption}
+          onChange={setSetupEncryption}
+          title="Enable Encryption"
+        />
+      </div>
+      <Button type="submit" color="primary" className="w-full mt-3">
         Create Workspace
       </Button>
     </VStack>
