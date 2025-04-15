@@ -15,8 +15,9 @@ pub(crate) struct MasterKey {
 }
 
 impl MasterKey {
-    pub(crate) fn get_or_create(user: &str) -> Result<Self> {
-        let entry = Entry::new("app.yaak.desktop.EncryptionKey", user)?;
+    pub(crate) fn get_or_create(app_id: &str, user: &str) -> Result<Self> {
+        let id = format!("{app_id}.EncryptionKey");
+        let entry = Entry::new(&id, user)?;
 
         let key = match entry.get_password() {
             Ok(encoded) => {

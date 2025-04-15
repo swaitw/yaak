@@ -12,7 +12,7 @@ use yaak_models::models::{EncryptedKey, Workspace, WorkspaceMeta};
 use yaak_models::query_manager::{QueryManager, QueryManagerExt};
 use yaak_models::util::{generate_id_of_length, UpdateSource};
 
-const KEY_USER: &str = "yaak-encryption-key";
+const KEY_USER: &str = "encryption-key";
 
 pub trait EncryptionManagerExt<'a, R> {
     fn crypto(&'a self) -> State<'a, EncryptionManager>;
@@ -29,6 +29,7 @@ pub struct EncryptionManager {
     cached_master_key: Arc<Mutex<Option<MasterKey>>>,
     cached_workspace_keys: Arc<Mutex<HashMap<String, WorkspaceKey>>>,
     query_manager: QueryManager,
+    app_id: String,
 }
 
 impl EncryptionManager {
@@ -37,6 +38,7 @@ impl EncryptionManager {
             cached_master_key: Default::default(),
             cached_workspace_keys: Default::default(),
             query_manager: app_handle.db_manager().inner().clone(),
+            app_id: app_handle.config().identifier.to_string(),
         }
     }
 
@@ -163,7 +165,7 @@ impl EncryptionManager {
             }
         }
 
-        let mkey = MasterKey::get_or_create(KEY_USER)?;
+        let mkey = MasterKey::get_or_create(&self.app_id, KEY_USER)?;
         let mut master_secret = self.cached_master_key.lock().unwrap();
         *master_secret = Some(mkey.clone());
         Ok(mkey)
