@@ -3,7 +3,7 @@ use crate::error::Result;
 use crate::render::render_http_request;
 use crate::response_err;
 use http::header::{ACCEPT, USER_AGENT};
-use http::{HeaderMap, HeaderName, HeaderValue, Uri};
+use http::{HeaderMap, HeaderName, HeaderValue};
 use log::{debug, error, warn};
 use mime_guess::Mime;
 use reqwest::redirect::Policy;
@@ -187,19 +187,7 @@ pub async fn send_http_request<R: Runtime>(
         query_params.push((p.name, p.value));
     }
 
-    let uri = match Uri::from_str(url_string.as_str()) {
-        Ok(u) => u,
-        Err(e) => {
-            return Ok(response_err(
-                &app_handle,
-                &*response.lock().await,
-                format!("Failed to parse URL \"{}\": {}", url_string, e.to_string()),
-                &update_source,
-            ));
-        }
-    };
-    // Yes, we're parsing both URI and URL because they could return different errors
-    let url = match Url::from_str(uri.to_string().as_str()) {
+    let url = match Url::from_str(&url_string) {
         Ok(u) => u,
         Err(e) => {
             return Ok(response_err(
