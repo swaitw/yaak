@@ -7,10 +7,10 @@ use http::{HeaderMap, HeaderName, HeaderValue};
 use log::{debug, error, warn};
 use mime_guess::Mime;
 use reqwest::redirect::Policy;
-use reqwest::{multipart, Proxy, Url};
 use reqwest::{Method, Response};
-use rustls::crypto::ring;
+use reqwest::{Proxy, Url, multipart};
 use rustls::ClientConfig;
+use rustls::crypto::ring;
 use rustls_platform_verifier::BuilderVerifierExt;
 use serde_json::Value;
 use std::collections::BTreeMap;
@@ -20,10 +20,10 @@ use std::sync::Arc;
 use std::time::Duration;
 use tauri::{Manager, Runtime, WebviewWindow};
 use tokio::fs;
-use tokio::fs::{create_dir_all, File};
+use tokio::fs::{File, create_dir_all};
 use tokio::io::AsyncWriteExt;
 use tokio::sync::watch::Receiver;
-use tokio::sync::{oneshot, Mutex};
+use tokio::sync::{Mutex, oneshot};
 use yaak_models::models::{
     Cookie, CookieJar, Environment, HttpRequest, HttpResponse, HttpResponseHeader,
     HttpResponseState, ProxySetting, ProxySettingAuth,
@@ -80,7 +80,7 @@ pub async fn send_http_request<R: Runtime>(
                 &*response.lock().await,
                 e.to_string(),
                 &update_source,
-            ))
+            ));
         }
     };
 
@@ -464,8 +464,10 @@ pub async fn send_http_request<R: Runtime>(
     let raw_response = tokio::select! {
         Ok(r) = resp_rx => r,
         _ = cancelled_rx.changed() => {
-            debug!("Request cancelled");
-            return Ok(response_err(&app_handle, &*response.lock().await, "Request was cancelled".to_string(), &update_source));
+            let mut r = response.lock().await;
+            r.elapsed_headers = start.elapsed().as_millis() as i32;
+            r.elapsed = start.elapsed().as_millis() as i32;
+            return Ok(response_err(&app_handle, &r, "Request was cancelled".to_string(), &update_source));
         }
     };
 
@@ -632,6 +634,8 @@ pub async fn send_http_request<R: Runtime>(
             match app_handle.with_db(|c| c.get_http_response(&response_id)) {
                 Ok(mut r) => {
                     r.state = HttpResponseState::Closed;
+                    r.elapsed = start.elapsed().as_millis() as i32;
+                    r.elapsed_headers = start.elapsed().as_millis() as i32;
                     app_handle.db().update_http_response_if_id(&r, &UpdateSource::from_window(window))
                         .expect("Failed to update response")
                 },
