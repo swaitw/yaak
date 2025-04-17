@@ -494,6 +494,7 @@ pub async fn send_http_request<R: Runtime>(
                         let mut r = response.lock().await;
                         r.body_path = Some(body_path.to_str().unwrap().to_string());
                         r.elapsed_headers = start.elapsed().as_millis() as i32;
+                        r.elapsed = start.elapsed().as_millis() as i32;
                         r.status = v.status().as_u16() as i32;
                         r.status_reason = v.status().canonical_reason().map(|s| s.to_string());
                         r.headers = response_headers
@@ -565,7 +566,7 @@ pub async fn send_http_request<R: Runtime>(
                         }
                     }
 
-                    // Set final content length
+                    // Set the final content length
                     {
                         let mut r = response.lock().await;
                         r.content_length = match content_length {
