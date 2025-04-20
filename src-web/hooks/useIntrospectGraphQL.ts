@@ -85,6 +85,7 @@ export function useIntrospectGraphQL(
 
   const clear = useCallback(async () => {
     setError('');
+    setSchema(null);
     await setIntrospection(null);
   }, [setIntrospection]);
 
