@@ -2,7 +2,6 @@ import type { HttpResponse } from '@yaakapp-internal/models';
 import { useResponseBodyText } from '../../hooks/useResponseBodyText';
 import { languageFromContentType } from '../../lib/contentType';
 import { getContentTypeFromHeaders } from '../../lib/model_util';
-import { BinaryViewer } from './BinaryViewer';
 import { TextViewer } from './TextViewer';
 import { WebPageViewer } from './WebPageViewer';
 
@@ -19,11 +18,6 @@ export function HTMLOrTextViewer({ response, pretty, textViewerClassName }: Prop
 
   if (rawTextBody.isLoading || response.state === 'initialized') {
     return null;
-  }
-
-  // Wasn't able to decode as text, so it must be binary
-  if (rawTextBody.data == null) {
-    return <BinaryViewer response={response} />;
   }
 
   if (language === 'html' && pretty) {
