@@ -1,5 +1,5 @@
 import { patchModel, workspaceMetasAtom, workspacesAtom } from '@yaakapp-internal/models';
-import { useAtomValue } from 'jotai/index';
+import { useAtomValue } from 'jotai';
 import { deleteModelWithConfirm } from '../lib/deleteModelWithConfirm';
 import { router } from '../lib/router';
 import { Banner } from './core/Banner';

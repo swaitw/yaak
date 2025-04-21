@@ -1,4 +1,4 @@
-import { createStore } from 'jotai/index';
+import { createStore } from 'jotai';
 import { AnyModel } from '../bindings/gen_models';
 
 export type ExtractModel<T, M> = T extends { model: M } ? T : never;

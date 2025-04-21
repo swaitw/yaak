@@ -5,8 +5,7 @@ import {
   grpcEventsAtom,
   replaceModelsInStore,
 } from '@yaakapp-internal/models';
-import { useAtomValue } from 'jotai';
-import { atom } from 'jotai/index';
+import { useAtomValue , atom } from 'jotai';
 import { useEffect } from 'react';
 import { atomWithKVStorage } from '../lib/atoms/atomWithKVStorage';
 import { activeRequestIdAtom } from './useActiveRequestId';

@@ -11,7 +11,7 @@ import type {
   JsonPrimitive,
 } from '@yaakapp-internal/plugins';
 import classNames from 'classnames';
-import { useAtomValue } from 'jotai/index';
+import { useAtomValue } from 'jotai';
 import { useCallback } from 'react';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { capitalize } from '../lib/capitalize';

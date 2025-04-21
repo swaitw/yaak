@@ -1,5 +1,5 @@
 import { foldersAtom, patchModel } from '@yaakapp-internal/models';
-import { useAtomValue } from 'jotai/index';
+import { useAtomValue } from 'jotai';
 import { Input } from './core/Input';
 import { VStack } from './core/Stacks';
 import { MarkdownEditor } from './MarkdownEditor';

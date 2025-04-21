@@ -4,7 +4,7 @@ import {
   websocketConnectionsAtom,
 } from '@yaakapp-internal/models';
 import classNames from 'classnames';
-import { useAtomValue } from 'jotai/index';
+import { useAtomValue } from 'jotai';
 import React, { Fragment, memo } from 'react';
 import { VStack } from '../core/Stacks';
 import { DropMarker } from '../DropMarker';

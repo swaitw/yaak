@@ -1,8 +1,7 @@
 import { useSearch } from '@tanstack/react-router';
 import type { Environment } from '@yaakapp-internal/models';
 import { environmentsAtom } from '@yaakapp-internal/models';
-import { useAtomValue } from 'jotai';
-import { atom } from 'jotai/index';
+import { useAtomValue , atom } from 'jotai';
 import { useEffect } from 'react';
 import { jotaiStore } from '../lib/jotai';
 

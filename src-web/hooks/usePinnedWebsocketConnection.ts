@@ -5,7 +5,7 @@ import {
   websocketConnectionsAtom,
   websocketEventsAtom,
 } from '@yaakapp-internal/models';
-import { atom, useAtomValue } from 'jotai/index';
+import { atom, useAtomValue } from 'jotai';
 import { useEffect } from 'react';
 import { atomWithKVStorage } from '../lib/atoms/atomWithKVStorage';
 import { jotaiStore } from '../lib/jotai';

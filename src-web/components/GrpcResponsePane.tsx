@@ -1,8 +1,7 @@
 import type { GrpcEvent, GrpcRequest } from '@yaakapp-internal/models';
 import classNames from 'classnames';
 import { format } from 'date-fns';
-import { useAtomValue } from 'jotai';
-import { useSetAtom } from 'jotai/index';
+import { useAtomValue , useSetAtom } from 'jotai';
 import type { CSSProperties } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useCopy } from '../hooks/useCopy';

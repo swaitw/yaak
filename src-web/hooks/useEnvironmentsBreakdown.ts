@@ -1,5 +1,5 @@
 import { environmentsAtom } from '@yaakapp-internal/models';
-import { useAtomValue } from 'jotai/index';
+import { useAtomValue } from 'jotai';
 import { useMemo } from 'react';
 
 export function useEnvironmentsBreakdown() {

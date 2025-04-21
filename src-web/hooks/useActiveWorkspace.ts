@@ -1,6 +1,6 @@
 import { useParams } from '@tanstack/react-router';
 import { workspaceMetasAtom, workspacesAtom } from '@yaakapp-internal/models';
-import { atom } from 'jotai/index';
+import { atom } from 'jotai';
 import { useEffect } from 'react';
 import { jotaiStore } from '../lib/jotai';
 

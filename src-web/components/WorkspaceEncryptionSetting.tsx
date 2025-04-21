@@ -1,7 +1,7 @@
 import { enableEncryption, revealWorkspaceKey, setWorkspaceKey } from '@yaakapp-internal/crypto';
 import type { WorkspaceMeta } from '@yaakapp-internal/models';
 import classNames from 'classnames';
-import { useAtomValue } from 'jotai/index';
+import { useAtomValue } from 'jotai';
 import { useEffect, useState } from 'react';
 import { activeWorkspaceAtom, activeWorkspaceMetaAtom } from '../hooks/useActiveWorkspace';
 import { createFastMutation } from '../hooks/useFastMutation';

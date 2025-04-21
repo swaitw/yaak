@@ -1,7 +1,7 @@
 import { useSearch } from '@tanstack/react-router';
 import type { CookieJar } from '@yaakapp-internal/models';
 import { cookieJarsAtom } from '@yaakapp-internal/models';
-import { atom, useAtomValue } from 'jotai/index';
+import { atom, useAtomValue } from 'jotai';
 import { useEffect } from 'react';
 import { jotaiStore } from '../lib/jotai';
 import { setWorkspaceSearchParams } from '../lib/setWorkspaceSearchParams';

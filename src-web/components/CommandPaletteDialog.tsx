@@ -1,7 +1,7 @@
 import { workspacesAtom } from '@yaakapp-internal/models';
 import classNames from 'classnames';
 import { fuzzyFilter } from 'fuzzbunny';
-import { useAtomValue } from 'jotai/index';
+import { useAtomValue } from 'jotai';
 import type { KeyboardEvent, ReactNode } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createFolder } from '../commands/commands';

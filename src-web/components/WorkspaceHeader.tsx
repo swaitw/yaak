@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { useAtomValue } from 'jotai/index';
+import { useAtomValue } from 'jotai';
 import React, { memo } from 'react';
 import { activeWorkspaceAtom, activeWorkspaceMetaAtom } from '../hooks/useActiveWorkspace';
 import { useToggleCommandPalette } from '../hooks/useToggleCommandPalette';

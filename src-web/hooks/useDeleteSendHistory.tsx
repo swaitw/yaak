@@ -3,7 +3,7 @@ import {
   httpResponsesAtom,
   websocketConnectionsAtom,
 } from '@yaakapp-internal/models';
-import { useAtomValue } from 'jotai/index';
+import { useAtomValue } from 'jotai';
 import { showAlert } from '../lib/alert';
 import { showConfirmDelete } from '../lib/confirm';
 import { jotaiStore } from '../lib/jotai';

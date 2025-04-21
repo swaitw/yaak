@@ -1,4 +1,4 @@
-import { atom } from 'jotai/index';
+import { atom } from 'jotai';
 import { getKeyValue, setKeyValue } from '../keyValueStore';
 
 export function atomWithKVStorage<T extends object | boolean | number | string | null>(
