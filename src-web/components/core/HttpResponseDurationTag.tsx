@@ -6,23 +6,25 @@ interface Props {
 }
 
 export function HttpResponseDurationTag({ response }: Props) {
-  const [fallbackDuration, setFallbackDuration] = useState<number>(0);
+  const [fallbackElapsed, setFallbackElapsed] = useState<number>(0);
   const timeout = useRef<NodeJS.Timeout>();
 
   // Calculate the duration of the response for use when the response hasn't finished yet
   useEffect(() => {
     clearInterval(timeout.current);
     timeout.current = setInterval(() => {
-      setFallbackDuration(Date.now() - new Date(response.createdAt + 'Z').getTime());
+      setFallbackElapsed(Date.now() - new Date(response.createdAt + 'Z').getTime());
     }, 100);
     return () => clearInterval(timeout.current);
   }, [response.createdAt, response.elapsed, response.state]);
 
   const title = `HEADER: ${formatMillis(response.elapsedHeaders)}\nTOTAL: ${formatMillis(response.elapsed)}`;
 
+  const elapsed = response.state === 'closed' ? response.elapsed : fallbackElapsed;
+
   return (
     <span className="font-mono" title={title}>
-      {formatMillis(response.elapsed || fallbackDuration)}
+      {formatMillis(elapsed)}
     </span>
   );
 }
