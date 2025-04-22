@@ -158,15 +158,14 @@ impl EncryptionManager {
     }
 
     fn get_master_key(&self) -> Result<MasterKey> {
-        {
-            let master_secret = self.cached_master_key.lock().unwrap();
-            if let Some(k) = master_secret.as_ref() {
-                return Ok(k.to_owned());
-            }
+        // NOTE: This locks the key for the entire function which seems wrong, but this prevents
+        // concurrent access from prompting the user for a keychain password multiple times.
+        let mut master_secret = self.cached_master_key.lock().unwrap();
+        if let Some(k) = master_secret.as_ref() {
+            return Ok(k.to_owned());
         }
 
         let mkey = MasterKey::get_or_create(&self.app_id, KEY_USER)?;
-        let mut master_secret = self.cached_master_key.lock().unwrap();
         *master_secret = Some(mkey.clone());
         Ok(mkey)
     }
