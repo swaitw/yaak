@@ -5,6 +5,7 @@ import React, { useCallback, useMemo } from 'react';
 import { useLocalStorage } from 'react-use';
 import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
 import { useResponseViewMode } from '../hooks/useResponseViewMode';
+import { getMimeTypeFromContentType } from '../lib/contentType';
 import { getContentTypeFromHeaders } from '../lib/model_util';
 import { ConfirmLargeResponse } from './ConfirmLargeResponse';
 import { Banner } from './core/Banner';
@@ -48,6 +49,7 @@ export function HttpResponsePane({ style, className, activeRequestId }: Props) {
     {},
   );
   const contentType = getContentTypeFromHeaders(activeResponse?.headers ?? null);
+  const mimeType = contentType == null ? null : getMimeTypeFromContentType(contentType).essence;
 
   const tabs = useMemo<TabItem[]>(
     () => [
@@ -59,7 +61,7 @@ export function HttpResponsePane({ style, className, activeRequestId }: Props) {
           onChange: setViewMode,
           items: [
             { label: 'Pretty', value: 'pretty' },
-            ...(contentType?.startsWith('image') ? [] : [{ label: 'Raw', value: 'raw' }]),
+            ...(mimeType?.startsWith('image') ? [] : [{ label: 'Raw', value: 'raw' }]),
           ],
         },
       },
@@ -77,7 +79,7 @@ export function HttpResponsePane({ style, className, activeRequestId }: Props) {
         label: 'Info',
       },
     ],
-    [activeResponse?.headers, contentType, setViewMode, viewMode],
+    [activeResponse?.headers, mimeType, setViewMode, viewMode],
   );
   const activeTab = activeTabs?.[activeRequestId];
   const setActiveTab = useCallback(
@@ -123,9 +125,7 @@ export function HttpResponsePane({ style, className, activeRequestId }: Props) {
                 {activeResponse.state !== 'closed' && <LoadingIcon size="sm" />}
                 <HttpStatusTag showReason response={activeResponse} />
                 <span>&bull;</span>
-                <HttpResponseDurationTag
-                  response={activeResponse}
-                />
+                <HttpResponseDurationTag response={activeResponse} />
                 <span>&bull;</span>
                 <SizeTag contentLength={activeResponse.contentLength ?? 0} />
 
@@ -162,23 +162,21 @@ export function HttpResponsePane({ style, className, activeRequestId }: Props) {
                     </EmptyStateText>
                   ) : activeResponse.state === 'closed' && activeResponse.contentLength === 0 ? (
                     <EmptyStateText>Empty </EmptyStateText>
-                  ) : contentType?.match(/^text\/event-stream$/i) && viewMode === 'pretty' ? (
+                  ) : mimeType?.match(/^text\/event-stream/i) && viewMode === 'pretty' ? (
                     <EventStreamViewer response={activeResponse} />
-                  ) : contentType?.match(/^image\/svg/) ? (
+                  ) : mimeType?.match(/^image\/svg/) ? (
                     <SvgViewer response={activeResponse} />
-                  ) : contentType?.match(/^image/i) ? (
+                  ) : mimeType?.match(/^image/i) ? (
                     <EnsureCompleteResponse response={activeResponse} render={ImageViewer} />
-                  ) : contentType?.match(/^audio/i) ? (
+                  ) : mimeType?.match(/^audio/i) ? (
                     <EnsureCompleteResponse response={activeResponse} render={AudioViewer} />
-                  ) : contentType?.match(/^video/i) ? (
+                  ) : mimeType?.match(/^video/i) ? (
                     <EnsureCompleteResponse response={activeResponse} render={VideoViewer} />
-                  ) : contentType?.match(/pdf/i) ? (
+                  ) : mimeType?.match(/pdf/i) ? (
                     <EnsureCompleteResponse response={activeResponse} render={PdfViewer} />
-                  ) : contentType?.match(/csv|tab-separated/i) ? (
+                  ) : mimeType?.match(/csv|tab-separated/i) ? (
                     <CsvViewer className="pb-2" response={activeResponse} />
                   ) : (
-                    // ) : viewMode === 'pretty' && contentType?.includes('json') ? (
-                    //   <JsonAttributeTree attrValue={activeResponse} />
                     <HTMLOrTextViewer
                       textViewerClassName="-mr-2 bg-surface" // Pull to the right
                       response={activeResponse}
