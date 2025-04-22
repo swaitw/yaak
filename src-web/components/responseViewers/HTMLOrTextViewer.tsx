@@ -2,6 +2,7 @@ import type { HttpResponse } from '@yaakapp-internal/models';
 import { useResponseBodyText } from '../../hooks/useResponseBodyText';
 import { languageFromContentType } from '../../lib/contentType';
 import { getContentTypeFromHeaders } from '../../lib/model_util';
+import { EmptyStateText } from '../EmptyStateText';
 import { TextViewer } from './TextViewer';
 import { WebPageViewer } from './WebPageViewer';
 
@@ -22,6 +23,8 @@ export function HTMLOrTextViewer({ response, pretty, textViewerClassName }: Prop
 
   if (language === 'html' && pretty) {
     return <WebPageViewer response={response} />;
+  } else if (rawTextBody.data == null) {
+    return <EmptyStateText>Empty response</EmptyStateText>
   } else {
     return (
       <TextViewer
