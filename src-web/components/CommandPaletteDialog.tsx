@@ -350,10 +350,10 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
 
     const filteredGroups = groups
       .map((g) => {
-        g.items = result
+        const items = result
           .filter((i) => g.items.find((i2) => i2.key === i.key))
           .slice(0, MAX_PER_GROUP);
-        return g;
+        return { ...g, items };
       })
       .filter((g) => g.items.length > 0);
 
