@@ -18,10 +18,10 @@ export function SyncToFilesystemSetting({
   onCreateNewWorkspace,
   value,
 }: SyncToFilesystemSettingProps) {
-  const [isNonEmpty, setIsNonEmpty] = useState<string | null>(null);
+  const [syncDir, setSyncDir] = useState<string | null>(null);
   return (
     <VStack className="w-full my-2" space={3}>
-      {isNonEmpty && (
+      {syncDir && (
         <Banner color="notice" className="flex flex-col gap-1.5">
           <p>Directory is not empty. Do you want to open it instead?</p>
           <div>
@@ -31,7 +31,7 @@ export function SyncToFilesystemSetting({
               size="xs"
               type="button"
               onClick={() => {
-                openWorkspaceFromSyncDir.mutate(isNonEmpty);
+                openWorkspaceFromSyncDir.mutate(syncDir);
                 onCreateNewWorkspace();
               }}
             >
@@ -52,12 +52,12 @@ export function SyncToFilesystemSetting({
           if (filePath != null) {
             const files = await readDir(filePath);
             if (files.length > 0) {
-              setIsNonEmpty(filePath);
+              setSyncDir(filePath);
               return;
             }
           }
 
-          setIsNonEmpty(null);
+          setSyncDir(null);
           onChange({ ...value, filePath });
         }}
       />

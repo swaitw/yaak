@@ -448,7 +448,7 @@ pub(crate) async fn apply_sync_ops<R: Runtime>(
             websocket_requests_to_upsert,
             &UpdateSource::Sync,
         )?;
-        
+
         // Ensure we create WorkspaceMeta models for each new workspace, with the appropriate sync dir
         let sync_dir_string = sync_dir.to_string_lossy().to_string();
         for workspace in upserted_models.workspaces {

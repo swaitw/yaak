@@ -9,7 +9,7 @@ use crate::updates::{UpdateMode, UpdateTrigger, YaakUpdater};
 use crate::uri_scheme::handle_uri_scheme;
 use error::Result as YaakResult;
 use eventsource_client::{EventParser, SSE};
-use log::{debug, error, warn};
+use log::{debug, error, info, warn};
 use std::collections::{BTreeMap, HashMap};
 use std::fs::{File, create_dir_all};
 use std::path::PathBuf;
@@ -879,6 +879,8 @@ async fn cmd_import_data<R: Runtime>(
             v
         })
         .collect();
+
+    info!("Importing data");
 
     let upserted = app_handle.with_tx(|tx| {
         tx.batch_upsert(
