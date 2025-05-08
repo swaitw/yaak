@@ -6,7 +6,7 @@ import { getResponseBodyText } from '../lib/responseBody';
 export function useCopyHttpResponse(response: HttpResponse) {
   const copy = useCopy();
   return useFastMutation({
-    mutationKey: ['copy_http_response'],
+    mutationKey: ['copy_http_response', response.id],
     async mutationFn() {
       const body = await getResponseBodyText(response);
       copy(body);
