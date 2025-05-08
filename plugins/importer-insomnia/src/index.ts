@@ -101,7 +101,7 @@ function importEnvironment(e: any, workspaceId: string): ExportResources['enviro
     createdAt: e.created ? new Date(e.created).toISOString().replace('Z', '') : undefined,
     updatedAt: e.updated ? new Date(e.updated).toISOString().replace('Z', '') : undefined,
     workspaceId: convertId(workspaceId),
-    environmentId: e.parentId === workspaceId ? null : convertId(e.parentId),
+    base: e.parentId === workspaceId,
     model: 'environment',
     name: e.name,
     variables: Object.entries(e.data).map(([name, value]) => ({

@@ -53,7 +53,7 @@ describe('importer-yaak', () => {
           }],
           environments: [{
             id: 'e_1',
-            environmentId: 'GENERATE_ID::base_env_w_1',
+            base: false,
             workspaceId: 'w_1',
             name: 'Production',
             variables: [{ name: 'E1', value: 'E1!' }],

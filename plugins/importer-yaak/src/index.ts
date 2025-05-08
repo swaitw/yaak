@@ -46,7 +46,7 @@ export function migrateImport(contents: string) {
       parsed.resources.environments = parsed.resources.environments ?? [];
       parsed.resources.environments.push(baseEnvironment);
 
-      // Delete variables key from workspace
+      // Delete variables key from the workspace
       delete workspace.variables;
 
       // Add environmentId to relevant environments
@@ -55,6 +55,14 @@ export function migrateImport(contents: string) {
           environment.environmentId = baseEnvironment.id;
         }
       }
+    }
+  }
+
+  // Migrate v3 to v4
+  for (const environment of parsed.resources.environments ?? []) {
+    if ('environmentId' in environment) {
+      environment.base = environment.environmentId == null;
+      delete environment.environmentId;
     }
   }
 
