@@ -172,6 +172,35 @@ describe('importer-curl', () => {
     });
   });
 
+  test('Imports combined data params as form url-encoded', () => {
+    expect(convertCurl(`curl -d 'a=aaa&b=bbb&c' https://yaak.app`)).toEqual({
+      resources: {
+        workspaces: [baseWorkspace()],
+        httpRequests: [
+          baseRequest({
+            method: 'POST',
+            url: 'https://yaak.app',
+            bodyType: 'application/x-www-form-urlencoded',
+            headers: [
+              {
+                name: 'Content-Type',
+                value: 'application/x-www-form-urlencoded',
+                enabled: true,
+              },
+            ],
+            body: {
+              form: [
+                { name: 'a', value: 'aaa', enabled: true },
+                { name: 'b', value: 'bbb', enabled: true },
+                { name: 'c', value: '', enabled: true },
+              ],
+            },
+          }),
+        ],
+      },
+    });
+  });
+
   test('Imports data params as text', () => {
     expect(
       convertCurl('curl -H Content-Type:text/plain -d a -d b -d c=ccc https://yaak.app'),
