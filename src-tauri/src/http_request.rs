@@ -399,6 +399,15 @@ pub async fn send_http_request<R: Runtime>(
         } else {
             warn!("Unsupported body type: {}", body_type);
         }
+    } else {
+        // No body set
+        let method = request.method.to_ascii_lowercase();
+        let is_body_method = method == "post" || method == "put" || method == "patch";
+        // Add Content-Length for methods that commonly accept a body because some servers
+        // will error if they don't receive it.
+        if is_body_method && !headers.contains_key("content-length") {
+            headers.insert("Content-Length", HeaderValue::from_static("0"));
+        }
     }
 
     // Add headers last, because previous steps may modify them
