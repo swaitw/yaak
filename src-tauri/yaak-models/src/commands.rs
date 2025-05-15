@@ -94,7 +94,7 @@ pub(crate) fn get_settings<R: Runtime>(app_handle: AppHandle<R>) -> Result<Setti
 pub(crate) fn workspace_models<R: Runtime>(
     window: WebviewWindow<R>,
     workspace_id: Option<&str>,
-) -> Result<Vec<AnyModel>> {
+) -> Result<String> {
     let db = window.db();
     let mut l: Vec<AnyModel> = Vec::new();
 
@@ -120,5 +120,36 @@ pub(crate) fn workspace_models<R: Runtime>(
         l.append(&mut db.list_workspace_metas(wid)?.into_iter().map(Into::into).collect());
     }
 
-    Ok(l)
+    let j = serde_json::to_string(&l)?;
+    
+    // NOTE: There's something weird that happens on Linux. If we send Cyrillic (or maybe other)
+    //  unicode characters in this response (doesn't matter where) then the following bug happens:
+    //  https://feedback.yaak.app/p/editing-the-url-sometimes-freezes-the-app
+    // 
+    //  It's as if every string resulting from the JSON.parse of the models gets encoded slightly
+    //  wrong or something, causing the above bug where Codemirror can't calculate the cursor
+    //  position anymore (even when none of the characters are included directly in the input).
+    //
+    //  For some reason using escape sequences works, but it's a hacky fix. Hopefully the Linux
+    //  webview dependency updates to a version where this bug doesn't exist, or we can use CEF
+    //  (Chromium) for Linux in the future, which Tauri is working on.
+    Ok(escape_str_for_webview(&j))
+}
+
+fn escape_str_for_webview(input: &str) -> String {
+    input.chars().map(|c| {
+        let code = c as u32;
+        // ASCII 
+        if code <= 0x7F {
+            c.to_string()
+            // BMP characters encoded normally
+        } else if code < 0xFFFF {
+            format!("\\u{:04X}", code)
+            // Beyond BMP encoded a surrogate pairs
+        } else {
+            let high = ((code - 0x10000) >> 10) + 0xD800;
+            let low = ((code - 0x10000) & 0x3FF) + 0xDC00;
+            format!("\\u{:04X}\\u{:04X}", high, low)
+        }
+    }).collect()
 }
