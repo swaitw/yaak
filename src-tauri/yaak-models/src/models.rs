@@ -1997,6 +1997,7 @@ impl<'de> Deserialize<'de> for AnyModel {
             Some(m) if m == "grpc_event" => AnyModel::GrpcEvent(fv(value).unwrap()),
             Some(m) if m == "grpc_request" => AnyModel::GrpcRequest(fv(value).unwrap()),
             Some(m) if m == "http_request" => AnyModel::HttpRequest(fv(value).unwrap()),
+            Some(m) if m == "http_response" => AnyModel::HttpResponse(fv(value).unwrap()),
             Some(m) if m == "key_value" => AnyModel::KeyValue(fv(value).unwrap()),
             Some(m) if m == "plugin" => AnyModel::Plugin(fv(value).unwrap()),
             Some(m) if m == "settings" => AnyModel::Settings(fv(value).unwrap()),
