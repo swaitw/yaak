@@ -5,6 +5,8 @@ import {
   completionKeymap,
 } from '@codemirror/autocomplete';
 import { history, historyKeymap } from '@codemirror/commands';
+import { javascript } from '@codemirror/lang-javascript';
+import { markdown } from '@codemirror/lang-markdown';
 import type { LanguageSupport } from '@codemirror/language';
 import {
   codeFolding,
@@ -37,7 +39,12 @@ import { pluralizeCount } from '../../../lib/pluralize';
 import type { EditorProps } from './Editor';
 import { text } from './text/extension';
 import type { TwigCompletionOption } from './twig/completion';
+import { twig } from './twig/extension';
 import { pathParametersPlugin } from './twig/pathParameters';
+import { json } from '@codemirror/lang-json';
+import { xml } from '@codemirror/lang-xml';
+import { pairs } from './pairs/extension';
+import { url } from './url/extension';
 
 export const syntaxHighlightStyle = HighlightStyle.define([
   {
@@ -70,23 +77,23 @@ const closeBracketsExtensions: Extension = [closeBrackets(), keymap.of([...close
 
 const syntaxExtensions: Record<
   NonNullable<EditorProps['language']>,
-  null | (() => Promise<LanguageSupport>)
+  null | (() => LanguageSupport)
 > = {
   graphql: null,
-  json: () => import('@codemirror/lang-json').then((m) => m.json()),
-  javascript: () => import('@codemirror/lang-javascript').then((m) => m.javascript()),
+  json: json,
+  javascript: javascript,
   // HTML as XML because HTML is oddly slow
-  html: () => import('@codemirror/lang-xml').then((m) => m.xml()),
-  xml: () => import('@codemirror/lang-xml').then((m) => m.xml()),
-  url: () => import('./url/extension').then((m) => m.url()),
-  pairs: () => import('./pairs/extension').then((m) => m.pairs()),
-  text: () => import('./text/extension').then((m) => m.text()),
-  markdown: () => import('@codemirror/lang-markdown').then((m) => m.markdown()),
+  html: xml,
+  xml: xml,
+  url: url,
+  pairs: pairs,
+  text: text,
+  markdown: markdown,
 };
 
 const closeBracketsFor: (keyof typeof syntaxExtensions)[] = ['json', 'javascript', 'graphql'];
 
-export async function getLanguageExtension({
+export function getLanguageExtension({
   useTemplating,
   language = 'text',
   environmentVariables,
@@ -120,13 +127,12 @@ export async function getLanguageExtension({
   }
 
   const base_ = syntaxExtensions[language ?? 'text'] ?? text();
-  const base = typeof base_ === 'function' ? await base_() : text();
+  const base = typeof base_ === 'function' ? base_() : text();
 
   if (!useTemplating) {
     return [base, extraExtensions];
   }
 
-  const { twig } = await import('./twig/extension');
   return twig({
     base,
     environmentVariables,

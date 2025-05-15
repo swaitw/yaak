@@ -4,6 +4,7 @@ import type { EditorStateConfig, Extension } from '@codemirror/state';
 import { Compartment, EditorState } from '@codemirror/state';
 import { EditorView, keymap, placeholder as placeholderExt, tooltips } from '@codemirror/view';
 import { emacs } from '@replit/codemirror-emacs';
+import { vim } from '@replit/codemirror-vim';
 
 import { vscodeKeymap } from '@replit/codemirror-vscode-keymap';
 import type { EditorKeymap, EnvironmentVariable } from '@yaakapp-internal/models';
@@ -46,8 +47,6 @@ import {
 } from './extensions';
 import type { GenericCompletionConfig } from './genericCompletion';
 import { singleLineExtensions } from './singleLine';
-
-const { vim } = await import('@replit/codemirror-vim');
 
 // VSCode's Tab actions mess with the single-line editor tab actions, so remove it.
 const vsCodeWithoutTab = vscodeKeymap.filter((k) => k.key !== 'Tab');
@@ -366,7 +365,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
   useEffect(() => {
     if (cm.current === null) return;
     const { view, languageCompartment } = cm.current;
-    getLanguageExtension({
+    const ext = getLanguageExtension({
       useTemplating,
       language,
       environmentVariables,
@@ -375,9 +374,8 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
       onClickVariable,
       onClickMissingVariable,
       onClickPathParameter,
-    }).then((ext) => {
-      view.dispatch({ effects: languageCompartment.reconfigure(ext) });
     });
+    view.dispatch({ effects: languageCompartment.reconfigure(ext) });
   }, [
     language,
     autocomplete,
@@ -401,7 +399,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
 
       try {
         const languageCompartment = new Compartment();
-        getLanguageExtension({
+        const langExt = getLanguageExtension({
           useTemplating,
           language,
           completionOptions,
@@ -410,57 +408,56 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
           onClickVariable,
           onClickMissingVariable,
           onClickPathParameter,
-        }).then((langExt) => {
-          const extensions = [
-            languageCompartment.of(langExt),
-            placeholderCompartment.current.of(placeholderExt(placeholderElFromText(placeholder))),
-            wrapLinesCompartment.current.of(wrapLines ? EditorView.lineWrapping : emptyExtension),
-            tabIndentCompartment.current.of(
-              !disableTabIndent ? keymap.of([indentWithTab]) : emptyExtension,
-            ),
-            keymapCompartment.current.of(
-              keymapExtensions[settings.editorKeymap] ?? keymapExtensions['default'],
-            ),
-            ...getExtensions({
-              container,
-              readOnly,
-              singleLine,
-              hideGutter,
-              stateKey,
-              onChange: handleChange,
-              onPaste: handlePaste,
-              onPasteOverwrite: handlePasteOverwrite,
-              onFocus: handleFocus,
-              onBlur: handleBlur,
-              onKeyDown: handleKeyDown,
-            }),
-            ...(extraExtensions ?? []),
-          ];
-
-          const cachedJsonState = getCachedEditorState(defaultValue ?? '', stateKey);
-
-          const doc = `${defaultValue ?? ''}`;
-          const config: EditorStateConfig = { extensions, doc };
-
-          const state = cachedJsonState
-            ? EditorState.fromJSON(cachedJsonState, config, stateFields)
-            : EditorState.create(config);
-
-          const view = new EditorView({ state, parent: container });
-
-          // For large documents, the parser may parse the max number of lines and fail to add
-          // things like fold markers because of it.
-          // This forces it to parse more but keeps the timeout to the default of 100 ms.
-          forceParsing(view, 9e6, 100);
-
-          cm.current = { view, languageCompartment };
-          if (autoFocus) {
-            view.focus();
-          }
-          if (autoSelect) {
-            view.dispatch({ selection: { anchor: 0, head: view.state.doc.length } });
-          }
         });
+        const extensions = [
+          languageCompartment.of(langExt),
+          placeholderCompartment.current.of(placeholderExt(placeholderElFromText(placeholder))),
+          wrapLinesCompartment.current.of(wrapLines ? EditorView.lineWrapping : emptyExtension),
+          tabIndentCompartment.current.of(
+            !disableTabIndent ? keymap.of([indentWithTab]) : emptyExtension,
+          ),
+          keymapCompartment.current.of(
+            keymapExtensions[settings.editorKeymap] ?? keymapExtensions['default'],
+          ),
+          ...getExtensions({
+            container,
+            readOnly,
+            singleLine,
+            hideGutter,
+            stateKey,
+            onChange: handleChange,
+            onPaste: handlePaste,
+            onPasteOverwrite: handlePasteOverwrite,
+            onFocus: handleFocus,
+            onBlur: handleBlur,
+            onKeyDown: handleKeyDown,
+          }),
+          ...(extraExtensions ?? []),
+        ];
+
+        const cachedJsonState = getCachedEditorState(defaultValue ?? '', stateKey);
+
+        const doc = `${defaultValue ?? ''}`;
+        const config: EditorStateConfig = { extensions, doc };
+
+        const state = cachedJsonState
+          ? EditorState.fromJSON(cachedJsonState, config, stateFields)
+          : EditorState.create(config);
+
+        const view = new EditorView({ state, parent: container });
+
+        // For large documents, the parser may parse the max number of lines and fail to add
+        // things like fold markers because of it.
+        // This forces it to parse more but keeps the timeout to the default of 100 ms.
+        forceParsing(view, 9e6, 100);
+
+        cm.current = { view, languageCompartment };
+        if (autoFocus) {
+          view.focus();
+        }
+        if (autoSelect) {
+          view.dispatch({ selection: { anchor: 0, head: view.state.doc.length } });
+        }
       } catch (e) {
         console.log('Failed to initialize Codemirror', e);
       }
