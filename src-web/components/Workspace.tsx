@@ -194,12 +194,18 @@ function WorkspaceBody() {
 
   if (activeWorkspace == null) {
     return (
-      <div className="m-auto">
+      <m.div
+        className="m-auto"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        // Delay the entering because the workspaces might load after a slight delay
+        transition={{ delay: 0.5 }}
+      >
         <Banner color="warning" className="max-w-[30rem]">
           The active workspace was not found. Select a workspace from the header menu or report this
           bug to <FeedbackLink />
         </Banner>
-      </div>
+      </m.div>
     );
   }
 

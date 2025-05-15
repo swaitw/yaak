@@ -13,7 +13,6 @@ import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { KeyboardShortcutsDialog } from './KeyboardShortcutsDialog';
-import { SettingsTab } from './Settings/SettingsTab';
 
 export function SettingsDropdown() {
   const importData = useImportData();
@@ -64,7 +63,7 @@ export function SettingsDropdown() {
           color: 'success',
           hidden: check.data == null || check.data.type === 'commercial_use',
           leftSlot: <Icon icon="circle_dollar_sign" />,
-          onSelect: () => openSettings.mutate(SettingsTab.License),
+          onSelect: () => openSettings.mutate('license'),
         },
         {
           label: 'Check for Updates',

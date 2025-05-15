@@ -1,4 +1,4 @@
-import { SettingsTab } from '../components/Settings/SettingsTab';
+import type { SettingsTab } from '../components/Settings/Settings';
 import { activeWorkspaceIdAtom } from '../hooks/useActiveWorkspace';
 import { createFastMutation } from '../hooks/useFastMutation';
 import { jotaiStore } from '../lib/jotai';
@@ -14,8 +14,9 @@ export const openSettings = createFastMutation<void, string, SettingsTab | null>
     const location = router.buildLocation({
       to: '/workspaces/$workspaceId/settings',
       params: { workspaceId },
-      search: { tab: tab ?? SettingsTab.General },
+      search: { tab },
     });
+
     await invokeCmd('cmd_new_child_window', {
       url: location.href,
       label: 'settings',

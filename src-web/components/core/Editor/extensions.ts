@@ -5,10 +5,6 @@ import {
   completionKeymap,
 } from '@codemirror/autocomplete';
 import { history, historyKeymap } from '@codemirror/commands';
-import { javascript } from '@codemirror/lang-javascript';
-import { json } from '@codemirror/lang-json';
-import { markdown } from '@codemirror/lang-markdown';
-import { xml } from '@codemirror/lang-xml';
 import type { LanguageSupport } from '@codemirror/language';
 import {
   codeFolding,
@@ -27,6 +23,7 @@ import {
   crosshairCursor,
   drawSelection,
   dropCursor,
+  EditorView,
   highlightActiveLineGutter,
   highlightSpecialChars,
   keymap,
@@ -36,15 +33,11 @@ import {
 import { tags as t } from '@lezer/highlight';
 import type { EnvironmentVariable } from '@yaakapp-internal/models';
 import { graphql } from 'cm6-graphql';
-import { EditorView } from 'codemirror';
 import { pluralizeCount } from '../../../lib/pluralize';
 import type { EditorProps } from './Editor';
-import { pairs } from './pairs/extension';
 import { text } from './text/extension';
 import type { TwigCompletionOption } from './twig/completion';
-import { twig } from './twig/extension';
 import { pathParametersPlugin } from './twig/pathParameters';
-import { url } from './url/extension';
 
 export const syntaxHighlightStyle = HighlightStyle.define([
   {
@@ -75,21 +68,25 @@ const syntaxTheme = EditorView.theme({}, { dark: true });
 
 const closeBracketsExtensions: Extension = [closeBrackets(), keymap.of([...closeBracketsKeymap])];
 
-const syntaxExtensions: Record<NonNullable<EditorProps['language']>, LanguageSupport | null> = {
+const syntaxExtensions: Record<
+  NonNullable<EditorProps['language']>,
+  null | (() => Promise<LanguageSupport>)
+> = {
   graphql: null,
-  json: json(),
-  javascript: javascript(),
-  html: xml(), // HTML as XML because HTML is oddly slow
-  xml: xml(),
-  url: url(),
-  pairs: pairs(),
-  text: text(),
-  markdown: markdown(),
+  json: () => import('@codemirror/lang-json').then((m) => m.json()),
+  javascript: () => import('@codemirror/lang-javascript').then((m) => m.javascript()),
+  // HTML as XML because HTML is oddly slow
+  html: () => import('@codemirror/lang-xml').then((m) => m.xml()),
+  xml: () => import('@codemirror/lang-xml').then((m) => m.xml()),
+  url: () => import('./url/extension').then((m) => m.url()),
+  pairs: () => import('./pairs/extension').then((m) => m.pairs()),
+  text: () => import('./text/extension').then((m) => m.text()),
+  markdown: () => import('@codemirror/lang-markdown').then((m) => m.markdown()),
 };
 
 const closeBracketsFor: (keyof typeof syntaxExtensions)[] = ['json', 'javascript', 'graphql'];
 
-export function getLanguageExtension({
+export async function getLanguageExtension({
   useTemplating,
   language = 'text',
   environmentVariables,
@@ -122,12 +119,14 @@ export function getLanguageExtension({
     return [graphql(), extraExtensions];
   }
 
-  const base = syntaxExtensions[language ?? 'text'] ?? text();
+  const base_ = syntaxExtensions[language ?? 'text'] ?? text();
+  const base = typeof base_ === 'function' ? await base_() : text();
 
   if (!useTemplating) {
     return [base, extraExtensions];
   }
 
+  const { twig } = await import('./twig/extension');
   return twig({
     base,
     environmentVariables,

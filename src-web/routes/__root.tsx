@@ -15,26 +15,6 @@ import { useOsInfo } from '../hooks/useOsInfo';
 import { jotaiStore } from '../lib/jotai';
 import { queryClient } from '../lib/queryClient';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const TanStackRouterDevtools =
-  process.env.NODE_ENV === 'production'
-    ? () => null // Render nothing in production
-    : React.lazy(() =>
-        import('@tanstack/router-devtools').then((res) => ({
-          default: res.TanStackRouterDevtools,
-        })),
-      );
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ReactQueryDevtools =
-  process.env.NODE_ENV === 'production'
-    ? () => null // Render nothing in production
-    : React.lazy(() =>
-        import('@tanstack/react-query-devtools').then((res) => ({
-          default: res.ReactQueryDevtools,
-        })),
-      );
-
 export const Route = createRootRoute({
   component: RouteComponent,
   errorComponent: RouteError,
@@ -66,8 +46,6 @@ function RouteComponent() {
             </HelmetProvider>
           </MotionConfig>
         </LazyMotion>
-        {/*<ReactQueryDevtools initialIsOpen />*/}
-        {/*<TanStackRouterDevtools initialIsOpen />*/}
       </QueryClientProvider>
     </JotaiProvider>
   );

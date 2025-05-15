@@ -4,7 +4,7 @@ import type { GenericCompletionOption } from '@yaakapp-internal/plugins';
 import classNames from 'classnames';
 import { atom, useAtomValue } from 'jotai';
 import type { CSSProperties } from 'react';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { lazy, useCallback, useMemo, useState } from 'react';
 import { activeRequestIdAtom } from '../hooks/useActiveRequestId';
 import { useCancelHttpResponse } from '../hooks/useCancelHttpResponse';
 import { useHttpAuthenticationSummaries } from '../hooks/useHttpAuthentication';
@@ -44,12 +44,17 @@ import { TabContent, Tabs } from './core/Tabs/Tabs';
 import { EmptyStateText } from './EmptyStateText';
 import { FormMultipartEditor } from './FormMultipartEditor';
 import { FormUrlencodedEditor } from './FormUrlencodedEditor';
-import { GraphQLEditor } from './GraphQLEditor';
 import { HeadersEditor } from './HeadersEditor';
 import { HttpAuthenticationEditor } from './HttpAuthenticationEditor';
-import { MarkdownEditor } from './MarkdownEditor';
 import { UrlBar } from './UrlBar';
 import { UrlParametersEditor } from './UrlParameterEditor';
+
+const GraphQLEditor = lazy(() =>
+  import('./GraphQLEditor').then((m) => ({ default: m.GraphQLEditor })),
+);
+const MarkdownEditor = lazy(() =>
+  import('./MarkdownEditor').then((m) => ({ default: m.MarkdownEditor })),
+);
 
 interface Props {
   style: CSSProperties;

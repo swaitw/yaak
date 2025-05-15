@@ -1,7 +1,7 @@
 import type { HttpResponse } from '@yaakapp-internal/models';
 import classNames from 'classnames';
 import type { CSSProperties, ReactNode } from 'react';
-import React, { useCallback, useMemo } from 'react';
+import React, { lazy , useCallback, useMemo } from 'react';
 import { useLocalStorage } from 'react-use';
 import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
 import { useResponseViewMode } from '../hooks/useResponseViewMode';
@@ -27,7 +27,10 @@ import { CsvViewer } from './responseViewers/CsvViewer';
 import { EventStreamViewer } from './responseViewers/EventStreamViewer';
 import { HTMLOrTextViewer } from './responseViewers/HTMLOrTextViewer';
 import { ImageViewer } from './responseViewers/ImageViewer';
-import { PdfViewer } from './responseViewers/PdfViewer';
+
+const PdfViewer = lazy(() =>
+  import('./responseViewers/PdfViewer').then((m) => ({ default: m.PdfViewer })),
+);
 import { SvgViewer } from './responseViewers/SvgViewer';
 import { VideoViewer } from './responseViewers/VideoViewer';
 import { ErrorBoundary } from './ErrorBoundary';

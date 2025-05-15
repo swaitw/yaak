@@ -1,6 +1,6 @@
+import type { EditorView } from '@codemirror/view';
 import type { Color } from '@yaakapp/api';
 import classNames from 'classnames';
-import type { EditorView } from 'codemirror';
 import type { ReactNode } from 'react';
 import {
   forwardRef,

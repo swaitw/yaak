@@ -1,5 +1,5 @@
+import type { EditorView } from '@codemirror/view';
 import classNames from 'classnames';
-import type { EditorView } from 'codemirror';
 import {
   forwardRef,
   Fragment,
