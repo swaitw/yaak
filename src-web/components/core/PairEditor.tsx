@@ -221,7 +221,7 @@ export const PairEditor = forwardRef<PairEditorRef, PairEditorProps>(function Pa
         'pb-2 mb-auto h-full',
         !noScroll && 'overflow-y-auto max-h-full',
         // Move over the width of the drag handle
-        '-ml-3 -mr-2 pr-2',
+        '-mr-2 pr-2',
         // Pad to make room for the drag divider
         'pt-0.5',
       )}
@@ -458,26 +458,26 @@ function PairEditorRow({
         !pair.enabled && 'opacity-60',
       )}
     >
+      <Checkbox
+        hideLabel
+        title={pair.enabled ? 'Disable item' : 'Enable item'}
+        disabled={isLast}
+        checked={isLast ? false : !!pair.enabled}
+        className={classNames(isLast && '!opacity-disabled')}
+        onChange={handleChangeEnabled}
+      />
       {!isLast ? (
         <div
           className={classNames(
-            'py-2 h-7 w-3 flex items-center',
+            'py-2 h-7 w-4 flex items-center',
             'justify-center opacity-0 group-hover:opacity-70',
           )}
         >
           <Icon size="sm" icon="grip_vertical" className="pointer-events-none" />
         </div>
       ) : (
-        <span className="w-3" />
+        <span className="w-4" />
       )}
-      <Checkbox
-        hideLabel
-        title={pair.enabled ? 'Disable item' : 'Enable item'}
-        disabled={isLast}
-        checked={isLast ? false : !!pair.enabled}
-        className={classNames('pr-2', isLast && '!opacity-disabled')}
-        onChange={handleChangeEnabled}
-      />
       <div
         className={classNames(
           'grid items-center',
