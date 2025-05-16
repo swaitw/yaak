@@ -6,6 +6,7 @@ export async function getAccessToken(
   ctx: Context, {
     accessTokenUrl,
     scope,
+    audience,
     params,
     grantType,
     credentialsInBody,
@@ -17,6 +18,7 @@ export async function getAccessToken(
     grantType: string;
     accessTokenUrl: string;
     scope: string | null;
+    audience: string | null;
     credentialsInBody: boolean;
     params: HttpUrlParameter[];
   }): Promise<AccessTokenRawResponse> {
@@ -39,6 +41,7 @@ export async function getAccessToken(
   };
 
   if (scope) httpRequest.body!.form.push({ name: 'scope', value: scope });
+  if (scope) httpRequest.body!.form.push({ name: 'audience', value: audience });
 
   if (credentialsInBody) {
     httpRequest.body!.form.push({ name: 'client_id', value: clientId });

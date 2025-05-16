@@ -19,6 +19,7 @@ export async function getAuthorizationCode(
     redirectUri,
     scope,
     state,
+    audience,
     credentialsInBody,
     pkce,
   }: {
@@ -29,6 +30,7 @@ export async function getAuthorizationCode(
     redirectUri: string | null;
     scope: string | null;
     state: string | null;
+    audience: string | null;
     credentialsInBody: boolean;
     pkce: {
       challengeMethod: string | null;
@@ -53,6 +55,7 @@ export async function getAuthorizationCode(
   if (redirectUri) authorizationUrl.searchParams.set('redirect_uri', redirectUri);
   if (scope) authorizationUrl.searchParams.set('scope', scope);
   if (state) authorizationUrl.searchParams.set('state', state);
+  if (audience) authorizationUrl.searchParams.set('audience', audience);
   if (pkce) {
     const verifier = pkce.codeVerifier || createPkceCodeVerifier();
     const challengeMethod = pkce.challengeMethod || DEFAULT_PKCE_METHOD;
@@ -95,6 +98,7 @@ export async function getAuthorizationCode(
           clientId,
           clientSecret,
           scope,
+          audience,
           credentialsInBody,
           params: [
             { name: 'code', value: code },

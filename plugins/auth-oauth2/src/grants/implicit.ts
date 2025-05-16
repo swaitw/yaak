@@ -11,6 +11,7 @@ export function getImplicit(
     redirectUri,
     scope,
     state,
+    audience,
   }: {
     authorizationUrl: string;
     responseType: string;
@@ -18,6 +19,7 @@ export function getImplicit(
     redirectUri: string | null;
     scope: string | null;
     state: string | null;
+    audience: string | null;
   },
 ) :Promise<AccessToken> {
   return new Promise(async (resolve, reject) => {
@@ -34,6 +36,7 @@ export function getImplicit(
     if (redirectUri) authorizationUrl.searchParams.set('redirect_uri', redirectUri);
     if (scope) authorizationUrl.searchParams.set('scope', scope);
     if (state) authorizationUrl.searchParams.set('state', state);
+    if (audience) authorizationUrl.searchParams.set('audience', audience);
     if (responseType.includes('id_token')) {
       authorizationUrl.searchParams.set('nonce', String(Math.floor(Math.random() * 9999999999999) + 1));
     }

@@ -13,6 +13,7 @@ export async function getPassword(
     username,
     password,
     credentialsInBody,
+    audience,
     scope,
   }: {
     accessTokenUrl: string;
@@ -21,6 +22,7 @@ export async function getPassword(
     username: string;
     password: string;
     scope: string | null;
+    audience: string | null;
     credentialsInBody: boolean;
   },
 ): Promise<AccessToken> {
@@ -40,6 +42,7 @@ export async function getPassword(
     clientId,
     clientSecret,
     scope,
+    audience,
     grantType: 'password',
     credentialsInBody,
     params: [

@@ -157,6 +157,12 @@ export const plugin: PluginDefinition = {
         dynamic: hiddenIfNot(['authorization_code', 'implicit']),
       },
       {
+        type: 'text',
+        name: 'audience',
+        label: 'Audience',
+        optional: true,
+      },
+      {
         type: 'checkbox',
         name: 'usePkce',
         label: 'Use PKCE',
@@ -258,6 +264,7 @@ export const plugin: PluginDefinition = {
           clientSecret: stringArg(values, 'clientSecret'),
           redirectUri: stringArgOrNull(values, 'redirectUri'),
           scope: stringArgOrNull(values, 'scope'),
+          audience: stringArgOrNull(values, 'audience'),
           state: stringArgOrNull(values, 'state'),
           credentialsInBody,
           pkce: values.usePkce ? {
@@ -273,6 +280,7 @@ export const plugin: PluginDefinition = {
           redirectUri: stringArgOrNull(values, 'redirectUri'),
           responseType: stringArg(values, 'responseType'),
           scope: stringArgOrNull(values, 'scope'),
+          audience: stringArgOrNull(values, 'audience'),
           state: stringArgOrNull(values, 'state'),
         });
       } else if (grantType === 'client_credentials') {
@@ -282,6 +290,7 @@ export const plugin: PluginDefinition = {
           clientId: stringArg(values, 'clientId'),
           clientSecret: stringArg(values, 'clientSecret'),
           scope: stringArgOrNull(values, 'scope'),
+          audience: stringArgOrNull(values, 'audience'),
           credentialsInBody,
         });
       } else if (grantType === 'password') {
@@ -293,6 +302,7 @@ export const plugin: PluginDefinition = {
           username: stringArg(values, 'username'),
           password: stringArg(values, 'password'),
           scope: stringArgOrNull(values, 'scope'),
+          audience: stringArgOrNull(values, 'audience'),
           credentialsInBody,
         });
       } else {

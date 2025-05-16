@@ -10,12 +10,14 @@ export async function getClientCredentials(
     clientId,
     clientSecret,
     scope,
+    audience,
     credentialsInBody,
   }: {
     accessTokenUrl: string;
     clientId: string;
     clientSecret: string;
     scope: string | null;
+    audience: string | null;
     credentialsInBody: boolean;
   },
 ) {
@@ -29,6 +31,7 @@ export async function getClientCredentials(
   const response = await getAccessToken(ctx, {
     grantType: 'client_credentials',
     accessTokenUrl,
+    audience,
     clientId,
     clientSecret,
     scope,
