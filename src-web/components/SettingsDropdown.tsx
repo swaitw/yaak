@@ -2,7 +2,7 @@ import { openUrl } from '@tauri-apps/plugin-opener';
 import { useLicense } from '@yaakapp-internal/license';
 import { useRef } from 'react';
 import { openSettings } from '../commands/openSettings';
-import { useAppInfo } from '../hooks/useAppInfo';
+import { appInfo } from '../lib/appInfo';
 import { useCheckForUpdates } from '../hooks/useCheckForUpdates';
 import { useExportData } from '../hooks/useExportData';
 import { useImportData } from '../hooks/useImportData';
@@ -17,7 +17,6 @@ import { KeyboardShortcutsDialog } from './KeyboardShortcutsDialog';
 export function SettingsDropdown() {
   const importData = useImportData();
   const exportData = useExportData();
-  const appInfo = useAppInfo();
   const dropdownRef = useRef<DropdownRef>(null);
   const checkForUpdates = useCheckForUpdates();
   const { check } = useLicense();
