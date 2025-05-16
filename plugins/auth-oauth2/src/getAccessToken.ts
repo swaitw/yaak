@@ -53,11 +53,11 @@ export async function getAccessToken(
 
   const resp = await ctx.httpRequest.send({ httpRequest });
 
-  if (resp.status < 200 || resp.status >= 300) {
-    throw new Error('Failed to fetch access token with status=' + resp.status);
-  }
+  const body = resp.bodyPath ? readFileSync(resp.bodyPath, 'utf8') : '';
 
-  const body = readFileSync(resp.bodyPath ?? '', 'utf8');
+  if (resp.status < 200 || resp.status >= 300) {
+    throw new Error('Failed to fetch access token with status=' + resp.status + ' and body=' + body);
+  }
 
   let response;
   try {

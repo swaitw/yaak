@@ -73,11 +73,11 @@ export async function getOrRefreshAccessToken(ctx: Context, contextId: string, {
     return null;
   }
 
-  if (resp.status < 200 || resp.status >= 300) {
-    throw new Error('Failed to fetch access token with status=' + resp.status);
-  }
+  const body = resp.bodyPath ? readFileSync(resp.bodyPath, 'utf8') : '';
 
-  const body = readFileSync(resp.bodyPath ?? '', 'utf8');
+  if (resp.status < 200 || resp.status >= 300) {
+    throw new Error('Failed to refresh access token with status=' + resp.status + ' and body=' + body);
+  }
 
   let response;
   try {
