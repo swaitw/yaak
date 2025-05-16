@@ -116,14 +116,16 @@ export function TextViewer({ language, text, responseId, requestId, pretty, clas
     body = formattedBody.data;
   }
 
-  // Decode unicode sequences in the text to readable characters  
-  const decodedBodyText = unescape(body.replace(/\\u/g, '%u')) || body;
+  // Decode unicode sequences in the text to readable characters
+  if (pretty) {
+    body = decodeUnicodeLiterals(body);
+  }
 
   return (
     <Editor
       readOnly
       className={className}
-      defaultValue={decodedBodyText}
+      defaultValue={body}
       language={language}
       actions={actions}
       extraExtensions={extraExtensions}
@@ -132,3 +134,11 @@ export function TextViewer({ language, text, responseId, requestId, pretty, clas
   );
 }
 
+/** Convert \uXXXX to actual Unicode characters */
+function decodeUnicodeLiterals(text: string): string {
+  const decoded = text.replace(/\\u([0-9a-fA-F]{4})/g, (_, hex) => {
+    const charCode = parseInt(hex, 16);
+    return String.fromCharCode(charCode);
+  });
+  return decoded;
+}
