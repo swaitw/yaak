@@ -9,13 +9,6 @@ import { initSync } from './init/sync';
 import { jotaiStore } from './lib/jotai';
 import { router } from './lib/router';
 
-import('react-pdf').then(({ pdfjs }) => {
-  pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-    'pdfjs-dist/build/pdf.worker.min.mjs',
-    import.meta.url,
-  ).toString();
-});
-
 // Hide decorations here because it doesn't work in Rust for some reason (bug?)
 const osType = type();
 if (osType !== 'macos') {
