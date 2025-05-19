@@ -1,17 +1,70 @@
-@top Template { (Tag | Text)* }
-
-@local tokens {
-  TagClose { "]}" }
-  @else TagContent
+@precedence {
+  top,
+  mid,
+  lesser
 }
 
-@skip { } {
-  TagOpen { "${[" }
-  Tag { TagOpen (TagContent)+ TagClose }
+@top Template { (Tag | PlainText)* }
+
+@skip { space }
+
+Tag { "${[" expression* "]}" }
+
+commaSep<content> { "" | content ("," content?)* }
+
+expression {
+  Function |
+  Assignment |
+  Identifier |
+  ChainedIdentifier |
+  basicType |
+  hashStructure
 }
+
+basicType {
+  String |
+  Boolean |
+  Number
+}
+
+functionParam {
+  Identifier |
+  Assignment |
+  basicType
+}
+
+FunctionParamList {
+  "(" commaSep<functionParam> ")"
+}
+
+Assignment { Identifier "=" expression }
+
+Function { (Identifier | ChainedIdentifier) !top FunctionParamList}
 
 @tokens {
-  Text { ![$] Text? | "$" (@eof | ![{] Text?) }
+  PlainText { ![$] PlainText? | "$" (@eof | ![{[] PlainText?) }
+
+  Identifier { $[a-zA-Z_\-0-9]+ }
+  ChainedIdentifier { Identifier ("." Identifier)+ }
+
+  hashStructure { "{" | "}" | ":" | ","}
+
+  Boolean { "true" | "false" }
+  String { ("'" (![\\'] | "\\" _)* "'"?) | ("\"" (![\\"] | "\\" _)* "\""?) }
+  Number { '-'? int frac? }
+  int  { '0' | $[1-9] @digit* }
+  frac { '.' @digit+ }
+
+  @precedence { PlainText, Boolean, Number, ChainedIdentifier, Identifier, space, String }
+
+  space { $[ \t\n\r]+ }
+
+  "${[" "]}"
+  "(" ")"
+  "="
+  ","
 }
 
 @external propSource highlight from "./highlight"
+
+@detectDelim
