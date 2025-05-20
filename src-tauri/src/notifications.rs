@@ -1,4 +1,3 @@
-use std::ops::Deref;
 use std::time::SystemTime;
 
 use crate::error::Result;
@@ -9,7 +8,7 @@ use reqwest::Method;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use tauri::{AppHandle, Emitter, Manager, Runtime, WebviewWindow};
-use yaak_license::{check_license, LicenseCheckStatus};
+use yaak_license::{LicenseCheckStatus, check_license};
 use yaak_models::query_manager::QueryManagerExt;
 use yaak_models::util::UpdateSource;
 
