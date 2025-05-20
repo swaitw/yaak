@@ -113,6 +113,7 @@
         "workspaceId": "GENERATE_ID::wrk_d4d92f7c0ee947b89159243506687019"
       }
     ],
+    "websocketRequests": [],
     "workspaces": [
       {
         "createdAt": "2025-01-13T15:15:43.765",
