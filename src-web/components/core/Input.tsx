@@ -174,14 +174,11 @@ const BaseInput = forwardRef<EditorView, InputProps>(function InputBase(
   );
 
   const isValid = useMemo(() => {
-    console.log('CHECKING VALIDITY', validate);
     if (required && !validateRequire(defaultValue ?? '')) return false;
     if (typeof validate === 'boolean') return validate;
     if (typeof validate === 'function' && !validate(defaultValue ?? '')) return false;
     return true;
   }, [required, defaultValue, validate]);
-
-  console.log('IS VALID', isValid, defaultValue);
 
   const handleChange = useCallback(
     (value: string) => {
