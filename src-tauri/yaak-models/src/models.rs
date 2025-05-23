@@ -219,8 +219,13 @@ pub struct Workspace {
     pub id: String,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
-    pub name: String,
+
+    #[ts(type = "Record<string, any>")]
+    pub authentication: BTreeMap<String, Value>,
+    pub authentication_type: Option<String>,
     pub description: String,
+    pub headers: Vec<HttpRequestHeader>,
+    pub name: String,
     pub encryption_key_challenge: Option<String>,
 
     // Settings
@@ -261,6 +266,9 @@ impl UpsertModelInfo for Workspace {
             (CreatedAt, upsert_date(source, self.created_at)),
             (UpdatedAt, upsert_date(source, self.updated_at)),
             (Name, self.name.trim().into()),
+            (Authentication, serde_json::to_string(&self.authentication)?.into()),
+            (AuthenticationType, self.authentication_type.into()),
+            (Headers, serde_json::to_string(&self.headers)?.into()),
             (Description, self.description.into()),
             (EncryptionKeyChallenge, self.encryption_key_challenge.into()),
             (SettingFollowRedirects, self.setting_follow_redirects.into()),
@@ -273,6 +281,9 @@ impl UpsertModelInfo for Workspace {
         vec![
             WorkspaceIden::UpdatedAt,
             WorkspaceIden::Name,
+            WorkspaceIden::Authentication,
+            WorkspaceIden::AuthenticationType,
+            WorkspaceIden::Headers,
             WorkspaceIden::Description,
             WorkspaceIden::EncryptionKeyChallenge,
             WorkspaceIden::SettingRequestTimeout,
@@ -286,6 +297,8 @@ impl UpsertModelInfo for Workspace {
     where
         Self: Sized,
     {
+        let headers: String = row.get("headers")?;
+        let authentication: String = row.get("authentication")?;
         Ok(Self {
             id: row.get("id")?,
             model: row.get("model")?,
@@ -294,6 +307,9 @@ impl UpsertModelInfo for Workspace {
             name: row.get("name")?,
             description: row.get("description")?,
             encryption_key_challenge: row.get("encryption_key_challenge")?,
+            headers: serde_json::from_str(&headers).unwrap_or_default(),
+            authentication: serde_json::from_str(&authentication).unwrap_or_default(),
+            authentication_type: row.get("authentication_type")?,
             setting_follow_redirects: row.get("setting_follow_redirects")?,
             setting_request_timeout: row.get("setting_request_timeout")?,
             setting_validate_certificates: row.get("setting_validate_certificates")?,
@@ -584,6 +600,22 @@ pub struct EnvironmentVariable {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export, export_to = "gen_models.ts")]
+pub struct ParentAuthentication {
+    #[ts(type = "Record<string, any>")]
+    pub authentication: BTreeMap<String, Value>,
+    pub authentication_type: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "gen_models.ts")]
+pub struct ParentHeaders {
+    pub headers: Vec<HttpRequestHeader>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "gen_models.ts")]
 #[enum_def(table_name = "folders")]
 pub struct Folder {
     #[ts(type = "\"folder\"")]
@@ -594,8 +626,12 @@ pub struct Folder {
     pub workspace_id: String,
     pub folder_id: Option<String>,
 
-    pub name: String,
+    #[ts(type = "Record<string, any>")]
+    pub authentication: BTreeMap<String, Value>,
+    pub authentication_type: Option<String>,
     pub description: String,
+    pub headers: Vec<HttpRequestHeader>,
+    pub name: String,
     pub sort_priority: f32,
 }
 
@@ -630,8 +666,11 @@ impl UpsertModelInfo for Folder {
             (UpdatedAt, upsert_date(source, self.updated_at)),
             (WorkspaceId, self.workspace_id.into()),
             (FolderId, self.folder_id.into()),
-            (Name, self.name.trim().into()),
+            (Authentication, serde_json::to_string(&self.authentication)?.into()),
+            (AuthenticationType, self.authentication_type.into()),
+            (Headers, serde_json::to_string(&self.headers)?.into()),
             (Description, self.description.into()),
+            (Name, self.name.trim().into()),
             (SortPriority, self.sort_priority.into()),
         ])
     }
@@ -640,6 +679,9 @@ impl UpsertModelInfo for Folder {
         vec![
             FolderIden::UpdatedAt,
             FolderIden::Name,
+            FolderIden::Authentication,
+            FolderIden::AuthenticationType,
+            FolderIden::Headers,
             FolderIden::Description,
             FolderIden::FolderId,
             FolderIden::SortPriority,
@@ -650,6 +692,8 @@ impl UpsertModelInfo for Folder {
     where
         Self: Sized,
     {
+        let headers: String = row.get("headers")?;
+        let authentication: String = row.get("authentication")?;
         Ok(Self {
             id: row.get("id")?,
             model: row.get("model")?,
@@ -660,6 +704,9 @@ impl UpsertModelInfo for Folder {
             folder_id: row.get("folder_id")?,
             name: row.get("name")?,
             description: row.get("description")?,
+            headers: serde_json::from_str(&headers).unwrap_or_default(),
+            authentication_type: row.get("authentication_type")?,
+            authentication: serde_json::from_str(&authentication).unwrap_or_default(),
         })
     }
 }
@@ -782,28 +829,28 @@ impl UpsertModelInfo for HttpRequest {
         ]
     }
 
-    fn from_row(r: &Row) -> rusqlite::Result<Self> {
-        let url_parameters: String = r.get("url_parameters")?;
-        let body: String = r.get("body")?;
-        let authentication: String = r.get("authentication")?;
-        let headers: String = r.get("headers")?;
+    fn from_row(row: &Row) -> rusqlite::Result<Self> {
+        let url_parameters: String = row.get("url_parameters")?;
+        let body: String = row.get("body")?;
+        let authentication: String = row.get("authentication")?;
+        let headers: String = row.get("headers")?;
         Ok(Self {
-            id: r.get("id")?,
-            model: r.get("model")?,
-            workspace_id: r.get("workspace_id")?,
-            created_at: r.get("created_at")?,
-            updated_at: r.get("updated_at")?,
+            id: row.get("id")?,
+            model: row.get("model")?,
+            workspace_id: row.get("workspace_id")?,
+            created_at: row.get("created_at")?,
+            updated_at: row.get("updated_at")?,
             authentication: serde_json::from_str(authentication.as_str()).unwrap_or_default(),
-            authentication_type: r.get("authentication_type")?,
+            authentication_type: row.get("authentication_type")?,
             body: serde_json::from_str(body.as_str()).unwrap_or_default(),
-            body_type: r.get("body_type")?,
-            description: r.get("description")?,
-            folder_id: r.get("folder_id")?,
+            body_type: row.get("body_type")?,
+            description: row.get("description")?,
+            folder_id: row.get("folder_id")?,
             headers: serde_json::from_str(headers.as_str()).unwrap_or_default(),
-            method: r.get("method")?,
-            name: r.get("name")?,
-            sort_priority: r.get("sort_priority")?,
-            url: r.get("url")?,
+            method: row.get("method")?,
+            name: row.get("name")?,
+            sort_priority: row.get("sort_priority")?,
+            url: row.get("url")?,
             url_parameters: serde_json::from_str(url_parameters.as_str()).unwrap_or_default(),
         })
     }
@@ -992,7 +1039,7 @@ impl UpsertModelInfo for WebsocketRequest {
             (WorkspaceId, self.workspace_id.into()),
             (FolderId, self.folder_id.as_ref().map(|s| s.as_str()).into()),
             (Authentication, serde_json::to_string(&self.authentication)?.into()),
-            (AuthenticationType, self.authentication_type.as_ref().map(|s| s.as_str()).into()),
+            (AuthenticationType, self.authentication_type.into()),
             (Description, self.description.into()),
             (Headers, serde_json::to_string(&self.headers)?.into()),
             (Message, self.message.into()),
@@ -1298,19 +1345,6 @@ impl UpsertModelInfo for HttpResponse {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export, export_to = "gen_models.ts")]
-pub struct GrpcMetadataEntry {
-    #[serde(default = "default_true")]
-    #[ts(optional, as = "Option<bool>")]
-    pub enabled: bool,
-    pub name: String,
-    pub value: String,
-    #[ts(optional, as = "Option<String>")]
-    pub id: Option<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default, TS)]
-#[serde(default, rename_all = "camelCase")]
-#[ts(export, export_to = "gen_models.ts")]
 #[enum_def(table_name = "grpc_requests")]
 pub struct GrpcRequest {
     #[ts(type = "\"grpc_request\"")]
@@ -1326,7 +1360,7 @@ pub struct GrpcRequest {
     pub authentication: BTreeMap<String, Value>,
     pub description: String,
     pub message: String,
-    pub metadata: Vec<GrpcMetadataEntry>,
+    pub metadata: Vec<HttpRequestHeader>,
     pub method: Option<String>,
     pub name: String,
     pub service: Option<String>,
