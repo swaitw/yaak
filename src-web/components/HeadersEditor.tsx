@@ -55,6 +55,10 @@ export function HeadersEditor({
                   onMove={() => {}}
                   pair={ensurePairId(pair)}
                   stateKey={null}
+                  nameAutocompleteFunctions
+                  nameAutocompleteVariables
+                  valueAutocompleteFunctions
+                  valueAutocompleteVariables
                 />
               ))}
             </div>
