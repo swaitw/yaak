@@ -5,6 +5,7 @@ import { useAtomValue } from 'jotai';
 import type { KeyboardEvent, ReactNode } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createFolder } from '../commands/commands';
+import { createEnvironmentAndActivate } from '../commands/createEnvironment';
 import { openSettings } from '../commands/openSettings';
 import { switchWorkspace } from '../commands/switchWorkspace';
 import { useActiveCookieJar } from '../hooks/useActiveCookieJar';
@@ -12,7 +13,6 @@ import { useActiveEnvironment } from '../hooks/useActiveEnvironment';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { activeWorkspaceIdAtom } from '../hooks/useActiveWorkspace';
 import { useAllRequests } from '../hooks/useAllRequests';
-import { useCreateEnvironment } from '../hooks/useCreateEnvironment';
 import { useCreateWorkspace } from '../hooks/useCreateWorkspace';
 import { useDebouncedState } from '../hooks/useDebouncedState';
 import { useEnvironmentsBreakdown } from '../hooks/useEnvironmentsBreakdown';
@@ -72,7 +72,6 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
   const activeCookieJar = useActiveCookieJar();
   const [recentRequests] = useRecentRequests();
   const [, setSidebarHidden] = useSidebarHidden();
-  const { mutate: createEnvironment } = useCreateEnvironment();
   const { mutate: sendRequest } = useSendAnyHttpRequest();
 
   const workspaceCommands = useMemo<CommandPaletteItem[]>(() => {
@@ -139,7 +138,7 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
       {
         key: 'environment.create',
         label: 'Create Environment',
-        onSelect: () => createEnvironment(baseEnvironment),
+        onSelect: () => createEnvironmentAndActivate.mutate(baseEnvironment),
       },
       {
         key: 'sidebar.toggle',
@@ -190,7 +189,6 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
     activeEnvironment,
     activeRequest,
     baseEnvironment,
-    createEnvironment,
     createWorkspace,
     httpRequestActions,
     sendRequest,
