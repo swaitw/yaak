@@ -153,7 +153,10 @@ pub async fn send_http_request<R: Runtime>(
 
     // Add cookie store if specified
     let maybe_cookie_manager = match cookie_jar.clone() {
-        Some(cj) => {
+        Some(CookieJar { id, .. }) => {
+            // NOTE: WE need to refetch the cookie jar because a chained request might have
+            //  updated cookies when we rendered the request.
+            let cj = window.db().get_cookie_jar(&id)?;
             // HACK: Can't construct Cookie without serde, so we have to do this
             let cookies = cj
                 .cookies
