@@ -1,7 +1,10 @@
-import { PluginWindowContext, TemplateFunctionArg } from '@yaakapp-internal/plugins';
-import type {
+import {
+  GetCookieValueRequest,
+  GetCookieValueResponse,
+  ListCookieNamesResponse,
+  PluginWindowContext,
+  TemplateFunctionArg,
   BootRequest,
-  Context,
   DeleteKeyValueResponse,
   FindHttpResponsesResponse,
   FormInput,
@@ -12,16 +15,17 @@ import type {
   InternalEvent,
   InternalEventPayload,
   JsonPrimitive,
-  PluginDefinition,
   PromptTextResponse,
   RenderHttpRequestResponse,
   SendHttpRequestResponse,
   TemplateFunction,
   TemplateRenderResponse,
-} from '@yaakapp/api';
+} from '@yaakapp-internal/plugins';
+import { Context, PluginDefinition } from '@yaakapp/api';
 import console from 'node:console';
 import { readFileSync, type Stats, statSync, watch } from 'node:fs';
 import path from 'node:path';
+import Promise from '../../../../../Library/Caches/deno/npm/registry.npmjs.org/any-promise/1.3.0';
 // import util from 'node:util';
 import { EventChannel } from './EventChannel';
 // import { interceptStdout } from './interceptStdout';
@@ -493,6 +497,27 @@ export class PluginInstance {
             payload,
           );
           return httpRequest;
+        },
+      },
+      cookies: {
+        getValue: async (args: GetCookieValueRequest) => {
+          const payload = {
+            type: 'get_cookie_value_request',
+            ...args,
+          } as const;
+          const { value } = await this.#sendAndWaitForReply<GetCookieValueResponse>(
+            event.windowContext,
+            payload,
+          );
+          return value;
+        },
+        listNames: async () => {
+          const payload = { type: 'list_cookie_names_request' } as const;
+          const { names } = await this.#sendAndWaitForReply<ListCookieNamesResponse>(
+            event.windowContext,
+            payload,
+          );
+          return names;
         },
       },
       templates: {

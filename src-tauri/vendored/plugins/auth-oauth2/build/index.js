@@ -330,7 +330,7 @@ function getImplicit(ctx, contextId, {
     if (token) {
     }
     const authorizationUrl = new URL(`${authorizationUrlRaw ?? ""}`);
-    authorizationUrl.searchParams.set("response_type", "code");
+    authorizationUrl.searchParams.set("response_type", "token");
     authorizationUrl.searchParams.set("client_id", clientId);
     if (redirectUri) authorizationUrl.searchParams.set("redirect_uri", redirectUri);
     if (scope) authorizationUrl.searchParams.set("scope", scope);
@@ -340,22 +340,28 @@ function getImplicit(ctx, contextId, {
       authorizationUrl.searchParams.set("nonce", String(Math.floor(Math.random() * 9999999999999) + 1));
     }
     const authorizationUrlStr = authorizationUrl.toString();
+    let foundAccessToken = false;
     let { close } = await ctx.window.openUrl({
       url: authorizationUrlStr,
       label: "oauth-authorization-url",
+      async onClose() {
+        if (!foundAccessToken) {
+          reject(new Error("Authorization window closed"));
+        }
+      },
       async onNavigate({ url: urlStr }) {
         const url = new URL(urlStr);
         if (url.searchParams.has("error")) {
           return reject(Error(`Failed to authorize: ${url.searchParams.get("error")}`));
         }
-        close();
         const hash = url.hash.slice(1);
         const params = new URLSearchParams(hash);
-        const idToken = params.get("id_token");
-        if (idToken) {
-          params.set("access_token", idToken);
-          params.delete("id_token");
+        const accessToken = params.get("access_token");
+        if (!accessToken) {
+          return;
         }
+        foundAccessToken = true;
+        close();
         const response = Object.fromEntries(params);
         try {
           resolve(await storeToken(ctx, contextId, response));

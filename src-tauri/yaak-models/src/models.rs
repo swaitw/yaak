@@ -418,10 +418,10 @@ enum CookieExpires {
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "gen_models.ts")]
 pub struct Cookie {
-    raw_cookie: String,
-    domain: CookieDomain,
-    expires: CookieExpires,
-    path: (String, bool),
+    pub raw_cookie: String,
+    pub domain: CookieDomain,
+    pub expires: CookieExpires,
+    pub path: (String, bool),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]

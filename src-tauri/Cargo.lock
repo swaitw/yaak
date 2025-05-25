@@ -8041,6 +8041,7 @@ name = "yaak-app"
 version = "0.0.0"
 dependencies = [
  "chrono",
+ "cookie",
  "encoding_rs",
  "eventsource-client",
  "http",

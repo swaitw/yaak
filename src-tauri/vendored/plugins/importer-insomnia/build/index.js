@@ -7564,7 +7564,7 @@ function importHttpRequest2(r, workspaceId, parentId) {
   const sortKey = r.meta?.sortKey ?? r.sortKey;
   let bodyType = null;
   let body = {};
-  if (r.body.mimeType === "application/octet-stream") {
+  if (r.body?.mimeType === "application/octet-stream") {
     bodyType = "binary";
     body = { filePath: r.body.fileName ?? "" };
   } else if (r.body?.mimeType === "application/x-www-form-urlencoded") {
@@ -7720,7 +7720,7 @@ function importEnvironment2(e, workspaceId, isParent) {
     base: isParent ?? e.parentId === workspaceId,
     model: "environment",
     name: e.name,
-    variables: Object.entries(e.data).map(([name, value]) => ({
+    variables: Object.entries(e.data ?? {}).map(([name, value]) => ({
       enabled: true,
       name,
       value: `${value}`
