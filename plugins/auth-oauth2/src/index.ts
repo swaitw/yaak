@@ -115,7 +115,6 @@ export const plugin: PluginDefinition = {
         label: 'Client ID',
         optional: true,
       },
-
       {
         type: 'text',
         name: 'clientSecret',
