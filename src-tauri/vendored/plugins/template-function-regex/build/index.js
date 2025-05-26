@@ -24,22 +24,27 @@ __export(src_exports, {
 });
 module.exports = __toCommonJS(src_exports);
 var plugin = {
-  templateFunctions: [
-    {
-      name: "cookie.value",
-      description: "Read the value of a cookie in the jar, by name",
-      args: [
-        {
-          type: "text",
-          name: "cookie_name",
-          label: "Cookie Name"
-        }
-      ],
-      async onRender(ctx, args) {
-        return ctx.cookies.getValue({ name: String(args.values.cookie_name) });
-      }
+  templateFunctions: [{
+    name: "regex.match",
+    description: "Extract",
+    args: [
+      {
+        type: "text",
+        name: "regex",
+        label: "Regular Expression",
+        placeholder: "^w+=(?<value>w*)$",
+        defaultValue: "^(.*)$",
+        description: "A JavaScript regular expression, evaluated using the Node.js RegExp engine. Capture groups or named groups can be used to extract values."
+      },
+      { type: "text", name: "input", label: "Input Text", multiLine: true }
+    ],
+    async onRender(_ctx, args) {
+      if (!args.values.regex) return "";
+      const regex = new RegExp(String(args.values.regex));
+      const match = args.values.input?.match(regex);
+      return match?.groups ? Object.values(match.groups)[0] ?? "" : match?.[1] ?? match?.[0] ?? "";
     }
-  ]
+  }]
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

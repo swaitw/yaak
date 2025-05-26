@@ -104,7 +104,11 @@ hideLabel?: boolean,
 /**
  * The default value
  */
-defaultValue?: string, disabled?: boolean, };
+defaultValue?: string, disabled?: boolean, 
+/**
+ * Longer description of the input, likely shown in a tooltip
+ */
+description?: string, };
 
 export type FormInputCheckbox = { 
 /**
@@ -131,7 +135,11 @@ hideLabel?: boolean,
 /**
  * The default value
  */
-defaultValue?: string, disabled?: boolean, };
+defaultValue?: string, disabled?: boolean, 
+/**
+ * Longer description of the input, likely shown in a tooltip
+ */
+description?: string, };
 
 export type FormInputEditor = { 
 /**
@@ -170,7 +178,11 @@ hideLabel?: boolean,
 /**
  * The default value
  */
-defaultValue?: string, disabled?: boolean, };
+defaultValue?: string, disabled?: boolean, 
+/**
+ * Longer description of the input, likely shown in a tooltip
+ */
+description?: string, };
 
 export type FormInputFile = { 
 /**
@@ -205,7 +217,11 @@ hideLabel?: boolean,
 /**
  * The default value
  */
-defaultValue?: string, disabled?: boolean, };
+defaultValue?: string, disabled?: boolean, 
+/**
+ * Longer description of the input, likely shown in a tooltip
+ */
+description?: string, };
 
 export type FormInputHttpRequest = { 
 /**
@@ -232,7 +248,11 @@ hideLabel?: boolean,
 /**
  * The default value
  */
-defaultValue?: string, disabled?: boolean, };
+defaultValue?: string, disabled?: boolean, 
+/**
+ * Longer description of the input, likely shown in a tooltip
+ */
+description?: string, };
 
 export type FormInputMarkdown = { content: string, hidden?: boolean, };
 
@@ -265,7 +285,11 @@ hideLabel?: boolean,
 /**
  * The default value
  */
-defaultValue?: string, disabled?: boolean, };
+defaultValue?: string, disabled?: boolean, 
+/**
+ * Longer description of the input, likely shown in a tooltip
+ */
+description?: string, };
 
 export type FormInputSelectOption = { label: string, value: string, };
 
@@ -306,7 +330,11 @@ hideLabel?: boolean,
 /**
  * The default value
  */
-defaultValue?: string, disabled?: boolean, };
+defaultValue?: string, disabled?: boolean, 
+/**
+ * Longer description of the input, likely shown in a tooltip
+ */
+description?: string, };
 
 export type GenericCompletionOption = { label: string, detail?: string, info?: string, type?: CompletionOptionType, boost?: number, };
 

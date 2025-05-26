@@ -16,6 +16,7 @@ export interface SelectProps<T extends string> {
   labelClassName?: string;
   hideLabel?: boolean;
   value: T;
+  help?: ReactNode;
   leftSlot?: ReactNode;
   options: RadioDropdownItem<T>[];
   onChange: (value: T) => void;
@@ -28,6 +29,7 @@ export interface SelectProps<T extends string> {
 export function Select<T extends string>({
   labelPosition = 'top',
   name,
+  help,
   labelClassName,
   disabled,
   hideLabel,
@@ -59,7 +61,7 @@ export function Select<T extends string>({
         labelPosition === 'top' && 'flex-row gap-0.5',
       )}
     >
-      <Label htmlFor={id} visuallyHidden={hideLabel} className={labelClassName}>
+      <Label htmlFor={id} visuallyHidden={hideLabel} className={labelClassName} help={help}>
         {label}
       </Label>
       {type() === 'macos' ? (

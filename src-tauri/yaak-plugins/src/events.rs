@@ -594,6 +594,10 @@ pub struct FormInputBase {
 
     #[ts(optional)]
     pub disabled: Option<bool>,
+
+    /// Longer description of the input, likely shown in a tooltip
+    #[ts(optional)]
+    pub description: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]

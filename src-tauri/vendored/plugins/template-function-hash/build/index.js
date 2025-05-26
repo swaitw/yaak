@@ -25,24 +25,76 @@ __export(src_exports, {
 module.exports = __toCommonJS(src_exports);
 var import_node_crypto = require("node:crypto");
 var algorithms = ["md5", "sha1", "sha256", "sha512"];
-var plugin = {
-  templateFunctions: algorithms.map((algorithm) => ({
-    name: `hash.${algorithm}`,
-    description: "Hash a value to its hexidecimal representation",
-    args: [
-      {
-        name: "input",
-        label: "Input",
-        placeholder: "input text",
-        type: "text"
-      }
-    ],
-    async onRender(_ctx, args) {
-      if (!args.values.input) return "";
-      return (0, import_node_crypto.createHash)(algorithm).update(args.values.input, "utf-8").digest("hex");
+var encodings = ["base64", "hex"];
+var hashFunctions = algorithms.map((algorithm) => ({
+  name: `hash.${algorithm}`,
+  description: "Hash a value to its hexidecimal representation",
+  args: [
+    {
+      type: "text",
+      name: "input",
+      label: "Input",
+      placeholder: "input text",
+      multiLine: true
+    },
+    {
+      type: "select",
+      name: "encoding",
+      label: "Encoding",
+      defaultValue: "base64",
+      options: encodings.map((encoding) => ({
+        label: capitalize(encoding),
+        value: encoding
+      }))
     }
-  }))
+  ],
+  async onRender(_ctx, args) {
+    const input = String(args.values.input);
+    const encoding = String(args.values.encoding);
+    return (0, import_node_crypto.createHash)(algorithm).update(input, "utf-8").digest(encoding);
+  }
+}));
+var hmacFunctions = algorithms.map((algorithm) => ({
+  name: `hmac.${algorithm}`,
+  description: "Compute the HMAC of a value",
+  args: [
+    {
+      type: "text",
+      name: "input",
+      label: "Input",
+      placeholder: "input text",
+      multiLine: true
+    },
+    {
+      type: "text",
+      name: "key",
+      label: "Key",
+      password: true
+    },
+    {
+      type: "select",
+      name: "encoding",
+      label: "Encoding",
+      defaultValue: "base64",
+      options: encodings.map((encoding) => ({
+        value: encoding,
+        label: capitalize(encoding)
+      }))
+    }
+  ],
+  async onRender(_ctx, args) {
+    const input = String(args.values.input);
+    const key = String(args.values.key);
+    const encoding = String(args.values.encoding);
+    return (0, import_node_crypto.createHmac)(algorithm, key, {}).update(input).digest(encoding);
+  }
+}));
+var plugin = {
+  templateFunctions: [...hashFunctions, ...hmacFunctions]
 };
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   plugin

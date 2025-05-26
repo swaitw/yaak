@@ -58,6 +58,7 @@ export type InputProps = Pick<
   fullHeight?: boolean;
   hideLabel?: boolean;
   inputWrapperClassName?: string;
+  help?: ReactNode;
   label: ReactNode;
   labelClassName?: string;
   labelPosition?: 'top' | 'left';
@@ -94,33 +95,34 @@ const BaseInput = forwardRef<EditorView, InputProps>(function InputBase(
   {
     className,
     containerClassName,
-    inputWrapperClassName,
     defaultValue,
+    disableObscureToggle,
+    disabled,
     forceUpdateKey,
     fullHeight,
+    help,
     hideLabel,
+    inputWrapperClassName,
     label,
     labelClassName,
     labelPosition = 'top',
     leftSlot,
+    multiLine,
     onBlur,
     onChange,
     onFocus,
     onPaste,
     onPasteOverwrite,
     placeholder,
+    readOnly,
     required,
     rightSlot,
-    wrapLines,
     size = 'md',
-    type = 'text',
-    disableObscureToggle,
-    tint,
-    validate,
-    readOnly,
     stateKey,
-    multiLine,
-    disabled,
+    tint,
+    type = 'text',
+    validate,
+    wrapLines,
     ...props
   }: InputProps,
   ref,
@@ -216,6 +218,7 @@ const BaseInput = forwardRef<EditorView, InputProps>(function InputBase(
     >
       <Label
         htmlFor={id.current}
+        help={help}
         required={required}
         visuallyHidden={hideLabel}
         className={classNames(labelClassName)}

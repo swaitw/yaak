@@ -401,7 +401,7 @@ impl UpsertModelInfo for WorkspaceMeta {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "gen_models.ts")]
-enum CookieDomain {
+pub enum CookieDomain {
     HostOnly(String),
     Suffix(String),
     NotPresent,
@@ -410,7 +410,7 @@ enum CookieDomain {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "gen_models.ts")]
-enum CookieExpires {
+pub enum CookieExpires {
     AtUtc(String),
     SessionEnd,
 }
