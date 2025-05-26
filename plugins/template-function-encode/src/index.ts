@@ -18,5 +18,25 @@ export const plugin: PluginDefinition = {
         return Buffer.from(args.values.value ?? '', 'base64').toString('utf-8');
       },
     },
+    {
+      name: 'url.encode',
+      description: 'Encode a value for use in a URL (percent-encoding)',
+      args: [{ label: 'Plain Text', type: 'text', name: 'value', multiLine: true }],
+      async onRender(_ctx: Context, args: CallTemplateFunctionArgs): Promise<string | null> {
+        return encodeURIComponent(args.values.value ?? '');
+      },
+    },
+    {
+      name: 'url.decode',
+      description: 'Decode a percent-encoded URL value',
+      args: [{ label: 'Encoded Value', type: 'text', name: 'value', multiLine: true }],
+      async onRender(_ctx: Context, args: CallTemplateFunctionArgs): Promise<string | null> {
+        try {
+          return decodeURIComponent(args.values.value ?? '');
+        } catch {
+          return '';
+        }
+      },
+    },
   ],
 };
