@@ -1,13 +1,10 @@
 import {
-  GetCookieValueRequest,
-  GetCookieValueResponse,
-  ListCookieNamesResponse,
-  PluginWindowContext,
-  TemplateFunctionArg,
   BootRequest,
   DeleteKeyValueResponse,
   FindHttpResponsesResponse,
   FormInput,
+  GetCookieValueRequest,
+  GetCookieValueResponse,
   GetHttpRequestByIdResponse,
   GetKeyValueResponse,
   HttpAuthenticationAction,
@@ -15,20 +12,20 @@ import {
   InternalEvent,
   InternalEventPayload,
   JsonPrimitive,
+  ListCookieNamesResponse,
+  PluginWindowContext,
   PromptTextResponse,
   RenderHttpRequestResponse,
   SendHttpRequestResponse,
   TemplateFunction,
+  TemplateFunctionArg,
   TemplateRenderResponse,
 } from '@yaakapp-internal/plugins';
 import { Context, PluginDefinition } from '@yaakapp/api';
 import console from 'node:console';
 import { readFileSync, type Stats, statSync, watch } from 'node:fs';
 import path from 'node:path';
-import Promise from '../../../../../Library/Caches/deno/npm/registry.npmjs.org/any-promise/1.3.0';
-// import util from 'node:util';
 import { EventChannel } from './EventChannel';
-// import { interceptStdout } from './interceptStdout';
 import { migrateTemplateFunctionSelectOptions } from './migrations';
 
 export interface PluginWorkerData {
