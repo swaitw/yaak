@@ -7,13 +7,6 @@ import React, { useRef, useState } from 'react';
 import { Document, Page } from 'react-pdf';
 import { useContainerSize } from '../../hooks/useContainerQuery';
 
-import('react-pdf').then(({ pdfjs }) => {
-  pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-    'pdfjs-dist/build/pdf.worker.min.mjs',
-    import.meta.url,
-  ).toString();
-});
-
 interface Props {
   bodyPath: string;
 }

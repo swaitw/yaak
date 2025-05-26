@@ -40,6 +40,26 @@ var plugin = {
       async onRender(_ctx, args) {
         return Buffer.from(args.values.value ?? "", "base64").toString("utf-8");
       }
+    },
+    {
+      name: "url.encode",
+      description: "Encode a value for use in a URL (percent-encoding)",
+      args: [{ label: "Plain Text", type: "text", name: "value", multiLine: true }],
+      async onRender(_ctx, args) {
+        return encodeURIComponent(args.values.value ?? "");
+      }
+    },
+    {
+      name: "url.decode",
+      description: "Decode a percent-encoded URL value",
+      args: [{ label: "Encoded Value", type: "text", name: "value", multiLine: true }],
+      async onRender(_ctx, args) {
+        try {
+          return decodeURIComponent(args.values.value ?? "");
+        } catch {
+          return "";
+        }
+      }
     }
   ]
 };
