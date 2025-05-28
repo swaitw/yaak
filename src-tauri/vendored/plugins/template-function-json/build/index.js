@@ -1740,6 +1740,9 @@ var plugin2 = {
           if (Array.isArray(filtered)) {
             filtered = filtered[0];
           }
+          if (typeof filtered === "string") {
+            return filtered;
+          }
           if (args.values.formatted) {
             return JSON.stringify(filtered, null, 2);
           } else {

@@ -522,9 +522,9 @@ var require_dom = __commonJS({
         return node;
       }
     };
-    function Node() {
+    function Node2() {
     }
-    Node.prototype = {
+    Node2.prototype = {
       firstChild: null,
       lastChild: null,
       previousSibling: null,
@@ -633,8 +633,8 @@ var require_dom = __commonJS({
     function _xmlEncoder(c) {
       return c == "<" && "&lt;" || c == ">" && "&gt;" || c == "&" && "&amp;" || c == '"' && "&quot;" || "&#" + c.charCodeAt() + ";";
     }
-    copy(NodeType, Node);
-    copy(NodeType, Node.prototype);
+    copy(NodeType, Node2);
+    copy(NodeType, Node2.prototype);
     function _visitNode(node, callback) {
       if (callback(node)) {
         return true;
@@ -702,19 +702,19 @@ var require_dom = __commonJS({
       return child;
     }
     function hasValidParentNodeType(node) {
-      return node && (node.nodeType === Node.DOCUMENT_NODE || node.nodeType === Node.DOCUMENT_FRAGMENT_NODE || node.nodeType === Node.ELEMENT_NODE);
+      return node && (node.nodeType === Node2.DOCUMENT_NODE || node.nodeType === Node2.DOCUMENT_FRAGMENT_NODE || node.nodeType === Node2.ELEMENT_NODE);
     }
     function hasInsertableNodeType(node) {
-      return node && (isElementNode(node) || isTextNode(node) || isDocTypeNode(node) || node.nodeType === Node.DOCUMENT_FRAGMENT_NODE || node.nodeType === Node.COMMENT_NODE || node.nodeType === Node.PROCESSING_INSTRUCTION_NODE);
+      return node && (isElementNode(node) || isTextNode(node) || isDocTypeNode(node) || node.nodeType === Node2.DOCUMENT_FRAGMENT_NODE || node.nodeType === Node2.COMMENT_NODE || node.nodeType === Node2.PROCESSING_INSTRUCTION_NODE);
     }
     function isDocTypeNode(node) {
-      return node && node.nodeType === Node.DOCUMENT_TYPE_NODE;
+      return node && node.nodeType === Node2.DOCUMENT_TYPE_NODE;
     }
     function isElementNode(node) {
-      return node && node.nodeType === Node.ELEMENT_NODE;
+      return node && node.nodeType === Node2.ELEMENT_NODE;
     }
     function isTextNode(node) {
-      return node && node.nodeType === Node.TEXT_NODE;
+      return node && node.nodeType === Node2.TEXT_NODE;
     }
     function isElementInsertionPossible(doc, child) {
       var parentChildNodes = doc.childNodes || [];
@@ -748,7 +748,7 @@ var require_dom = __commonJS({
         // the sax parser currently adds top level text nodes, this will be fixed in 0.9.0
         // || (node.nodeType === Node.TEXT_NODE && parent.nodeType === Node.DOCUMENT_NODE)
         // or `node` is a doctype and `parent` is not a document, then throw a "HierarchyRequestError" DOMException.
-        isDocTypeNode(node) && parent.nodeType !== Node.DOCUMENT_NODE
+        isDocTypeNode(node) && parent.nodeType !== Node2.DOCUMENT_NODE
       ) {
         throw new DOMException(
           HIERARCHY_REQUEST_ERR,
@@ -759,7 +759,7 @@ var require_dom = __commonJS({
     function assertPreInsertionValidityInDocument(parent, node, child) {
       var parentChildNodes = parent.childNodes || [];
       var nodeChildNodes = node.childNodes || [];
-      if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+      if (node.nodeType === Node2.DOCUMENT_FRAGMENT_NODE) {
         var nodeChildElements = nodeChildNodes.filter(isElementNode);
         if (nodeChildElements.length > 1 || find(nodeChildNodes, isTextNode)) {
           throw new DOMException(HIERARCHY_REQUEST_ERR, "More than one element or text in fragment");
@@ -789,7 +789,7 @@ var require_dom = __commonJS({
     function assertPreReplacementValidityInDocument(parent, node, child) {
       var parentChildNodes = parent.childNodes || [];
       var nodeChildNodes = node.childNodes || [];
-      if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+      if (node.nodeType === Node2.DOCUMENT_FRAGMENT_NODE) {
         var nodeChildElements = nodeChildNodes.filter(isElementNode);
         if (nodeChildElements.length > 1 || find(nodeChildNodes, isTextNode)) {
           throw new DOMException(HIERARCHY_REQUEST_ERR, "More than one element or text in fragment");
@@ -819,7 +819,7 @@ var require_dom = __commonJS({
     }
     function _insertBefore(parent, node, child, _inDocumentAssertion) {
       assertPreInsertionValidity1to5(parent, node, child);
-      if (parent.nodeType === Node.DOCUMENT_NODE) {
+      if (parent.nodeType === Node2.DOCUMENT_NODE) {
         (_inDocumentAssertion || assertPreInsertionValidityInDocument)(parent, node, child);
       }
       var cp = node.parentNode;
@@ -1072,7 +1072,7 @@ var require_dom = __commonJS({
         return node;
       }
     };
-    _extends(Document, Node);
+    _extends(Document, Node2);
     function Element() {
       this._nsMap = {};
     }
@@ -1159,11 +1159,11 @@ var require_dom = __commonJS({
     };
     Document.prototype.getElementsByTagName = Element.prototype.getElementsByTagName;
     Document.prototype.getElementsByTagNameNS = Element.prototype.getElementsByTagNameNS;
-    _extends(Element, Node);
+    _extends(Element, Node2);
     function Attr() {
     }
     Attr.prototype.nodeType = ATTRIBUTE_NODE;
-    _extends(Attr, Node);
+    _extends(Attr, Node2);
     function CharacterData() {
     }
     CharacterData.prototype = {
@@ -1193,7 +1193,7 @@ var require_dom = __commonJS({
         this.length = text.length;
       }
     };
-    _extends(CharacterData, Node);
+    _extends(CharacterData, Node2);
     function Text() {
     }
     Text.prototype = {
@@ -1230,34 +1230,34 @@ var require_dom = __commonJS({
     function DocumentType() {
     }
     DocumentType.prototype.nodeType = DOCUMENT_TYPE_NODE;
-    _extends(DocumentType, Node);
+    _extends(DocumentType, Node2);
     function Notation() {
     }
     Notation.prototype.nodeType = NOTATION_NODE;
-    _extends(Notation, Node);
+    _extends(Notation, Node2);
     function Entity() {
     }
     Entity.prototype.nodeType = ENTITY_NODE;
-    _extends(Entity, Node);
+    _extends(Entity, Node2);
     function EntityReference() {
     }
     EntityReference.prototype.nodeType = ENTITY_REFERENCE_NODE;
-    _extends(EntityReference, Node);
+    _extends(EntityReference, Node2);
     function DocumentFragment() {
     }
     DocumentFragment.prototype.nodeName = "#document-fragment";
     DocumentFragment.prototype.nodeType = DOCUMENT_FRAGMENT_NODE;
-    _extends(DocumentFragment, Node);
+    _extends(DocumentFragment, Node2);
     function ProcessingInstruction() {
     }
     ProcessingInstruction.prototype.nodeType = PROCESSING_INSTRUCTION_NODE;
-    _extends(ProcessingInstruction, Node);
+    _extends(ProcessingInstruction, Node2);
     function XMLSerializer() {
     }
     XMLSerializer.prototype.serializeToString = function(node, isHtml, nodeFilter) {
       return nodeSerializeToString.call(node, isHtml, nodeFilter);
     };
-    Node.prototype.toString = nodeSerializeToString;
+    Node2.prototype.toString = nodeSerializeToString;
     function nodeSerializeToString(isHtml, nodeFilter) {
       var buf = [];
       var refNode = this.nodeType == 9 && this.documentElement || this;
@@ -1535,7 +1535,7 @@ var require_dom = __commonJS({
             return this.$$length;
           }
         });
-        Object.defineProperty(Node.prototype, "textContent", {
+        Object.defineProperty(Node2.prototype, "textContent", {
           get: function() {
             return getTextContent2(this);
           },
@@ -1568,7 +1568,7 @@ var require_dom = __commonJS({
     exports2.DOMException = DOMException;
     exports2.DOMImplementation = DOMImplementation;
     exports2.Element = Element;
-    exports2.Node = Node;
+    exports2.Node = Node2;
     exports2.NodeList = NodeList;
     exports2.XMLSerializer = XMLSerializer;
   }
@@ -8364,7 +8364,9 @@ var plugin = {
         const doc = new import_xmldom.DOMParser().parseFromString(String(args.values.input), "text/xml");
         let result = import_xpath.default.select(String(args.values.query), doc, false);
         if (Array.isArray(result)) {
-          return String(result[0]);
+          return String(result.map((c) => String(c.firstChild))[0] ?? "");
+        } else if (result instanceof Node) {
+          return String(result.firstChild);
         } else {
           return String(result);
         }
