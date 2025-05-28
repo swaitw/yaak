@@ -1723,15 +1723,45 @@ JSONPath.prototype.vm = import_vm.default;
 
 // src/index.ts
 var plugin2 = {
-  filter: {
-    name: "JSONPath",
-    description: "Filter JSONPath",
-    onFilter(_ctx, args) {
-      const parsed = JSON.parse(args.payload);
-      const filtered = JSONPath({ path: args.filter, json: parsed });
-      return { filtered: JSON.stringify(filtered, null, 2) };
+  templateFunctions: [
+    {
+      name: "json.jsonpath",
+      description: "Filter JSON-formatted text using JSONPath syntax",
+      args: [
+        { type: "text", name: "input", label: "Input", multiLine: true, placeholder: '{ "foo": "bar" }' },
+        { type: "text", name: "query", label: "Query", placeholder: "$..foo" },
+        { type: "checkbox", name: "formatted", label: "Format Output" }
+      ],
+      async onRender(_ctx, args) {
+        try {
+          const parsed = JSON.parse(String(args.values.input));
+          const query = String(args.values.query ?? "$").trim();
+          let filtered = JSONPath({ path: query, json: parsed });
+          if (Array.isArray(filtered)) {
+            filtered = filtered[0];
+          }
+          if (args.values.formatted) {
+            return JSON.stringify(filtered, null, 2);
+          } else {
+            return JSON.stringify(filtered);
+          }
+        } catch (e) {
+          return null;
+        }
+      }
+    },
+    {
+      name: "json.escape",
+      description: "Escape a JSON string, useful when using the output in JSON values",
+      args: [
+        { type: "text", name: "input", label: "Input", multiLine: true, placeholder: 'Hello "World"' }
+      ],
+      async onRender(_ctx, args) {
+        const input = String(args.values.input ?? "");
+        return input.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+      }
     }
-  }
+  ]
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

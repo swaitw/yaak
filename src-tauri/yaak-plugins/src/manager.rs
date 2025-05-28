@@ -11,6 +11,7 @@ use crate::events::{
     GetHttpRequestActionsResponse, GetTemplateFunctionsResponse, ImportRequest, ImportResponse,
     InternalEvent, InternalEventPayload, JsonPrimitive, PluginWindowContext, RenderPurpose,
 };
+use crate::native_template_functions::template_function_secure;
 use crate::nodejs::start_nodejs_plugin_runtime;
 use crate::plugin_handle::PluginHandle;
 use crate::server_ws::PluginRuntimeServerWebsocket;
@@ -24,13 +25,12 @@ use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager, Runtime, WebviewWindow};
 use tokio::fs::read_dir;
 use tokio::net::TcpListener;
-use tokio::sync::{mpsc, Mutex};
-use tokio::time::{timeout, Instant};
+use tokio::sync::{Mutex, mpsc};
+use tokio::time::{Instant, timeout};
 use yaak_models::query_manager::QueryManagerExt;
 use yaak_models::util::generate_id;
 use yaak_templates::error::Error::RenderError;
 use yaak_templates::error::Result as TemplateResult;
-use crate::native_template_functions::template_function_secure;
 
 #[derive(Clone)]
 pub struct PluginManager {
@@ -160,8 +160,7 @@ impl PluginManager {
             })
             .collect();
 
-        let plugins =
-            app_handle.db().list_plugins().unwrap_or_default();
+        let plugins = app_handle.db().list_plugins().unwrap_or_default();
         let installed_plugin_dirs: Vec<PluginCandidate> = plugins
             .iter()
             .map(|p| PluginCandidate {
@@ -606,15 +605,12 @@ impl PluginManager {
         &self,
         window_context: &PluginWindowContext,
         fn_name: &str,
-        args: HashMap<String, String>,
+        values: HashMap<String, serde_json::Value>,
         purpose: RenderPurpose,
     ) -> TemplateResult<String> {
         let req = CallTemplateFunctionRequest {
             name: fn_name.to_string(),
-            args: CallTemplateFunctionArgs {
-                purpose,
-                values: args,
-            },
+            args: CallTemplateFunctionArgs { purpose, values },
         };
 
         let events = self

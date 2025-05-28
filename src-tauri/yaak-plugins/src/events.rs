@@ -840,7 +840,7 @@ pub struct CallTemplateFunctionResponse {
 #[ts(export, export_to = "gen_events.ts")]
 pub struct CallTemplateFunctionArgs {
     pub purpose: RenderPurpose,
-    pub values: HashMap<String, String>,
+    pub values: HashMap<String, serde_json::Value>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
