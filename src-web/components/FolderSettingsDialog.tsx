@@ -59,18 +59,17 @@ export function FolderSettingsDialog({ folderId, tab }: Props) {
         <HttpAuthenticationEditor model={folder} />
       </TabContent>
       <TabContent value={TAB_GENERAL} className="pt-3 overflow-y-auto h-full px-4">
-        <VStack space={3} className="pb-3">
+        <VStack space={3} className="pb-3 h-full">
           <Input
             label="Folder Name"
             defaultValue={folder.name}
             onChange={(name) => patchModel(folder, { name })}
             stateKey={`name.${folder.id}`}
           />
-
           <MarkdownEditor
             name="folder-description"
             placeholder="Folder description"
-            className="min-h-[10rem] border border-border px-2"
+            className="border border-border px-2"
             defaultValue={folder.description}
             stateKey={`description.${folder.id}`}
             onChange={(description) => patchModel(folder, { description })}

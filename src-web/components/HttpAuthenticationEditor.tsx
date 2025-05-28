@@ -18,6 +18,7 @@ import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { InlineCode } from './core/InlineCode';
+import { Link } from './core/Link';
 import { HStack } from './core/Stacks';
 import { DynamicForm } from './DynamicForm';
 import { EmptyStateText } from './EmptyStateText';
@@ -52,7 +53,20 @@ export function HttpAuthenticationEditor({ model }: Props) {
   }
 
   if (inheritedAuth == null) {
-    return <EmptyStateText>Authentication not configured</EmptyStateText>;
+    if (model.model === 'workspace' || model.model === 'folder') {
+      return (
+        <EmptyStateText className="flex-col gap-1">
+          <p>
+            Apply auth to all requests in <strong>{resolvedModelName(model)}</strong>
+          </p>
+          <Link href="https://feedback.yaak.app/help/articles/2112119-request-inheritance">
+            Documentation
+          </Link>
+        </EmptyStateText>
+      );
+    } else {
+      return <EmptyStateText>Authentication not configured</EmptyStateText>;
+    }
   }
 
   if (inheritedAuth.authenticationType === 'none') {

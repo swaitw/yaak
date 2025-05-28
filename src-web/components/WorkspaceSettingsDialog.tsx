@@ -26,15 +26,22 @@ interface Props {
 }
 
 const TAB_AUTH = 'auth';
+const TAB_DESCRIPTION = 'description';
 const TAB_HEADERS = 'headers';
 const TAB_GENERAL = 'general';
 
-export type WorkspaceSettingsTab = typeof TAB_AUTH | typeof TAB_HEADERS | typeof TAB_GENERAL;
+export type WorkspaceSettingsTab =
+  | typeof TAB_AUTH
+  | typeof TAB_HEADERS
+  | typeof TAB_GENERAL
+  | typeof TAB_DESCRIPTION;
+
+const DEFAULT_TAB: WorkspaceSettingsTab = TAB_DESCRIPTION;
 
 export function WorkspaceSettingsDialog({ workspaceId, hide, tab }: Props) {
   const workspace = useAtomValue(workspacesAtom).find((w) => w.id === workspaceId);
   const workspaceMeta = useAtomValue(workspaceMetasAtom).find((m) => m.workspaceId === workspaceId);
-  const [activeTab, setActiveTab] = useState<string>(tab ?? TAB_GENERAL);
+  const [activeTab, setActiveTab] = useState<string>(tab ?? DEFAULT_TAB);
   const authTab = useAuthTab(TAB_AUTH, workspace ?? null);
   const headersTab = useHeadersTab(TAB_HEADERS, workspace ?? null);
   const inheritedHeaders = useInheritedHeaders(workspace ?? null);
@@ -61,7 +68,15 @@ export function WorkspaceSettingsDialog({ workspaceId, hide, tab }: Props) {
       label="Folder Settings"
       className="px-1.5 pb-2"
       addBorders
-      tabs={[{ value: TAB_GENERAL, label: 'General' }, ...authTab, ...headersTab]}
+      tabs={[
+        { value: TAB_DESCRIPTION, label: 'Description' },
+        {
+          value: TAB_GENERAL,
+          label: 'General',
+        },
+        ...authTab,
+        ...headersTab,
+      ]}
     >
       <TabContent value={TAB_AUTH} className="pt-3 overflow-y-auto h-full px-4">
         <HttpAuthenticationEditor model={workspace} />
@@ -75,7 +90,7 @@ export function WorkspaceSettingsDialog({ workspaceId, hide, tab }: Props) {
           stateKey={`headers.${workspace.id}`}
         />
       </TabContent>
-      <TabContent value={TAB_GENERAL} className="pt-3 overflow-y-auto h-full px-4">
+      <TabContent value={TAB_DESCRIPTION} className="pt-3 overflow-y-auto h-full px-4">
         <VStack space={4} alignItems="start" className="pb-3 h-full">
           <PlainInput
             required
@@ -90,13 +105,16 @@ export function WorkspaceSettingsDialog({ workspaceId, hide, tab }: Props) {
           <MarkdownEditor
             name="workspace-description"
             placeholder="Workspace description"
-            className="min-h-[3rem] max-h-[25rem] border border-border px-2"
+            className="border border-border px-2"
             defaultValue={workspace.description}
             stateKey={`description.${workspace.id}`}
             onChange={(description) => patchModel(workspace, { description })}
             heightMode="auto"
           />
-
+        </VStack>
+      </TabContent>
+      <TabContent value={TAB_GENERAL} className="pt-3 overflow-y-auto h-full px-4">
+        <VStack space={4} alignItems="start" className="pb-3 h-full">
           <SyncToFilesystemSetting
             value={{ filePath: workspaceMeta.settingSyncDir }}
             onCreateNewWorkspace={hide}
