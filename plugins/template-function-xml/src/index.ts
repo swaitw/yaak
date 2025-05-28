@@ -14,7 +14,6 @@ export const plugin: PluginDefinition = {
       try {
         const doc = new DOMParser().parseFromString(String(args.values.input), 'text/xml');
         let result = xpath.select(String(args.values.query), doc, false);
-        console.log("RESULT", result);
         if (Array.isArray(result)) {
           return String(result.map(c => String(c.firstChild))[0] ?? '');
         } else if (result instanceof Node) {
