@@ -50,120 +50,9 @@
     </cargoProject>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="30f590e1-85b8-4961-a56b-f12c098aad45" name="Changes" comment="Update plugins">
-      <change afterPath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/plugins.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/auth-basic/src/index.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/auth-bearer/src/index.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/auth-jwt/src/index.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/auth-oauth2/src/getAccessToken.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/auth-oauth2/src/getOrRefreshAccessToken.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/auth-oauth2/src/grants/authorizationCode.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/auth-oauth2/src/grants/clientCredentials.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/auth-oauth2/src/grants/implicit.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/auth-oauth2/src/grants/password.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/auth-oauth2/src/index.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/auth-oauth2/src/store.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/exporter-curl/src/index.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/exporter-curl/tests/index.test.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/filter-jsonpath/src/index.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/filter-xpath/src/index.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/importer-curl/src/index.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/importer-curl/tests/index.test.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/importer-insomnia/src/common.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/importer-insomnia/src/index.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/importer-insomnia/src/v4.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/importer-insomnia/src/v5.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/importer-insomnia/tests/fixtures/basic.input.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/importer-insomnia/tests/fixtures/basic.output.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/importer-insomnia/tests/fixtures/version-5-minimal.input.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/importer-insomnia/tests/fixtures/version-5-minimal.output.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/importer-insomnia/tests/fixtures/version-5.input.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/importer-insomnia/tests/fixtures/version-5.output.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/importer-insomnia/tests/index.test.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/importer-openapi/src/index.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/importer-openapi/tests/fixtures/petstore.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/importer-openapi/tests/index.test.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/importer-postman/src/index.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/importer-postman/tests/fixtures/nested.input.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/importer-postman/tests/fixtures/nested.output.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/importer-postman/tests/fixtures/params.input.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/importer-postman/tests/fixtures/params.output.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/importer-postman/tests/index.test.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/importer-yaak/src/index.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/importer-yaak/tests/index.test.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/template-function-cookie/src/index.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/template-function-encode/src/index.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/template-function-fs/src/index.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/template-function-hash/src/index.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/template-function-json/src/index.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/template-function-prompt/src/index.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/template-function-regex/src/index.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/template-function-request/src/index.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/template-function-response/src/index.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/template-function-uuid/src/index.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins/template-function-xml/src/index.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/plugins_/_package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.github/workflows/release.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/release.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DEVELOPMENT.md" beforeDir="false" afterPath="$PROJECT_DIR$/DEVELOPMENT.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/vendor-plugins.cjs" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/vendor-plugins.cjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/src-tauri/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/auth-basic/build/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/auth-basic/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/plugins/auth-basic/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/auth-bearer/build/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/auth-bearer/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/plugins/auth-bearer/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/auth-jwt/build/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/auth-jwt/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/plugins/auth-jwt/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/auth-oauth2/build/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/auth-oauth2/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/plugins/auth-oauth2/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/exporter-curl/build/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/exporter-curl/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/plugins/exporter-curl/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/filter-jsonpath/build/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/filter-jsonpath/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/plugins/filter-jsonpath/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/filter-xpath/build/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/filter-xpath/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/plugins/filter-xpath/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/importer-curl/build/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/importer-curl/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/plugins/importer-curl/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/importer-insomnia/build/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/importer-insomnia/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/plugins/importer-insomnia/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/importer-openapi/build/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/importer-openapi/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/plugins/importer-openapi/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/importer-postman/build/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/importer-postman/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/plugins/importer-postman/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/importer-yaak/build/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/importer-yaak/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/plugins/importer-yaak/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/template-function-cookie/build/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/template-function-cookie/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/plugins/template-function-cookie/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/template-function-encode/build/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/template-function-encode/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/plugins/template-function-encode/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/template-function-fs/build/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/template-function-fs/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/plugins/template-function-fs/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/template-function-hash/build/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/template-function-hash/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/plugins/template-function-hash/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/template-function-json/build/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/template-function-json/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/plugins/template-function-json/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/template-function-prompt/build/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/template-function-prompt/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/plugins/template-function-prompt/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/template-function-regex/build/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/template-function-regex/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/plugins/template-function-regex/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/template-function-request/build/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/template-function-request/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/plugins/template-function-request/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/template-function-response/build/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/template-function-response/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/plugins/template-function-response/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/template-function-uuid/build/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/template-function-uuid/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/plugins/template-function-uuid/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/template-function-xml/build/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/vendored/plugins/template-function-xml/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/plugins/template-function-xml/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src-tauri/yaak-plugins/src/manager.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src-tauri/yaak-plugins/src/manager.rs" afterDir="false" />
+    <list default="true" id="30f590e1-85b8-4961-a56b-f12c098aad45" name="Changes" comment="Merge plugins repo into mono">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/plugins_/_package.json" beforeDir="false" />
     </list>
     <list id="53a78560-c99e-4d1d-baeb-b011edf7c089" name="Don't Commit" comment="" />
     <option name="SHOW_DIALOG" value="false" />
@@ -257,7 +146,7 @@
     "Vitest.importer-yaak (1).executor": "Run",
     "Vitest.importer-yaak.converts schema 2 to 3.executor": "Run",
     "Vitest.importer-yaak.executor": "Run",
-    "git-widget-placeholder": "Merging master",
+    "git-widget-placeholder": "master",
     "go.import.settings.migrated": "true",
     "go.sdk.automatically.set": "true",
     "javascript.nodejs.core.library.configured.version": "22.8.0",
@@ -292,7 +181,7 @@
     "org.rust.first.attach.projects": "true",
     "prettierjs.PrettierConfiguration.Package": "/Users/gschier/Workspace/yaak/node_modules/prettier",
     "settings.editor.selected.configurable": "preferences.pluginManager",
-    "ts.external.directory.path": "/Users/gschier/Applications/IntelliJ IDEA Ultimate.app/Contents/plugins/javascript-plugin/jsLanguageServicesImpl/external",
+    "ts.external.directory.path": "/Users/gschier/Workspace/yaak/node_modules/typescript/lib",
     "typescript.add.unambiguous.imports.on.the.fly": "true"
   },
   "keyToStringList": {
@@ -565,15 +454,7 @@
       <workItem from="1747920624956" duration="24672000" />
       <workItem from="1748197354291" duration="6839000" />
       <workItem from="1748264052869" duration="6923000" />
-      <workItem from="1748442411941" duration="20870000" />
-    </task>
-    <task id="LOCAL-01222" summary="Ability to disable proxy config&#10;&#10;Closes https://feedback.yaak.app/p/proxy-save-last-data">
-      <option name="closed" value="true" />
-      <created>1747157702283</created>
-      <option name="number" value="01222" />
-      <option name="presentableId" value="LOCAL-01222" />
-      <option name="project" value="LOCAL" />
-      <updated>1747157702283</updated>
+      <workItem from="1748442411941" duration="21123000" />
     </task>
     <task id="LOCAL-01223" summary="Regenerate types">
       <option name="closed" value="true" />
@@ -959,7 +840,15 @@
       <option name="project" value="LOCAL" />
       <updated>1748466421031</updated>
     </task>
-    <option name="localTasksCounter" value="1271" />
+    <task id="LOCAL-01271" summary="Merge plugins repo into mono">
+      <option name="closed" value="true" />
+      <created>1748530944949</created>
+      <option name="number" value="01271" />
+      <option name="presentableId" value="LOCAL-01271" />
+      <option name="project" value="LOCAL" />
+      <updated>1748530944949</updated>
+    </task>
+    <option name="localTasksCounter" value="1272" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -993,7 +882,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Bump API version" />
     <MESSAGE value="Remove log" />
     <MESSAGE value="Bump plugin types" />
     <MESSAGE value="package-lock.json" />
@@ -1018,7 +906,8 @@
     <MESSAGE value="Don't return &quot;undefined&quot; when no XPath match" />
     <MESSAGE value="Remove console.log" />
     <MESSAGE value="Fix JSONPath function quoting strings" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fix JSONPath function quoting strings" />
+    <MESSAGE value="Merge plugins repo into mono" />
+    <option name="LAST_COMMIT_MESSAGE" value="Merge plugins repo into mono" />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>
