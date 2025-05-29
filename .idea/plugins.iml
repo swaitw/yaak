@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="Go" enabled="true" />
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/plugins/exporter-curl/build" />
+      <excludeFolder url="file://$MODULE_DIR$/plugins/filter-jsonpath/build" />
+      <excludeFolder url="file://$MODULE_DIR$/plugins/filter-xpath/build" />
+      <excludeFolder url="file://$MODULE_DIR$/plugins/importer-curl/build" />
+      <excludeFolder url="file://$MODULE_DIR$/plugins/importer-insomnia/build" />
+      <excludeFolder url="file://$MODULE_DIR$/plugins/importer-postman/build" />
+      <excludeFolder url="file://$MODULE_DIR$/plugins/importer-yaak/build" />
+      <excludeFolder url="file://$MODULE_DIR$/plugins/importer-openapi/build" />
+      <excludeFolder url="file://$MODULE_DIR$/plugins/template-function-response/build" />
+      <excludeFolder url="file://$MODULE_DIR$/plugins/template-function-request/build" />
+      <excludeFolder url="file://$MODULE_DIR$/.idea" />
+      <excludeFolder url="file://$MODULE_DIR$/plugins/template-function-hash/build" />
+      <excludeFolder url="file://$MODULE_DIR$/plugins/template-function-json/build" />
+      <excludeFolder url="file://$MODULE_DIR$/plugins/template-function-fs/build" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>

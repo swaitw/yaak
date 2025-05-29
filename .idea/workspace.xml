@@ -1,0 +1,736 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="44247d8b-821b-411f-8a91-a28f1c4e15f5" name="Changes" comment="Fix JSONPath function quoting strings" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CodeInsightWorkspaceSettings">
+    <option name="optimizeImportsOnTheFly" value="true" />
+  </component>
+  <component name="GOROOT" url="file:///opt/homebrew/Cellar/go/1.22.3/libexec" />
+  <component name="Git.Settings">
+    <option name="PREVIEW_PUSH_ON_COMMIT_AND_PUSH" value="false" />
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="insomnia-v5" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;gschier&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;git@github.com:yaakapp/plugins.git&quot;,
+    &quot;accountId&quot;: &quot;71967edb-f3a0-49b0-a8bb-91c112bf4a62&quot;
+  }
+}</component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="ooy9a7vw" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0
+}</component>
+  <component name="ProjectId" id="2iUdfxF39U5DPMdZzqNsE5sBcy7" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.GoLinterPluginOnboarding": "true",
+    "RunOnceActivity.GoLinterPluginStorageMigration": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.go.formatter.settings.were.checked": "true",
+    "RunOnceActivity.go.migrated.go.modules.settings": "true",
+    "RunOnceActivity.go.modules.automatic.dependencies.download": "true",
+    "Vitest.exporter-curl.Exports POST with GraphQL data.executor": "Run",
+    "Vitest.exporter-curl.executor": "Run",
+    "Vitest.importer-curl.Imports post data into URL.executor": "Run",
+    "Vitest.importer-curl.executor": "Run",
+    "Vitest.importer-openapi.executor": "Run",
+    "Vitest.importer-postman.executor": "Run",
+    "Vitest.importer-yaak (1).executor": "Run",
+    "Vitest.importer-yaak.converts schema 2 to 3.executor": "Run",
+    "Vitest.importer-yaak.executor": "Run",
+    "git-widget-placeholder": "main",
+    "go.import.settings.migrated": "true",
+    "go.sdk.automatically.set": "true",
+    "javascript.nodejs.core.library.configured.version": "22.8.0",
+    "javascript.nodejs.core.library.typings.version": "22.8.7",
+    "junie.onboarding.icon.badge.shown": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/gschier/Workspace/plugins/plugins",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "npm.Build Plugins.executor": "Run",
+    "npm.auth-basic > build.executor": "Run",
+    "npm.auth-jwt > dev.executor": "Debug",
+    "npm.auth-none > build.executor": "Run",
+    "npm.auth-oauth2 > dev.executor": "Run",
+    "npm.build (1).executor": "Run",
+    "npm.build (2).executor": "Run",
+    "npm.build.executor": "Run",
+    "npm.dev.executor": "Run",
+    "npm.exporter-curl > build.executor": "Run",
+    "npm.exporter-curl > dev.executor": "Run",
+    "npm.exporter-curl > watch.executor": "Run",
+    "npm.importer-openapi > dev.executor": "Run",
+    "npm.template-function-secure > dev.executor": "Run",
+    "org.rust.cargo.project.model.impl.CargoExternalSystemProjectAware.subscribe.first.balloon": "",
+    "org.rust.first.attach.projects": "true",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "ts.external.directory.path": "/Users/gschier/Applications/IntelliJ IDEA Ultimate.app/Contents/plugins/javascript-plugin/jsLanguageServicesImpl/external",
+    "typescript.add.unambiguous.imports.on.the.fly": "true"
+  },
+  "keyToStringList": {
+    "com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File": [
+      "TypeScript",
+      "TEXT",
+      "JSON"
+    ]
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/plugins" />
+      <recent name="$PROJECT_DIR$/plugins/importer-insomnia/tests/fixtures" />
+      <recent name="$PROJECT_DIR$/plugins/auth-oauth2/src/grants" />
+      <recent name="$PROJECT_DIR$/plugins/importer-curl/build" />
+      <recent name="$PROJECT_DIR$/plugins/importer-insomnia" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/plugins/auth-oauth2/src/grants" />
+      <recent name="$PROJECT_DIR$/plugins" />
+    </key>
+  </component>
+  <component name="RunManager" selected="npm.dev">
+    <configuration name="importer-yaak" type="JavaScriptTestRunnerVitest" temporary="true" nameIsGenerated="true">
+      <node-interpreter value="project" />
+      <vitest-package value="$PROJECT_DIR$/node_modules/vitest" />
+      <working-dir value="$PROJECT_DIR$/plugins/importer-insomnia" />
+      <vitest-options value="--run" />
+      <envs />
+      <scope-kind value="SUITE" />
+      <test-file value="$PROJECT_DIR$/plugins/importer-insomnia/tests/index.test.ts" />
+      <test-names>
+        <test-name value="importer-yaak" />
+      </test-names>
+      <method v="2" />
+    </configuration>
+    <configuration name="auth-none &gt; build" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/plugins/auth-none/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="build" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="auth-oauth2 &gt; dev" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/plugins/auth-oauth2/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="dev" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="build" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="build" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="dev" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="dev" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="npm.auth-none &gt; build" />
+      <item itemvalue="npm.auth-oauth2 &gt; dev" />
+      <item itemvalue="npm.build" />
+      <item itemvalue="npm.dev" />
+      <item itemvalue="Vitest.importer-yaak" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="npm.dev" />
+        <item itemvalue="npm.build" />
+        <item itemvalue="npm.auth-none &gt; build" />
+        <item itemvalue="Vitest.importer-yaak" />
+        <item itemvalue="npm.auth-oauth2 &gt; dev" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="RustProjectSettings">
+    <option name="toolchainHomeDirectory" value="$USER_HOME$/.cargo/bin" />
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-fbdcb00ec9e3-intellij.indexing.shared.core-IU-251.25410.129" />
+        <option value="bundled-js-predefined-d6986cc7102b-6a121458b545-JavaScript-IU-251.25410.129" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="44247d8b-821b-411f-8a91-a28f1c4e15f5" name="Changes" comment="" />
+      <created>1719549196236</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1719549196236</updated>
+      <workItem from="1719549197302" duration="23933000" />
+      <workItem from="1721601460471" duration="1960000" />
+      <workItem from="1721675952947" duration="1585000" />
+      <workItem from="1721682120151" duration="8320000" />
+      <workItem from="1721746963049" duration="1804000" />
+      <workItem from="1721763002887" duration="1310000" />
+      <workItem from="1721941105012" duration="6442000" />
+      <workItem from="1722438439340" duration="2112000" />
+      <workItem from="1722452168557" duration="7521000" />
+      <workItem from="1722545311213" duration="1503000" />
+      <workItem from="1722634259330" duration="1047000" />
+      <workItem from="1722889323321" duration="3140000" />
+      <workItem from="1723012355130" duration="2400000" />
+      <workItem from="1723054645628" duration="4855000" />
+      <workItem from="1723126821989" duration="6755000" />
+      <workItem from="1723571573657" duration="2110000" />
+      <workItem from="1723589082348" duration="12018000" />
+      <workItem from="1723899300227" duration="31474000" />
+      <workItem from="1724801917892" duration="1311000" />
+      <workItem from="1725467323250" duration="4522000" />
+      <workItem from="1725629563346" duration="1080000" />
+      <workItem from="1725896570707" duration="5047000" />
+      <workItem from="1726493575689" duration="5075000" />
+      <workItem from="1726838896076" duration="1518000" />
+      <workItem from="1727020989472" duration="17000" />
+      <workItem from="1727021009521" duration="26000" />
+      <workItem from="1727021039225" duration="5000" />
+      <workItem from="1727021055788" duration="3055000" />
+      <workItem from="1727181978298" duration="9604000" />
+      <workItem from="1727621245618" duration="1013000" />
+      <workItem from="1727629818313" duration="1084000" />
+      <workItem from="1727704266993" duration="4593000" />
+      <workItem from="1727725525745" duration="1136000" />
+      <workItem from="1727743637906" duration="21064000" />
+      <workItem from="1728422919421" duration="832000" />
+      <workItem from="1728423779677" duration="7495000" />
+      <workItem from="1729003468921" duration="2043000" />
+      <workItem from="1729435402512" duration="1688000" />
+      <workItem from="1729606517784" duration="713000" />
+      <workItem from="1729607352422" duration="3423000" />
+      <workItem from="1734655346308" duration="3897000" />
+      <workItem from="1734728928840" duration="6032000" />
+      <workItem from="1735622926642" duration="1929000" />
+      <workItem from="1735853482376" duration="2574000" />
+      <workItem from="1736622707889" duration="2229000" />
+      <workItem from="1736777007490" duration="7105000" />
+      <workItem from="1736877974126" duration="32318000" />
+      <workItem from="1737298559551" duration="824000" />
+      <workItem from="1737300809002" duration="31278000" />
+      <workItem from="1737640418745" duration="13180000" />
+      <workItem from="1737676909826" duration="23122000" />
+      <workItem from="1737820596464" duration="18650000" />
+      <workItem from="1738935965218" duration="5929000" />
+      <workItem from="1740173504544" duration="9824000" />
+      <workItem from="1741211440285" duration="2748000" />
+      <workItem from="1741449678373" duration="2000" />
+      <workItem from="1741449885267" duration="782000" />
+      <workItem from="1741893358986" duration="4899000" />
+      <workItem from="1741903665066" duration="1561000" />
+      <workItem from="1742236165239" duration="884000" />
+      <workItem from="1742314804154" duration="2300000" />
+      <workItem from="1743516983284" duration="1500000" />
+      <workItem from="1744031020115" duration="1303000" />
+      <workItem from="1744308921782" duration="8000" />
+      <workItem from="1746734138153" duration="17660000" />
+      <workItem from="1747167341089" duration="2578000" />
+      <workItem from="1747404314556" duration="5080000" />
+      <workItem from="1747753337105" duration="1536000" />
+      <workItem from="1747924969716" duration="1318000" />
+      <workItem from="1748178682628" duration="4308000" />
+      <workItem from="1748197253195" duration="3000" />
+      <workItem from="1748197266752" duration="6925000" />
+      <workItem from="1748457040049" duration="8007000" />
+    </task>
+    <task id="LOCAL-00044" summary="Fix deps">
+      <option name="closed" value="true" />
+      <created>1727877079373</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1727877079373</updated>
+    </task>
+    <task id="LOCAL-00045" summary="Fix curl import when using boolean flags">
+      <option name="closed" value="true" />
+      <created>1728423946655</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1728423946655</updated>
+    </task>
+    <task id="LOCAL-00046" summary="Fix curl import when using boolean flags">
+      <option name="closed" value="true" />
+      <created>1728424143732</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1728424143732</updated>
+    </task>
+    <task id="LOCAL-00047" summary="Tweak plugins">
+      <option name="closed" value="true" />
+      <created>1729003545855</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1729003545855</updated>
+    </task>
+    <task id="LOCAL-00048" summary="Add template function descriptions">
+      <option name="closed" value="true" />
+      <created>1729003646993</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1729003646993</updated>
+    </task>
+    <task id="LOCAL-00049" summary="Support new GraphQL body type in curl export">
+      <option name="closed" value="true" />
+      <created>1729607176787</created>
+      <option name="number" value="00049" />
+      <option name="presentableId" value="LOCAL-00049" />
+      <option name="project" value="LOCAL" />
+      <updated>1729607176787</updated>
+    </task>
+    <task id="LOCAL-00050" summary="Fix GraphQL variables">
+      <option name="closed" value="true" />
+      <created>1729608088950</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1729608088950</updated>
+    </task>
+    <task id="LOCAL-00051" summary="Handle no GraphQL variables">
+      <option name="closed" value="true" />
+      <created>1729609558962</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1729609558962</updated>
+    </task>
+    <task id="LOCAL-00052" summary="Support --url-query in curl import">
+      <option name="closed" value="true" />
+      <created>1735658474311</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1735658474311</updated>
+    </task>
+    <task id="LOCAL-00053" summary="Update for standalone base environments">
+      <option name="closed" value="true" />
+      <created>1736816675466</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1736816675466</updated>
+    </task>
+    <task id="LOCAL-00054" summary="Update">
+      <option name="closed" value="true" />
+      <created>1736880743531</created>
+      <option name="number" value="00054" />
+      <option name="presentableId" value="LOCAL-00054" />
+      <option name="project" value="LOCAL" />
+      <updated>1736880743531</updated>
+    </task>
+    <task id="LOCAL-00055" summary="Add auth plugins">
+      <option name="closed" value="true" />
+      <created>1737070105227</created>
+      <option name="number" value="00055" />
+      <option name="presentableId" value="LOCAL-00055" />
+      <option name="project" value="LOCAL" />
+      <updated>1737070105227</updated>
+    </task>
+    <task id="LOCAL-00056" summary="JWT auth plugin and updates">
+      <option name="closed" value="true" />
+      <created>1737129710576</created>
+      <option name="number" value="00056" />
+      <option name="presentableId" value="LOCAL-00056" />
+      <option name="project" value="LOCAL" />
+      <updated>1737129710576</updated>
+    </task>
+    <task id="LOCAL-00057" summary="JWT plugin">
+      <option name="closed" value="true" />
+      <created>1737153497392</created>
+      <option name="number" value="00057" />
+      <option name="presentableId" value="LOCAL-00057" />
+      <option name="project" value="LOCAL" />
+      <updated>1737153497392</updated>
+    </task>
+    <task id="LOCAL-00058" summary="A few tweaks">
+      <option name="closed" value="true" />
+      <created>1737155402591</created>
+      <option name="number" value="00058" />
+      <option name="presentableId" value="LOCAL-00058" />
+      <option name="project" value="LOCAL" />
+      <updated>1737155402591</updated>
+    </task>
+    <task id="LOCAL-00059" summary="Secret key to editor type">
+      <option name="closed" value="true" />
+      <created>1737156101366</created>
+      <option name="number" value="00059" />
+      <option name="presentableId" value="LOCAL-00059" />
+      <option name="project" value="LOCAL" />
+      <updated>1737156101366</updated>
+    </task>
+    <task id="LOCAL-00060" summary="Update plugins">
+      <option name="closed" value="true" />
+      <created>1737407224354</created>
+      <option name="number" value="00060" />
+      <option name="presentableId" value="LOCAL-00060" />
+      <option name="project" value="LOCAL" />
+      <updated>1737407224354</updated>
+    </task>
+    <task id="LOCAL-00061" summary="OAuth 2.0 plugin PoC working">
+      <option name="closed" value="true" />
+      <created>1737499157237</created>
+      <option name="number" value="00061" />
+      <option name="presentableId" value="LOCAL-00061" />
+      <option name="project" value="LOCAL" />
+      <updated>1737499157237</updated>
+    </task>
+    <task id="LOCAL-00062" summary="Some updates">
+      <option name="closed" value="true" />
+      <created>1737646990339</created>
+      <option name="number" value="00062" />
+      <option name="presentableId" value="LOCAL-00062" />
+      <option name="project" value="LOCAL" />
+      <updated>1737646990339</updated>
+    </task>
+    <task id="LOCAL-00063" summary="Mostly done">
+      <option name="closed" value="true" />
+      <created>1737753787385</created>
+      <option name="number" value="00063" />
+      <option name="presentableId" value="LOCAL-00063" />
+      <option name="project" value="LOCAL" />
+      <updated>1737753787385</updated>
+    </task>
+    <task id="LOCAL-00064" summary="Update for some minor API changes">
+      <option name="closed" value="true" />
+      <created>1737822585745</created>
+      <option name="number" value="00064" />
+      <option name="presentableId" value="LOCAL-00064" />
+      <option name="project" value="LOCAL" />
+      <updated>1737822585745</updated>
+    </task>
+    <task id="LOCAL-00065" summary="Refresh tokens">
+      <option name="closed" value="true" />
+      <created>1737910346126</created>
+      <option name="number" value="00065" />
+      <option name="presentableId" value="LOCAL-00065" />
+      <option name="project" value="LOCAL" />
+      <updated>1737910346126</updated>
+    </task>
+    <task id="LOCAL-00066" summary="Update for api changes">
+      <option name="closed" value="true" />
+      <created>1737925934294</created>
+      <option name="number" value="00066" />
+      <option name="presentableId" value="LOCAL-00066" />
+      <option name="project" value="LOCAL" />
+      <updated>1737925934294</updated>
+    </task>
+    <task id="LOCAL-00067" summary="Bump API version">
+      <option name="closed" value="true" />
+      <created>1737926912985</created>
+      <option name="number" value="00067" />
+      <option name="presentableId" value="LOCAL-00067" />
+      <option name="project" value="LOCAL" />
+      <updated>1737926912985</updated>
+    </task>
+    <task id="LOCAL-00068" summary="Bump API version">
+      <option name="closed" value="true" />
+      <created>1737927082537</created>
+      <option name="number" value="00068" />
+      <option name="presentableId" value="LOCAL-00068" />
+      <option name="project" value="LOCAL" />
+      <updated>1737927082537</updated>
+    </task>
+    <task id="LOCAL-00069" summary="Remove log">
+      <option name="closed" value="true" />
+      <created>1737995874094</created>
+      <option name="number" value="00069" />
+      <option name="presentableId" value="LOCAL-00069" />
+      <option name="project" value="LOCAL" />
+      <updated>1737995874094</updated>
+    </task>
+    <task id="LOCAL-00070" summary="Bump plugin types">
+      <option name="closed" value="true" />
+      <created>1738343109864</created>
+      <option name="number" value="00070" />
+      <option name="presentableId" value="LOCAL-00070" />
+      <option name="project" value="LOCAL" />
+      <updated>1738343109864</updated>
+    </task>
+    <task id="LOCAL-00071" summary="package-lock.json">
+      <option name="closed" value="true" />
+      <created>1738343119180</created>
+      <option name="number" value="00071" />
+      <option name="presentableId" value="LOCAL-00071" />
+      <option name="project" value="LOCAL" />
+      <updated>1738343119180</updated>
+    </task>
+    <task id="LOCAL-00072" summary="Make all OAuth 2.0 fields optional&#10;&#10;Closes mountain-loop/yaak#165">
+      <option name="closed" value="true" />
+      <created>1740174005727</created>
+      <option name="number" value="00072" />
+      <option name="presentableId" value="LOCAL-00072" />
+      <option name="project" value="LOCAL" />
+      <updated>1740174005727</updated>
+    </task>
+    <task id="LOCAL-00073" summary="Soft required field">
+      <option name="closed" value="true" />
+      <created>1740174199091</created>
+      <option name="number" value="00073" />
+      <option name="presentableId" value="LOCAL-00073" />
+      <option name="project" value="LOCAL" />
+      <updated>1740174199091</updated>
+    </task>
+    <task id="LOCAL-00074" summary="Better data key for window">
+      <option name="closed" value="true" />
+      <created>1740465250370</created>
+      <option name="number" value="00074" />
+      <option name="presentableId" value="LOCAL-00074" />
+      <option name="project" value="LOCAL" />
+      <updated>1740465250370</updated>
+    </task>
+    <task id="LOCAL-00075" summary="Fix access token refreshing">
+      <option name="closed" value="true" />
+      <created>1741273211692</created>
+      <option name="number" value="00075" />
+      <option name="presentableId" value="LOCAL-00075" />
+      <option name="project" value="LOCAL" />
+      <updated>1741273211692</updated>
+    </task>
+    <task id="LOCAL-00076" summary="Bump dep">
+      <option name="closed" value="true" />
+      <created>1741273219550</created>
+      <option name="number" value="00076" />
+      <option name="presentableId" value="LOCAL-00076" />
+      <option name="project" value="LOCAL" />
+      <updated>1741273219550</updated>
+    </task>
+    <task id="LOCAL-00077" summary="Bump openapi-to-postmanv2">
+      <option name="closed" value="true" />
+      <created>1741449987785</created>
+      <option name="number" value="00077" />
+      <option name="presentableId" value="LOCAL-00077" />
+      <option name="project" value="LOCAL" />
+      <updated>1741449987785</updated>
+    </task>
+    <task id="LOCAL-00078" summary="Logic for new Environment.base field">
+      <option name="closed" value="true" />
+      <created>1746739721406</created>
+      <option name="number" value="00078" />
+      <option name="presentableId" value="LOCAL-00078" />
+      <option name="project" value="LOCAL" />
+      <updated>1746739721406</updated>
+    </task>
+    <task id="LOCAL-00079" summary="Got Insomnia v5 imports working">
+      <option name="closed" value="true" />
+      <created>1746843160240</created>
+      <option name="number" value="00079" />
+      <option name="presentableId" value="LOCAL-00079" />
+      <option name="project" value="LOCAL" />
+      <updated>1746843160240</updated>
+    </task>
+    <task id="LOCAL-00080" summary="Split v4/5 and add websocket imports">
+      <option name="closed" value="true" />
+      <created>1746887529164</created>
+      <option name="number" value="00080" />
+      <option name="presentableId" value="LOCAL-00080" />
+      <option name="project" value="LOCAL" />
+      <updated>1746887529164</updated>
+    </task>
+    <task id="LOCAL-00081" summary="Add test">
+      <option name="closed" value="true" />
+      <created>1746970281607</created>
+      <option name="number" value="00081" />
+      <option name="presentableId" value="LOCAL-00081" />
+      <option name="project" value="LOCAL" />
+      <updated>1746970281607</updated>
+    </task>
+    <task id="LOCAL-00082" summary="Bump @yaakapp/api">
+      <option name="closed" value="true" />
+      <created>1746970468860</created>
+      <option name="number" value="00082" />
+      <option name="presentableId" value="LOCAL-00082" />
+      <option name="project" value="LOCAL" />
+      <updated>1746970468860</updated>
+    </task>
+    <task id="LOCAL-00083" summary="Add audience parameter to OAuth 2">
+      <option name="closed" value="true" />
+      <created>1747404948037</created>
+      <option name="number" value="00083" />
+      <option name="presentableId" value="LOCAL-00083" />
+      <option name="project" value="LOCAL" />
+      <updated>1747404948037</updated>
+    </task>
+    <task id="LOCAL-00084" summary="Add audience parameter to OAuth 2&#10;&#10;Closes https://feedback.yaak.app/p/how-do-i-send-an-audience-using-oauth2">
+      <option name="closed" value="true" />
+      <created>1747405042302</created>
+      <option name="number" value="00084" />
+      <option name="presentableId" value="LOCAL-00084" />
+      <option name="project" value="LOCAL" />
+      <updated>1747405042302</updated>
+    </task>
+    <task id="LOCAL-00085" summary="print body in OAuth 2 http errors">
+      <option name="closed" value="true" />
+      <created>1747408578898</created>
+      <option name="number" value="00085" />
+      <option name="presentableId" value="LOCAL-00085" />
+      <option name="project" value="LOCAL" />
+      <updated>1747408578898</updated>
+    </task>
+    <task id="LOCAL-00086" summary="Fix Insomnia v5 importer">
+      <option name="closed" value="true" />
+      <created>1747753736628</created>
+      <option name="number" value="00086" />
+      <option name="presentableId" value="LOCAL-00086" />
+      <option name="project" value="LOCAL" />
+      <updated>1747753736628</updated>
+    </task>
+    <task id="LOCAL-00087" summary="More template functions">
+      <option name="closed" value="true" />
+      <created>1748230024992</created>
+      <option name="number" value="00087" />
+      <option name="presentableId" value="LOCAL-00087" />
+      <option name="project" value="LOCAL" />
+      <updated>1748230024992</updated>
+    </task>
+    <task id="LOCAL-00088" summary="Url encode/decode functions">
+      <option name="closed" value="true" />
+      <created>1748230446073</created>
+      <option name="number" value="00088" />
+      <option name="presentableId" value="LOCAL-00088" />
+      <option name="project" value="LOCAL" />
+      <updated>1748230446073</updated>
+    </task>
+    <task id="LOCAL-00089" summary="UUID, json/x path">
+      <option name="closed" value="true" />
+      <created>1748462849770</created>
+      <option name="number" value="00089" />
+      <option name="presentableId" value="LOCAL-00089" />
+      <option name="project" value="LOCAL" />
+      <updated>1748462849770</updated>
+    </task>
+    <task id="LOCAL-00090" summary="Don't return &quot;undefined&quot; when no XPath match">
+      <option name="closed" value="true" />
+      <created>1748463273069</created>
+      <option name="number" value="00090" />
+      <option name="presentableId" value="LOCAL-00090" />
+      <option name="project" value="LOCAL" />
+      <updated>1748463273069</updated>
+    </task>
+    <task id="LOCAL-00091" summary="Remove console.log">
+      <option name="closed" value="true" />
+      <created>1748463286474</created>
+      <option name="number" value="00091" />
+      <option name="presentableId" value="LOCAL-00091" />
+      <option name="project" value="LOCAL" />
+      <updated>1748463286474</updated>
+    </task>
+    <task id="LOCAL-00092" summary="Fix JSONPath function quoting strings">
+      <option name="closed" value="true" />
+      <created>1748466377788</created>
+      <option name="number" value="00092" />
+      <option name="presentableId" value="LOCAL-00092" />
+      <option name="project" value="LOCAL" />
+      <updated>1748466377788</updated>
+    </task>
+    <option name="localTasksCounter" value="93" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Bump API version" />
+    <MESSAGE value="Remove log" />
+    <MESSAGE value="Bump plugin types" />
+    <MESSAGE value="package-lock.json" />
+    <MESSAGE value="Make all OAuth 2.0 fields optional&#10;&#10;Closes mountain-loop/yaak#165" />
+    <MESSAGE value="Soft required field" />
+    <MESSAGE value="Better data key for window" />
+    <MESSAGE value="Fix access token refreshing" />
+    <MESSAGE value="Bump dep" />
+    <MESSAGE value="Bump openapi-to-postmanv2" />
+    <MESSAGE value="Logic for new Environment.base field" />
+    <MESSAGE value="Got Insomnia v5 imports working" />
+    <MESSAGE value="Split v4/5 and add websocket imports" />
+    <MESSAGE value="Add test" />
+    <MESSAGE value="Bump @yaakapp/api" />
+    <MESSAGE value="Add audience parameter to OAuth 2" />
+    <MESSAGE value="Add audience parameter to OAuth 2&#10;&#10;Closes https://feedback.yaak.app/p/how-do-i-send-an-audience-using-oauth2" />
+    <MESSAGE value="print body in OAuth 2 http errors" />
+    <MESSAGE value="Fix Insomnia v5 importer" />
+    <MESSAGE value="More template functions" />
+    <MESSAGE value="Url encode/decode functions" />
+    <MESSAGE value="UUID, json/x path" />
+    <MESSAGE value="Don't return &quot;undefined&quot; when no XPath match" />
+    <MESSAGE value="Remove console.log" />
+    <MESSAGE value="Fix JSONPath function quoting strings" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix JSONPath function quoting strings" />
+  </component>
+  <component name="VgoProject">
+    <settings-migrated>true</settings-migrated>
+  </component>
+</project>
