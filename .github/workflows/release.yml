@@ -3,9 +3,6 @@ on:
   push:
     tags: [ v* ]
 
-env:
-  YAAK_PLUGINS_DIR: checkout/plugins
-
 jobs:
   build-artifacts:
     permissions:
@@ -83,12 +80,6 @@ jobs:
       - name: Run lint
         run: npm run lint
 
-      - name: Checkout yaakapp/plugins
-        uses: actions/checkout@v4
-        with:
-          repository: yaakapp/plugins
-          path: ${{ env.YAAK_PLUGINS_DIR }}
-
       - name: Set version
         run: npm run replace-version
         env:
@@ -96,7 +87,6 @@ jobs:
 
       - uses: tauri-apps/tauri-action@v0
         env:
-          YAAK_PLUGINS_DIR: ${{ env.YAAK_PLUGINS_DIR }}
           YAAK_TARGET_ARCH: ${{ matrix.yaak_arch }}
 
           ENABLE_CODE_SIGNING: ${{ secrets.APPLE_CERTIFICATE }}

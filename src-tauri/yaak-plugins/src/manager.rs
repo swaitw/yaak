@@ -22,7 +22,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
 use tauri::path::BaseDirectory;
-use tauri::{AppHandle, Manager, Runtime, WebviewWindow};
+use tauri::{AppHandle, Manager, Runtime, WebviewWindow, is_dev};
 use tokio::fs::read_dir;
 use tokio::net::TcpListener;
 use tokio::sync::{Mutex, mpsc};
@@ -140,9 +140,13 @@ impl PluginManager {
             .resolve("vendored/plugins", BaseDirectory::Resource)
             .expect("failed to resolve plugin directory resource");
 
-        let plugins_dir = match env::var("YAAK_PLUGINS_DIR") {
-            Ok(d) => &PathBuf::from(d),
-            Err(_) => bundled_plugins_dir,
+        let plugins_dir = if is_dev() {
+            // Use plugins directly for easy development
+            env::current_dir()
+                .map(|cwd| cwd.join("../plugins").canonicalize().unwrap())
+                .unwrap_or_else(|_| bundled_plugins_dir.clone())
+        } else {
+            bundled_plugins_dir.clone()
         };
 
         info!("Loading bundled plugins from {plugins_dir:?}");
