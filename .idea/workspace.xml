@@ -50,9 +50,9 @@
     </cargoProject>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="30f590e1-85b8-4961-a56b-f12c098aad45" name="Changes" comment="Merge plugins repo into mono">
+    <list default="true" id="30f590e1-85b8-4961-a56b-f12c098aad45" name="Changes" comment="Delete unneeded">
+      <change beforePath="$PROJECT_DIR$/.github/workflows/release.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/release.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/plugins_/_package.json" beforeDir="false" />
     </list>
     <list id="53a78560-c99e-4d1d-baeb-b011edf7c089" name="Don't Commit" comment="" />
     <option name="SHOW_DIALOG" value="false" />
@@ -454,15 +454,7 @@
       <workItem from="1747920624956" duration="24672000" />
       <workItem from="1748197354291" duration="6839000" />
       <workItem from="1748264052869" duration="6923000" />
-      <workItem from="1748442411941" duration="21123000" />
-    </task>
-    <task id="LOCAL-01223" summary="Regenerate types">
-      <option name="closed" value="true" />
-      <created>1747158341167</created>
-      <option name="number" value="01223" />
-      <option name="presentableId" value="LOCAL-01223" />
-      <option name="project" value="LOCAL" />
-      <updated>1747158341167</updated>
+      <workItem from="1748442411941" duration="21922000" />
     </task>
     <task id="LOCAL-01224" summary="Update encryption help">
       <option name="closed" value="true" />
@@ -848,7 +840,15 @@
       <option name="project" value="LOCAL" />
       <updated>1748530944949</updated>
     </task>
-    <option name="localTasksCounter" value="1272" />
+    <task id="LOCAL-01272" summary="Delete unneeded">
+      <option name="closed" value="true" />
+      <created>1748530984306</created>
+      <option name="number" value="01272" />
+      <option name="presentableId" value="LOCAL-01272" />
+      <option name="project" value="LOCAL" />
+      <updated>1748530984306</updated>
+    </task>
+    <option name="localTasksCounter" value="1273" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -882,7 +882,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Remove log" />
     <MESSAGE value="Bump plugin types" />
     <MESSAGE value="package-lock.json" />
     <MESSAGE value="Make all OAuth 2.0 fields optional&#10;&#10;Closes mountain-loop/yaak#165" />
@@ -907,7 +906,8 @@
     <MESSAGE value="Remove console.log" />
     <MESSAGE value="Fix JSONPath function quoting strings" />
     <MESSAGE value="Merge plugins repo into mono" />
-    <option name="LAST_COMMIT_MESSAGE" value="Merge plugins repo into mono" />
+    <MESSAGE value="Delete unneeded" />
+    <option name="LAST_COMMIT_MESSAGE" value="Delete unneeded" />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>
