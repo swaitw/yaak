@@ -119,6 +119,7 @@ export function TextViewer({ language, text, responseId, requestId, pretty, clas
   // Decode unicode sequences in the text to readable characters
   if (pretty) {
     body = decodeUnicodeLiterals(body);
+    body = body.replace(/\\\//g, '/'); // Hide unnecessary escaping of '/' by some older frameworks
   }
 
   return (
@@ -136,9 +137,8 @@ export function TextViewer({ language, text, responseId, requestId, pretty, clas
 
 /** Convert \uXXXX to actual Unicode characters */
 function decodeUnicodeLiterals(text: string): string {
-  const decoded = text.replace(/\\u([0-9a-fA-F]{4})/g, (_, hex) => {
+  return text.replace(/\\u([0-9a-fA-F]{4})/g, (_, hex) => {
     const charCode = parseInt(hex, 16);
     return String.fromCharCode(charCode);
   });
-  return decoded;
 }
