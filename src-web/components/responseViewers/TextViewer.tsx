@@ -117,7 +117,7 @@ export function TextViewer({ language, text, responseId, requestId, pretty, clas
   }
 
   // Decode unicode sequences in the text to readable characters
-  if (pretty) {
+  if (language === 'json' && pretty) {
     body = decodeUnicodeLiterals(body);
     body = body.replace(/\\\//g, '/'); // Hide unnecessary escaping of '/' by some older frameworks
   }
