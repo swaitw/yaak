@@ -282,15 +282,9 @@ export class PluginInstance {
         this.#importModule();
       }
     } catch (err) {
-      console.log('Plugin call threw exception', payload.type, err);
-      this.#sendPayload(
-        windowContext,
-        {
-          type: 'error_response',
-          error: `${err}`,
-        },
-        replyId,
-      );
+      const error = `${err}`.replace(/^Error:\s*/g, '');
+      console.log('Plugin call threw exception', payload.type, '→', error);
+      this.#sendPayload(windowContext, { type: 'error_response', error }, replyId);
       return;
     }
 

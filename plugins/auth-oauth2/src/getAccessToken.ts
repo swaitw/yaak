@@ -3,7 +3,8 @@ import { readFileSync } from 'node:fs';
 import { AccessTokenRawResponse } from './store';
 
 export async function getAccessToken(
-  ctx: Context, {
+  ctx: Context,
+  {
     accessTokenUrl,
     scope,
     audience,
@@ -21,17 +22,15 @@ export async function getAccessToken(
     audience: string | null;
     credentialsInBody: boolean;
     params: HttpUrlParameter[];
-  }): Promise<AccessTokenRawResponse> {
+  },
+): Promise<AccessTokenRawResponse> {
   console.log('Getting access token', accessTokenUrl);
   const httpRequest: Partial<HttpRequest> = {
     method: 'POST',
     url: accessTokenUrl,
     bodyType: 'application/x-www-form-urlencoded',
     body: {
-      form: [
-        { name: 'grant_type', value: grantType },
-        ...params,
-      ],
+      form: [{ name: 'grant_type', value: grantType }, ...params],
     },
     headers: [
       { name: 'User-Agent', value: 'yaak' },
@@ -56,7 +55,9 @@ export async function getAccessToken(
   const body = resp.bodyPath ? readFileSync(resp.bodyPath, 'utf8') : '';
 
   if (resp.status < 200 || resp.status >= 300) {
-    throw new Error('Failed to fetch access token with status=' + resp.status + ' and body=' + body);
+    throw new Error(
+      'Failed to fetch access token with status=' + resp.status + ' and body=' + body,
+    );
   }
 
   let response;

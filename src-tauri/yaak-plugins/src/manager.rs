@@ -530,6 +530,7 @@ impl PluginManager {
             InternalEventPayload::EmptyResponse(_) => {
                 Err(PluginErr("Auth plugin returned empty".to_string()))
             }
+            InternalEventPayload::ErrorResponse(e) => Err(PluginErr(e.error)),
             e => Err(PluginErr(format!("Auth plugin returned invalid event {:?}", e))),
         }
     }
@@ -601,6 +602,7 @@ impl PluginManager {
             InternalEventPayload::EmptyResponse(_) => {
                 Err(PluginErr("Auth plugin returned empty".to_string()))
             }
+            InternalEventPayload::ErrorResponse(e) => Err(PluginErr(e.error)),
             e => Err(PluginErr(format!("Auth plugin returned invalid event {:?}", e))),
         }
     }

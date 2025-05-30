@@ -12,6 +12,7 @@ export function getImplicit(
     scope,
     state,
     audience,
+    tokenName,
   }: {
     authorizationUrl: string;
     responseType: string;
@@ -20,8 +21,9 @@ export function getImplicit(
     scope: string | null;
     state: string | null;
     audience: string | null;
+    tokenName: 'access_token' | 'id_token';
   },
-) :Promise<AccessToken> {
+): Promise<AccessToken> {
   return new Promise(async (resolve, reject) => {
     const token = await getToken(ctx, contextId);
     if (token) {
@@ -38,7 +40,10 @@ export function getImplicit(
     if (state) authorizationUrl.searchParams.set('state', state);
     if (audience) authorizationUrl.searchParams.set('audience', audience);
     if (responseType.includes('id_token')) {
-      authorizationUrl.searchParams.set('nonce', String(Math.floor(Math.random() * 9999999999999) + 1));
+      authorizationUrl.searchParams.set(
+        'nonce',
+        String(Math.floor(Math.random() * 9999999999999) + 1),
+      );
     }
 
     const authorizationUrlStr = authorizationUrl.toString();
@@ -60,7 +65,7 @@ export function getImplicit(
         const hash = url.hash.slice(1);
         const params = new URLSearchParams(hash);
 
-        const accessToken = params.get('access_token');
+        const accessToken = params.get(tokenName);
         if (!accessToken) {
           return;
         }

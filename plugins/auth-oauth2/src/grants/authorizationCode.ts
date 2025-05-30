@@ -22,6 +22,7 @@ export async function getAuthorizationCode(
     audience,
     credentialsInBody,
     pkce,
+    tokenName,
   }: {
     authorizationUrl: string;
     accessTokenUrl: string;
@@ -36,6 +37,7 @@ export async function getAuthorizationCode(
       challengeMethod: string | null;
       codeVerifier: string | null;
     } | null;
+    tokenName: 'access_token' | 'id_token';
   },
 ): Promise<AccessToken> {
   const token = await getOrRefreshAccessToken(ctx, contextId, {
@@ -59,7 +61,10 @@ export async function getAuthorizationCode(
   if (pkce) {
     const verifier = pkce.codeVerifier || createPkceCodeVerifier();
     const challengeMethod = pkce.challengeMethod || DEFAULT_PKCE_METHOD;
-    authorizationUrl.searchParams.set('code_challenge', createPkceCodeChallenge(verifier, challengeMethod));
+    authorizationUrl.searchParams.set(
+      'code_challenge',
+      createPkceCodeChallenge(verifier, challengeMethod),
+    );
     authorizationUrl.searchParams.set('code_challenge_method', challengeMethod);
   }
 
@@ -107,7 +112,7 @@ export async function getAuthorizationCode(
         });
 
         try {
-          resolve(await storeToken(ctx, contextId, response));
+          resolve(await storeToken(ctx, contextId, response, tokenName));
         } catch (err) {
           reject(err);
         }
@@ -127,14 +132,15 @@ function createPkceCodeChallenge(verifier: string, method: string) {
 
   const hash = encodeForPkce(createHash('sha256').update(verifier).digest());
   return hash
-    .replace(/=/g, '')  // Remove padding '='
+    .replace(/=/g, '') // Remove padding '='
     .replace(/\+/g, '-') // Replace '+' with '-'
     .replace(/\//g, '_'); // Replace '/' with '_'
 }
 
 function encodeForPkce(bytes: Buffer) {
-  return bytes.toString('base64')
-    .replace(/=/g, '')  // Remove padding '='
+  return bytes
+    .toString('base64')
+    .replace(/=/g, '') // Remove padding '='
     .replace(/\+/g, '-') // Replace '+' with '-'
     .replace(/\//g, '_'); // Replace '/' with '_'
 }

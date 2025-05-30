@@ -5,7 +5,12 @@ import {
   JsonPrimitive,
   PluginDefinition,
 } from '@yaakapp/api';
-import { DEFAULT_PKCE_METHOD, getAuthorizationCode, PKCE_PLAIN, PKCE_SHA256 } from './grants/authorizationCode';
+import {
+  DEFAULT_PKCE_METHOD,
+  getAuthorizationCode,
+  PKCE_PLAIN,
+  PKCE_SHA256,
+} from './grants/authorizationCode';
 import { getClientCredentials } from './grants/clientCredentials';
 import { getImplicit } from './grants/implicit';
 import { getPassword } from './grants/password';
@@ -22,10 +27,13 @@ const grantTypes: FormInputSelectOption[] = [
 
 const defaultGrantType = grantTypes[0]!.value;
 
-function hiddenIfNot(grantTypes: GrantType[], ...other: ((values: GetHttpAuthenticationConfigRequest['values']) => boolean)[]) {
+function hiddenIfNot(
+  grantTypes: GrantType[],
+  ...other: ((values: GetHttpAuthenticationConfigRequest['values']) => boolean)[]
+) {
   return (_ctx: Context, { values }: GetHttpAuthenticationConfigRequest) => {
-    const hasGrantType = grantTypes.find(t => t === String(values.grantType ?? defaultGrantType));
-    const hasOtherBools = other.every(t => t(values));
+    const hasGrantType = grantTypes.find((t) => t === String(values.grantType ?? defaultGrantType));
+    const hasOtherBools = other.every((t) => t(values));
     const show = hasGrantType && hasOtherBools;
     return { hidden: !show };
   };
@@ -77,7 +85,11 @@ export const plugin: PluginDefinition = {
             await ctx.toast.show({ message: 'No token to copy', color: 'warning' });
           } else {
             await ctx.clipboard.copyText(token.response.access_token);
-            await ctx.toast.show({ message: 'Token copied to clipboard', icon: 'copy', color: 'success' });
+            await ctx.toast.show({
+              message: 'Token copied to clipboard',
+              icon: 'copy',
+              color: 'success',
+            });
           }
         },
       },
@@ -130,7 +142,7 @@ export const plugin: PluginDefinition = {
         label: 'Authorization URL',
         dynamic: hiddenIfNot(['authorization_code', 'implicit']),
         placeholder: authorizationUrls[0],
-        completionOptions: authorizationUrls.map(url => ({ label: url, value: url })),
+        completionOptions: authorizationUrls.map((url) => ({ label: url, value: url })),
       },
       {
         type: 'text',
@@ -139,7 +151,7 @@ export const plugin: PluginDefinition = {
         label: 'Access Token URL',
         placeholder: accessTokenUrls[0],
         dynamic: hiddenIfNot(['authorization_code', 'password', 'client_credentials']),
-        completionOptions: accessTokenUrls.map(url => ({ label: url, value: url })),
+        completionOptions: accessTokenUrls.map((url) => ({ label: url, value: url })),
       },
       {
         type: 'text',
@@ -162,6 +174,20 @@ export const plugin: PluginDefinition = {
         optional: true,
       },
       {
+        type: 'select',
+        name: 'tokenName',
+        label: 'Token for authorization',
+        description:
+          'Select which token to send in the "Authorization: Bearer" header. Most APIs expect ' +
+          'access_token, but some (like OpenID Connect) require id_token.',
+        defaultValue: 'access_token',
+        options: [
+          { label: 'access_token', value: 'access_token' },
+          { label: 'id_token', value: 'id_token' },
+        ],
+        dynamic: hiddenIfNot(['authorization_code', 'implicit']),
+      },
+      {
         type: 'checkbox',
         name: 'usePkce',
         label: 'Use PKCE',
@@ -171,7 +197,10 @@ export const plugin: PluginDefinition = {
         type: 'select',
         name: 'pkceChallengeMethod',
         label: 'Code Challenge Method',
-        options: [{ label: 'SHA-256', value: PKCE_SHA256 }, { label: 'Plain', value: PKCE_PLAIN }],
+        options: [
+          { label: 'SHA-256', value: PKCE_SHA256 },
+          { label: 'Plain', value: PKCE_PLAIN },
+        ],
         defaultValue: DEFAULT_PKCE_METHOD,
         dynamic: hiddenIfNot(['authorization_code'], ({ usePkce }) => !!usePkce),
       },
@@ -215,9 +244,19 @@ export const plugin: PluginDefinition = {
         label: 'Advanced',
         inputs: [
           { type: 'text', name: 'scope', label: 'Scope', optional: true },
-          { type: 'text', name: 'headerPrefix', label: 'Header Prefix', optional: true, defaultValue: 'Bearer' },
           {
-            type: 'select', name: 'credentials', label: 'Send Credentials', defaultValue: 'body', options: [
+            type: 'text',
+            name: 'headerPrefix',
+            label: 'Header Prefix',
+            optional: true,
+            defaultValue: 'Bearer',
+          },
+          {
+            type: 'select',
+            name: 'credentials',
+            label: 'Send Credentials',
+            defaultValue: 'body',
+            options: [
               { label: 'In Request Body', value: 'body' },
               { label: 'As Basic Authentication', value: 'basic' },
             ],
@@ -257,8 +296,12 @@ export const plugin: PluginDefinition = {
         const authorizationUrl = stringArg(values, 'authorizationUrl');
         const accessTokenUrl = stringArg(values, 'accessTokenUrl');
         token = await getAuthorizationCode(ctx, contextId, {
-          accessTokenUrl: accessTokenUrl.match(/^https?:\/\//) ? accessTokenUrl : `https://${accessTokenUrl}`,
-          authorizationUrl: authorizationUrl.match(/^https?:\/\//) ? authorizationUrl : `https://${authorizationUrl}`,
+          accessTokenUrl: accessTokenUrl.match(/^https?:\/\//)
+            ? accessTokenUrl
+            : `https://${accessTokenUrl}`,
+          authorizationUrl: authorizationUrl.match(/^https?:\/\//)
+            ? authorizationUrl
+            : `https://${authorizationUrl}`,
           clientId: stringArg(values, 'clientId'),
           clientSecret: stringArg(values, 'clientSecret'),
           redirectUri: stringArgOrNull(values, 'redirectUri'),
@@ -266,26 +309,34 @@ export const plugin: PluginDefinition = {
           audience: stringArgOrNull(values, 'audience'),
           state: stringArgOrNull(values, 'state'),
           credentialsInBody,
-          pkce: values.usePkce ? {
-            challengeMethod: stringArg(values, 'pkceChallengeMethod'),
-            codeVerifier: stringArgOrNull(values, 'pkceCodeVerifier'),
-          } : null,
+          pkce: values.usePkce
+            ? {
+                challengeMethod: stringArg(values, 'pkceChallengeMethod'),
+                codeVerifier: stringArgOrNull(values, 'pkceCodeVerifier'),
+              }
+            : null,
+          tokenName: values.tokenName === 'id_token' ? 'id_token' : 'access_token',
         });
       } else if (grantType === 'implicit') {
         const authorizationUrl = stringArg(values, 'authorizationUrl');
         token = await getImplicit(ctx, contextId, {
-          authorizationUrl: authorizationUrl.match(/^https?:\/\//) ? authorizationUrl : `https://${authorizationUrl}`,
+          authorizationUrl: authorizationUrl.match(/^https?:\/\//)
+            ? authorizationUrl
+            : `https://${authorizationUrl}`,
           clientId: stringArg(values, 'clientId'),
           redirectUri: stringArgOrNull(values, 'redirectUri'),
           responseType: stringArg(values, 'responseType'),
           scope: stringArgOrNull(values, 'scope'),
           audience: stringArgOrNull(values, 'audience'),
           state: stringArgOrNull(values, 'state'),
+          tokenName: values.tokenName === 'id_token' ? 'id_token' : 'access_token',
         });
       } else if (grantType === 'client_credentials') {
         const accessTokenUrl = stringArg(values, 'accessTokenUrl');
         token = await getClientCredentials(ctx, contextId, {
-          accessTokenUrl: accessTokenUrl.match(/^https?:\/\//) ? accessTokenUrl : `https://${accessTokenUrl}`,
+          accessTokenUrl: accessTokenUrl.match(/^https?:\/\//)
+            ? accessTokenUrl
+            : `https://${accessTokenUrl}`,
           clientId: stringArg(values, 'clientId'),
           clientSecret: stringArg(values, 'clientSecret'),
           scope: stringArgOrNull(values, 'scope'),
@@ -295,7 +346,9 @@ export const plugin: PluginDefinition = {
       } else if (grantType === 'password') {
         const accessTokenUrl = stringArg(values, 'accessTokenUrl');
         token = await getPassword(ctx, contextId, {
-          accessTokenUrl: accessTokenUrl.match(/^https?:\/\//) ? accessTokenUrl : `https://${accessTokenUrl}`,
+          accessTokenUrl: accessTokenUrl.match(/^https?:\/\//)
+            ? accessTokenUrl
+            : `https://${accessTokenUrl}`,
           clientId: stringArg(values, 'clientId'),
           clientSecret: stringArg(values, 'clientSecret'),
           username: stringArg(values, 'username'),
@@ -310,16 +363,21 @@ export const plugin: PluginDefinition = {
 
       const headerValue = `${headerPrefix} ${token.response.access_token}`.trim();
       return {
-        setHeaders: [{
-          name: 'Authorization',
-          value: headerValue,
-        }],
+        setHeaders: [
+          {
+            name: 'Authorization',
+            value: headerValue,
+          },
+        ],
       };
     },
   },
 };
 
-function stringArgOrNull(values: Record<string, JsonPrimitive | undefined>, name: string): string | null {
+function stringArgOrNull(
+  values: Record<string, JsonPrimitive | undefined>,
+  name: string,
+): string | null {
   const arg = values[name];
   if (arg == null || arg == '') return null;
   return `${arg}`;
