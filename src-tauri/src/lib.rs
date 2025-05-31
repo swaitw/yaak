@@ -1,7 +1,7 @@
 extern crate core;
 use crate::encoding::read_response_body;
 use crate::error::Error::GenericError;
-use crate::grpc::{build_metadata, metadata_to_map};
+use crate::grpc::{build_metadata, metadata_to_map, resolve_grpc_request};
 use crate::http_request::send_http_request;
 use crate::notifications::YaakNotifier;
 use crate::render::{render_grpc_request, render_template};
@@ -151,10 +151,14 @@ async fn cmd_grpc_reflect<R: Runtime>(
         None => None,
     };
     let unrendered_request = app_handle.db().get_grpc_request(request_id)?;
+    let resolved_request = resolve_grpc_request(&window, &unrendered_request)?;
+
     let base_environment =
         app_handle.db().get_base_environment(&unrendered_request.workspace_id)?;
+    let workspace = app_handle.db().get_workspace(&unrendered_request.workspace_id)?;
+
     let req = render_grpc_request(
-        &unrendered_request,
+        &resolved_request,
         &base_environment,
         environment.as_ref(),
         &PluginTemplateCallback::new(
@@ -176,6 +180,7 @@ async fn cmd_grpc_reflect<R: Runtime>(
             &uri,
             &proto_files.iter().map(|p| PathBuf::from_str(p).unwrap()).collect(),
             &metadata,
+            workspace.setting_validate_certificates,
         )
         .await
         .map_err(|e| GenericError(e.to_string()))?)
@@ -195,10 +200,13 @@ async fn cmd_grpc_go<R: Runtime>(
         None => None,
     };
     let unrendered_request = app_handle.db().get_grpc_request(request_id)?;
+    let resolved_request = resolve_grpc_request(&window, &unrendered_request)?;
     let base_environment =
         app_handle.db().get_base_environment(&unrendered_request.workspace_id)?;
+    let workspace = app_handle.db().get_workspace(&unrendered_request.workspace_id)?;
+
     let request = render_grpc_request(
-        &unrendered_request,
+        &resolved_request,
         &base_environment,
         environment.as_ref(),
         &PluginTemplateCallback::new(
@@ -258,6 +266,7 @@ async fn cmd_grpc_go<R: Runtime>(
             uri.as_str(),
             &proto_files.iter().map(|p| PathBuf::from_str(p).unwrap()).collect(),
             &metadata,
+            workspace.setting_validate_certificates,
         )
         .await;
 
@@ -291,7 +300,7 @@ async fn cmd_grpc_go<R: Runtime>(
         let cancelled_rx = cancelled_rx.clone();
         let app_handle = app_handle.clone();
         let window = window.clone();
-        let workspace = base_environment.clone();
+        let base_environment = base_environment.clone();
         let environment = environment.clone();
         let base_msg = base_msg.clone();
         let method_desc = method_desc.clone();
@@ -321,7 +330,7 @@ async fn cmd_grpc_go<R: Runtime>(
                         tauri::async_runtime::block_on(async {
                             render_template(
                                 msg.as_str(),
-                                &workspace,
+                                &base_environment,
                                 environment.as_ref(),
                                 &PluginTemplateCallback::new(
                                     &app_handle,
@@ -917,10 +926,10 @@ async fn cmd_call_http_authentication_action<R: Runtime>(
     auth_name: &str,
     action_index: i32,
     values: HashMap<String, JsonPrimitive>,
-    request_id: &str,
+    model_id: &str,
 ) -> YaakResult<()> {
     Ok(plugin_manager
-        .call_http_authentication_action(&window, auth_name, action_index, values, request_id)
+        .call_http_authentication_action(&window, auth_name, action_index, values, model_id)
         .await?)
 }
 

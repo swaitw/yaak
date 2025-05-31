@@ -116,6 +116,12 @@ export function TextViewer({ language, text, responseId, requestId, pretty, clas
     body = formattedBody.data;
   }
 
+  // Decode unicode sequences in the text to readable characters
+  if (language === 'json' && pretty) {
+    body = decodeUnicodeLiterals(body);
+    body = body.replace(/\\\//g, '/'); // Hide unnecessary escaping of '/' by some older frameworks
+  }
+
   return (
     <Editor
       readOnly
@@ -127,4 +133,12 @@ export function TextViewer({ language, text, responseId, requestId, pretty, clas
       stateKey={null}
     />
   );
+}
+
+/** Convert \uXXXX to actual Unicode characters */
+function decodeUnicodeLiterals(text: string): string {
+  return text.replace(/\\u([0-9a-fA-F]{4})/g, (_, hex) => {
+    const charCode = parseInt(hex, 16);
+    return String.fromCharCode(charCode);
+  });
 }

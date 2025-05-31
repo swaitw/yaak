@@ -11,7 +11,7 @@ pub trait TemplateCallback {
     fn run(
         &self,
         fn_name: &str,
-        args: HashMap<String, String>,
+        args: HashMap<String, serde_json::Value>,
     ) -> impl Future<Output = Result<String>> + Send;
 
     fn transform_arg(&self, fn_name: &str, arg_name: &str, arg_value: &str) -> Result<String>;
@@ -107,9 +107,15 @@ async fn render_value<T: TemplateCallback>(
             None => return Err(VariableNotFound(name)),
         },
         Val::Fn { name, args } => {
-            let mut resolved_args: HashMap<String, String> = HashMap::new();
+            let mut resolved_args: HashMap<String, serde_json::Value> = HashMap::new();
             for a in args {
-                let v = Box::pin(render_value(a.value, vars, cb, depth)).await?;
+                let v = match a.value.clone() {
+                    Val::Bool { value } => serde_json::Value::Bool(value),
+                    Val::Null => serde_json::Value::Null,
+                    _ => serde_json::Value::String(
+                        Box::pin(render_value(a.value, vars, cb, depth)).await?,
+                    ),
+                };
                 resolved_args.insert(a.name, v);
             }
             let result = cb.run(name.as_str(), resolved_args.clone()).await?;
@@ -133,7 +139,11 @@ mod parse_and_render_tests {
     struct EmptyCB {}
 
     impl TemplateCallback for EmptyCB {
-        async fn run(&self, _fn_name: &str, _args: HashMap<String, String>) -> Result<String> {
+        async fn run(
+            &self,
+            _fn_name: &str,
+            _args: HashMap<String, serde_json::Value>,
+        ) -> Result<String> {
             todo!()
         }
 
@@ -236,7 +246,11 @@ mod parse_and_render_tests {
 
         struct CB {}
         impl TemplateCallback for CB {
-            async fn run(&self, fn_name: &str, args: HashMap<String, String>) -> Result<String> {
+            async fn run(
+                &self,
+                fn_name: &str,
+                args: HashMap<String, serde_json::Value>,
+            ) -> Result<String> {
                 Ok(format!("{fn_name}: {}, {:?} {:?}", args.len(), args.get("a"), args.get("b")))
             }
 
@@ -260,7 +274,11 @@ mod parse_and_render_tests {
         let result = r#"BAR"#;
         struct CB {}
         impl TemplateCallback for CB {
-            async fn run(&self, fn_name: &str, args: HashMap<String, String>) -> Result<String> {
+            async fn run(
+                &self,
+                fn_name: &str,
+                args: HashMap<String, serde_json::Value>,
+            ) -> Result<String> {
                 Ok(match fn_name {
                     "secret" => "abc".to_string(),
                     "upper" => args["foo"].to_string().to_uppercase(),
@@ -290,7 +308,7 @@ mod parse_and_render_tests {
         let result = r#"FOO 'BAR' BAZ"#;
         struct CB {}
         impl TemplateCallback for CB {
-            async fn run(&self, fn_name: &str, args: HashMap<String, String>) -> Result<String> {
+            async fn run(&self, fn_name: &str, args: HashMap<String, serde_json::Value>) -> Result<String> {
                 Ok(match fn_name {
                     "upper" => args["foo"].to_string().to_uppercase(),
                     _ => "".to_string(),
@@ -319,7 +337,7 @@ mod parse_and_render_tests {
         let result = r#"BAR"#;
         struct CB {}
         impl TemplateCallback for CB {
-            async fn run(&self, fn_name: &str, args: HashMap<String, String>) -> Result<String> {
+            async fn run(&self, fn_name: &str, args: HashMap<String, serde_json::Value>) -> Result<String> {
                 Ok(match fn_name {
                     "secret" => "abc".to_string(),
                     "upper" => args["foo"].to_string().to_uppercase(),
@@ -349,7 +367,7 @@ mod parse_and_render_tests {
         let result = r#"bar"#;
         struct CB {}
         impl TemplateCallback for CB {
-            async fn run(&self, fn_name: &str, args: HashMap<String, String>) -> Result<String> {
+            async fn run(&self, fn_name: &str, args: HashMap<String, serde_json::Value>) -> Result<String> {
                 Ok(match fn_name {
                     "no_op" => args["inner"].to_string(),
                     _ => "".to_string(),
@@ -377,7 +395,7 @@ mod parse_and_render_tests {
         let result = r#"ABC"#;
         struct CB {}
         impl TemplateCallback for CB {
-            async fn run(&self, fn_name: &str, args: HashMap<String, String>) -> Result<String> {
+            async fn run(&self, fn_name: &str, args: HashMap<String, serde_json::Value>) -> Result<String> {
                 Ok(match fn_name {
                     "secret" => "abc".to_string(),
                     "upper" => args["foo"].to_string().to_uppercase(),
@@ -406,7 +424,7 @@ mod parse_and_render_tests {
 
         struct CB {}
         impl TemplateCallback for CB {
-            async fn run(&self, _fn_name: &str, _args: HashMap<String, String>) -> Result<String> {
+            async fn run(&self, _fn_name: &str, _args: HashMap<String, serde_json::Value>) -> Result<String> {
                 Err(RenderError("Failed to do it!".to_string()))
             }
 
@@ -438,7 +456,7 @@ mod render_json_value_raw_tests {
     struct EmptyCB {}
 
     impl TemplateCallback for EmptyCB {
-        async fn run(&self, _fn_name: &str, _args: HashMap<String, String>) -> Result<String> {
+        async fn run(&self, _fn_name: &str, _args: HashMap<String, serde_json::Value>) -> Result<String> {
             todo!()
         }
 

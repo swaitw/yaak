@@ -34,8 +34,6 @@ Run the `bootstrap` command to do some initial setup:
 npm run bootstrap
 ```
 
-_NOTE: Run with `YAAK_PLUGINS_DIR=<Path to yaakapp/plugins>` to re-build bundled plugins_
-
 ## Run the App
 
 After bootstrapping, start the app in development mode:
@@ -43,8 +41,6 @@ After bootstrapping, start the app in development mode:
 ```shell
 npm start
 ```
-
-_NOTE: If working on bundled plugins, run with `YAAK_PLUGINS_DIR=<Path to yaakapp/plugins>`_
 
 ## SQLite Migrations
 

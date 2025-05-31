@@ -8041,6 +8041,7 @@ name = "yaak-app"
 version = "0.0.0"
 dependencies = [
  "chrono",
+ "cookie",
  "encoding_rs",
  "eventsource-client",
  "http",
@@ -8051,8 +8052,6 @@ dependencies = [
  "rand 0.9.0",
  "reqwest",
  "reqwest_cookie_store",
- "rustls",
- "rustls-platform-verifier",
  "serde",
  "serde_json",
  "tauri",
@@ -8143,8 +8142,6 @@ dependencies = [
  "prost",
  "prost-reflect",
  "prost-types",
- "rustls",
- "rustls-platform-verifier",
  "serde",
  "serde_json",
  "tauri",
@@ -8154,6 +8151,7 @@ dependencies = [
  "tonic",
  "tonic-reflection",
  "uuid",
+ "yaak-http",
 ]
 
 [[package]]
@@ -8161,6 +8159,8 @@ name = "yaak-http"
 version = "0.1.0"
 dependencies = [
  "regex",
+ "rustls",
+ "rustls-platform-verifier",
  "urlencoding",
  "yaak-models",
 ]
@@ -8291,8 +8291,6 @@ dependencies = [
  "futures-util",
  "log",
  "md5",
- "rustls",
- "rustls-platform-verifier",
  "serde",
  "serde_json",
  "tauri",
