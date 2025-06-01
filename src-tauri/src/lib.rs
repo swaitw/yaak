@@ -1388,7 +1388,7 @@ pub fn run() {
                     if let Err(e) = app_handle.save_window_state(StateFlags::all()) {
                         warn!("Failed to save window state {e:?}");
                     } else {
-                        debug!("Saved window state");
+                        info!("Saved window state");
                     };
                 }
                 _ => {}
