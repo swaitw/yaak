@@ -37,12 +37,12 @@ export async function getDataDirKey(ctx: Context, contextId: string) {
   return `${contextId}::${key}`;
 }
 
-function tokenStoreKey(context_id: string) {
-  return ['token', context_id].join('::');
+function tokenStoreKey(contextId: string) {
+  return ['token', contextId].join('::');
 }
 
-function dataDirStoreKey(context_id: string) {
-  return ['data_dir', context_id].join('::');
+function dataDirStoreKey(contextId: string) {
+  return ['data_dir', contextId].join('::');
 }
 
 export interface AccessToken {

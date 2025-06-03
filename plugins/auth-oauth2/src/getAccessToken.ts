@@ -24,7 +24,7 @@ export async function getAccessToken(
     params: HttpUrlParameter[];
   },
 ): Promise<AccessTokenRawResponse> {
-  console.log('Getting access token', accessTokenUrl);
+  console.log('[oauth2] Getting access token', accessTokenUrl);
   const httpRequest: Partial<HttpRequest> = {
     method: 'POST',
     url: accessTokenUrl,

@@ -68,7 +68,7 @@ export async function getOrRefreshAccessToken(ctx: Context, contextId: string, {
   if (resp.status === 401) {
     // Bad refresh token, so we'll force it to fetch a fresh access token by deleting
     // and returning null;
-    console.log('Unauthorized refresh_token request');
+    console.log('[oauth2] Unauthorized refresh_token request');
     await deleteToken(ctx, contextId);
     return null;
   }

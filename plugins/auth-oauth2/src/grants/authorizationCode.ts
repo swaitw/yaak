@@ -70,7 +70,8 @@ export async function getAuthorizationCode(
 
   return new Promise(async (resolve, reject) => {
     const authorizationUrlStr = authorizationUrl.toString();
-    console.log('Authorizing', authorizationUrlStr);
+    const logsEnabled = (await ctx.store.get('enable_logs')) ?? false;
+    console.log('[oauth2] Authorizing', authorizationUrlStr);
 
     let foundCode = false;
 
@@ -85,11 +86,15 @@ export async function getAuthorizationCode(
       },
       async onNavigate({ url: urlStr }) {
         const url = new URL(urlStr);
+        if (logsEnabled) console.log('[oauth2] Navigated to', urlStr);
+
         if (url.searchParams.has('error')) {
           return reject(new Error(`Failed to authorize: ${url.searchParams.get('error')}`));
         }
+
         const code = url.searchParams.get('code');
         if (!code) {
+          console.log('[oauth2] Code not found');
           return; // Could be one of many redirects in a chain, so skip it
         }
 
@@ -97,6 +102,7 @@ export async function getAuthorizationCode(
         foundCode = true;
         close();
 
+        console.log('[oauth2] Code found');
         const response = await getAccessToken(ctx, {
           grantType: 'authorization_code',
           accessTokenUrl,

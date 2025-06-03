@@ -53,6 +53,7 @@ const authorizationUrls = [
   'https://www.dropbox.com/oauth2/authorize',
   'https://www.linkedin.com/oauth/v2/authorization',
   'https://MY_SHOP.myshopify.com/admin/oauth/access_token',
+  'https://appcenter.intuit.com/app/connect/oauth2/authorize',
 ];
 
 const accessTokenUrls = [
@@ -69,6 +70,7 @@ const accessTokenUrls = [
   'https://www.googleapis.com/oauth2/v4/token',
   'https://www.linkedin.com/oauth/v2/accessToken',
   'https://MY_SHOP.myshopify.com/admin/oauth/authorize',
+  'https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer',
 ];
 
 export const plugin: PluginDefinition = {
@@ -107,6 +109,17 @@ export const plugin: PluginDefinition = {
         label: 'Clear Window Session',
         async onSelect(ctx, { contextId }) {
           await resetDataDirKey(ctx, contextId);
+        },
+      },
+      {
+        label: 'Toggle Debug Logs',
+        async onSelect(ctx) {
+          const enableLogs = await ctx.store.get('enable_logs');
+          await ctx.store.set('enable_logs', !enableLogs);
+          await ctx.toast.show({
+            message: `Debug logs ${enableLogs ? 'enabled' : 'disabled'}`,
+            color: 'info',
+          });
         },
       },
     ],
