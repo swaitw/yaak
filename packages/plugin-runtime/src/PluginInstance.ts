@@ -11,7 +11,6 @@ import {
   HttpRequestAction,
   InternalEvent,
   InternalEventPayload,
-  JsonPrimitive,
   ListCookieNamesResponse,
   PluginWindowContext,
   PromptTextResponse,
@@ -22,6 +21,7 @@ import {
   TemplateRenderResponse,
 } from '@yaakapp-internal/plugins';
 import { Context, PluginDefinition } from '@yaakapp/api';
+import { JsonValue } from '@yaakapp/api/lib/bindings/serde_json/JsonValue';
 import console from 'node:console';
 import { readFileSync, type Stats, statSync, watch } from 'node:fs';
 import path from 'node:path';
@@ -568,7 +568,7 @@ function genId(len = 5): string {
 /** Recursively apply form input defaults to a set of values */
 function applyFormInputDefaults(
   inputs: TemplateFunctionArg[],
-  values: { [p: string]: JsonPrimitive | undefined },
+  values: { [p: string]: JsonValue | undefined },
 ) {
   for (const input of inputs) {
     if ('inputs' in input) {
