@@ -1232,7 +1232,7 @@ pub fn run() {
                 .level_for("hyper_util", log::LevelFilter::Info)
                 .level_for("hyper_rustls", log::LevelFilter::Info)
                 .level_for("reqwest", log::LevelFilter::Info)
-                .level_for("sqlx", log::LevelFilter::Warn)
+                .level_for("sqlx", log::LevelFilter::Debug)
                 .level_for("tao", log::LevelFilter::Info)
                 .level_for("tokio_util", log::LevelFilter::Info)
                 .level_for("tonic", log::LevelFilter::Info)
