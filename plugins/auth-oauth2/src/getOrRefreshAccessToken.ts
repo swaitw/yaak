@@ -63,6 +63,7 @@ export async function getOrRefreshAccessToken(ctx: Context, contextId: string, {
     httpRequest.headers!.push({ name: 'Authorization', value });
   }
 
+  httpRequest.authenticationType = 'none'; // Don't inherit workspace auth
   const resp = await ctx.httpRequest.send({ httpRequest });
 
   if (resp.status === 401) {
@@ -74,6 +75,8 @@ export async function getOrRefreshAccessToken(ctx: Context, contextId: string, {
   }
 
   const body = resp.bodyPath ? readFileSync(resp.bodyPath, 'utf8') : '';
+
+  console.log('[oauth2] Got refresh token response', resp.status);
 
   if (resp.status < 200 || resp.status >= 300) {
     throw new Error('Failed to refresh access token with status=' + resp.status + ' and body=' + body);
@@ -95,5 +98,6 @@ export async function getOrRefreshAccessToken(ctx: Context, contextId: string, {
     // Assign a new one or keep the old one,
     refresh_token: response.refresh_token ?? token.response.refresh_token,
   };
+
   return storeToken(ctx, contextId, newResponse);
 }

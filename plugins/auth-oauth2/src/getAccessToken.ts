@@ -50,7 +50,10 @@ export async function getAccessToken(
     httpRequest.headers!.push({ name: 'Authorization', value });
   }
 
+  httpRequest.authenticationType = 'none'; // Don't inherit workspace auth
   const resp = await ctx.httpRequest.send({ httpRequest });
+
+  console.log('[oauth2] Got access token response', resp.status);
 
   const body = resp.bodyPath ? readFileSync(resp.bodyPath, 'utf8') : '';
 
