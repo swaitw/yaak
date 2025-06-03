@@ -114,8 +114,8 @@ export const plugin: PluginDefinition = {
       {
         label: 'Toggle Debug Logs',
         async onSelect(ctx) {
-          const enableLogs = await ctx.store.get('enable_logs');
-          await ctx.store.set('enable_logs', !enableLogs);
+          const enableLogs = !(await ctx.store.get('enable_logs'));
+          await ctx.store.set('enable_logs', enableLogs);
           await ctx.toast.show({
             message: `Debug logs ${enableLogs ? 'enabled' : 'disabled'}`,
             color: 'info',
