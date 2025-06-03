@@ -115,15 +115,15 @@ impl<'a> DbContext<'a> {
 
     pub fn resolve_auth_for_folder(
         &self,
-        folder: Folder,
-    ) -> Result<(Option<String>, BTreeMap<String, Value>)> {
-        if let Some(at) = folder.authentication_type {
-            return Ok((Some(at), folder.authentication));
+        folder: &Folder,
+    ) -> Result<(Option<String>, BTreeMap<String, Value>, String)> {
+        if let Some(at) = folder.authentication_type.clone() {
+            return Ok((Some(at), folder.authentication.clone(), folder.id.clone()));
         }
 
-        if let Some(folder_id) = folder.folder_id {
+        if let Some(folder_id) = folder.folder_id.clone() {
             let folder = self.get_folder(&folder_id)?;
-            return self.resolve_auth_for_folder(folder);
+            return self.resolve_auth_for_folder(&folder);
         }
 
         let workspace = self.get_workspace(&folder.workspace_id)?;

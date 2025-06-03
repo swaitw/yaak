@@ -120,7 +120,8 @@ pub(crate) async fn send<R: Runtime>(
     };
     let base_environment =
         app_handle.db().get_base_environment(&unrendered_request.workspace_id)?;
-    let resolved_request = resolve_websocket_request(&window, &unrendered_request)?;
+    let (resolved_request, _auth_context_id) =
+        resolve_websocket_request(&window, &unrendered_request)?;
     let request = render_websocket_request(
         &resolved_request,
         &base_environment,
@@ -197,7 +198,8 @@ pub(crate) async fn connect<R: Runtime>(
     let base_environment =
         app_handle.db().get_base_environment(&unrendered_request.workspace_id)?;
     let workspace = app_handle.db().get_workspace(&unrendered_request.workspace_id)?;
-    let resolved_request = resolve_websocket_request(&window, &unrendered_request)?;
+    let (resolved_request, auth_context_id) =
+        resolve_websocket_request(&window, &unrendered_request)?;
     let request = render_websocket_request(
         &resolved_request,
         &base_environment,
@@ -237,7 +239,7 @@ pub(crate) async fn connect<R: Runtime>(
         Some(authentication_type) => {
             let auth = request.authentication.clone();
             let plugin_req = CallHttpAuthenticationRequest {
-                context_id: format!("{:x}", md5::compute(request_id.to_string())),
+                context_id: format!("{:x}", md5::compute(auth_context_id)),
                 values: serde_json::from_value(serde_json::to_value(&auth).unwrap()).unwrap(),
                 method: "POST".to_string(),
                 url: request.url.clone(),
@@ -299,13 +301,15 @@ pub(crate) async fn connect<R: Runtime>(
         }
     }
 
-    let response = match ws_manager.connect(
-        &connection.id,
-        url.as_str(),
-        headers,
-        receive_tx,
-        workspace.setting_validate_certificates,
-    ).await
+    let response = match ws_manager
+        .connect(
+            &connection.id,
+            url.as_str(),
+            headers,
+            receive_tx,
+            workspace.setting_validate_certificates,
+        )
+        .await
     {
         Ok(r) => r,
         Err(e) => {

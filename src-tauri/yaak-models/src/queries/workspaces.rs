@@ -71,8 +71,12 @@ impl<'a> DbContext<'a> {
     pub fn resolve_auth_for_workspace(
         &self,
         workspace: &Workspace,
-    ) -> (Option<String>, BTreeMap<String, Value>) {
-        (workspace.authentication_type.clone(), workspace.authentication.clone())
+    ) -> (Option<String>, BTreeMap<String, Value>, String) {
+        (
+            workspace.authentication_type.clone(),
+            workspace.authentication.clone(),
+            workspace.id.clone(),
+        )
     }
 
     pub fn resolve_headers_for_workspace(&self, workspace: &Workspace) -> Vec<HttpRequestHeader> {

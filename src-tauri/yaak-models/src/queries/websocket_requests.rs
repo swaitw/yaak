@@ -54,14 +54,14 @@ impl<'a> DbContext<'a> {
     pub fn resolve_auth_for_websocket_request(
         &self,
         websocket_request: &WebsocketRequest,
-    ) -> Result<(Option<String>, BTreeMap<String, Value>)> {
+    ) -> Result<(Option<String>, BTreeMap<String, Value>, String)> {
         if let Some(at) = websocket_request.authentication_type.clone() {
-            return Ok((Some(at), websocket_request.authentication.clone()));
+            return Ok((Some(at), websocket_request.authentication.clone(), websocket_request.id.clone()));
         }
 
         if let Some(folder_id) = websocket_request.folder_id.clone() {
             let folder = self.get_folder(&folder_id)?;
-            return self.resolve_auth_for_folder(folder);
+            return self.resolve_auth_for_folder(&folder);
         }
 
         let workspace = self.get_workspace(&websocket_request.workspace_id)?;

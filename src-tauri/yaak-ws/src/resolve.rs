@@ -6,10 +6,10 @@ use yaak_models::query_manager::QueryManagerExt;
 pub(crate) fn resolve_websocket_request<R: Runtime>(
     window: &WebviewWindow<R>,
     request: &WebsocketRequest,
-) -> Result<WebsocketRequest> {
+) -> Result<(WebsocketRequest, String)> {
     let mut new_request = request.clone();
 
-    let (authentication_type, authentication) =
+    let (authentication_type, authentication, authentication_context_id) =
         window.db().resolve_auth_for_websocket_request(request)?;
     new_request.authentication_type = authentication_type;
     new_request.authentication = authentication;
@@ -17,5 +17,5 @@ pub(crate) fn resolve_websocket_request<R: Runtime>(
     let headers = window.db().resolve_headers_for_websocket_request(request)?;
     new_request.headers = headers;
 
-    Ok(new_request)
+    Ok((new_request, authentication_context_id))
 }

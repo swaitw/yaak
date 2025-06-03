@@ -54,14 +54,14 @@ impl<'a> DbContext<'a> {
     pub fn resolve_auth_for_http_request(
         &self,
         http_request: &HttpRequest,
-    ) -> Result<(Option<String>, BTreeMap<String, Value>)> {
+    ) -> Result<(Option<String>, BTreeMap<String, Value>, String)> {
         if let Some(at) = http_request.authentication_type.clone() {
-            return Ok((Some(at), http_request.authentication.clone()));
+            return Ok((Some(at), http_request.authentication.clone(), http_request.id.clone()));
         }
 
         if let Some(folder_id) = http_request.folder_id.clone() {
             let folder = self.get_folder(&folder_id)?;
-            return self.resolve_auth_for_folder(folder);
+            return self.resolve_auth_for_folder(&folder);
         }
 
         let workspace = self.get_workspace(&http_request.workspace_id)?;

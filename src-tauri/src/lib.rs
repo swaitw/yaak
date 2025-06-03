@@ -151,7 +151,7 @@ async fn cmd_grpc_reflect<R: Runtime>(
         None => None,
     };
     let unrendered_request = app_handle.db().get_grpc_request(request_id)?;
-    let resolved_request = resolve_grpc_request(&window, &unrendered_request)?;
+    let (resolved_request, auth_context_id) = resolve_grpc_request(&window, &unrendered_request)?;
 
     let base_environment =
         app_handle.db().get_base_environment(&unrendered_request.workspace_id)?;
@@ -170,7 +170,7 @@ async fn cmd_grpc_reflect<R: Runtime>(
     .await?;
 
     let uri = safe_uri(&req.url);
-    let metadata = build_metadata(&window, &req).await?;
+    let metadata = build_metadata(&window, &req, &auth_context_id).await?;
 
     Ok(grpc_handle
         .lock()
@@ -200,7 +200,7 @@ async fn cmd_grpc_go<R: Runtime>(
         None => None,
     };
     let unrendered_request = app_handle.db().get_grpc_request(request_id)?;
-    let resolved_request = resolve_grpc_request(&window, &unrendered_request)?;
+    let (resolved_request, auth_context_id) = resolve_grpc_request(&window, &unrendered_request)?;
     let base_environment =
         app_handle.db().get_base_environment(&unrendered_request.workspace_id)?;
     let workspace = app_handle.db().get_workspace(&unrendered_request.workspace_id)?;
@@ -217,7 +217,7 @@ async fn cmd_grpc_go<R: Runtime>(
     )
     .await?;
 
-    let metadata = build_metadata(&window, &request).await?;
+    let metadata = build_metadata(&window, &request, &auth_context_id).await?;
 
     let conn = app_handle.db().upsert_grpc_connection(
         &GrpcConnection {

@@ -62,7 +62,8 @@ pub async fn send_http_request<R: Runtime>(
     );
     let update_source = UpdateSource::from_window(window);
 
-    let resolved_request = match resolve_http_request(window, unrendered_request) {
+    let (resolved_request, auth_context_id) = match resolve_http_request(window, unrendered_request)
+    {
         Ok(r) => r,
         Err(e) => {
             return Ok(response_err(
@@ -429,7 +430,7 @@ pub async fn send_http_request<R: Runtime>(
         }
         Some(authentication_type) => {
             let req = CallHttpAuthenticationRequest {
-                context_id: format!("{:x}", md5::compute(request.id)),
+                context_id: format!("{:x}", md5::compute(auth_context_id)),
                 values: serde_json::from_value(
                     serde_json::to_value(&request.authentication).unwrap(),
                 )
@@ -667,10 +668,10 @@ pub async fn send_http_request<R: Runtime>(
 fn resolve_http_request<R: Runtime>(
     window: &WebviewWindow<R>,
     request: &HttpRequest,
-) -> Result<HttpRequest> {
+) -> Result<(HttpRequest, String)> {
     let mut new_request = request.clone();
 
-    let (authentication_type, authentication) =
+    let (authentication_type, authentication, authentication_context_id) =
         window.db().resolve_auth_for_http_request(request)?;
     new_request.authentication_type = authentication_type;
     new_request.authentication = authentication;
@@ -678,7 +679,7 @@ fn resolve_http_request<R: Runtime>(
     let headers = window.db().resolve_headers_for_http_request(request)?;
     new_request.headers = headers;
 
-    Ok(new_request)
+    Ok((new_request, authentication_context_id))
 }
 
 fn ensure_proto(url_str: &str) -> String {
