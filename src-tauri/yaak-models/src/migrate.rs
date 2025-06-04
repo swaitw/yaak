@@ -1,5 +1,6 @@
+use crate::error::Error::MigrationError;
 use crate::error::Result;
-use log::{error, info};
+use log::info;
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
 use rusqlite::{OptionalExtension, TransactionBehavior, params};
@@ -10,7 +11,7 @@ use std::result::Result as StdResult;
 use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager, Runtime};
 
-pub(crate) fn must_migrate_db<R: Runtime>(
+pub(crate) fn migrate_db<R: Runtime>(
     app_handle: &AppHandle<R>,
     pool: &Pool<SqliteConnectionManager>,
 ) -> Result<()> {
@@ -54,9 +55,13 @@ pub(crate) fn must_migrate_db<R: Runtime>(
         match run_migration(entry.path().as_path(), &mut tx) {
             Ok(_) => tx.commit()?,
             Err(e) => {
-                error!("Failed to apply migration {:?} {e:?}", entry.path().file_name());
+                let msg = format!(
+                    "{} failed with {}",
+                    entry.path().file_name().unwrap().to_str().unwrap(),
+                    e.to_string()
+                );
                 tx.rollback()?;
-                return Err(e);
+                return Err(MigrationError(msg));
             }
         };
     }

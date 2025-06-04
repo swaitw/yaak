@@ -1,22 +1,24 @@
 use crate::commands::*;
+use crate::migrate::migrate_db;
 use crate::query_manager::QueryManager;
 use crate::util::ModelChangeEvent;
+use log::error;
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
 use std::fs::create_dir_all;
 use std::time::Duration;
 use tauri::async_runtime::Mutex;
 use tauri::plugin::TauriPlugin;
-use tauri::{generate_handler, Emitter, Manager, Runtime};
+use tauri::{Emitter, Manager, Runtime, generate_handler};
+use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
 use tokio::sync::mpsc;
-use crate::migrate::must_migrate_db;
 
 mod commands;
 
 mod connection_or_tx;
-mod migrate;
 pub mod db_context;
 pub mod error;
+mod migrate;
 pub mod models;
 pub mod queries;
 pub mod query_manager;
@@ -57,7 +59,15 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                 .build(manager)
                 .unwrap();
 
-            must_migrate_db(app_handle.app_handle(), &pool).expect("Failed to run migrations");
+            if let Err(e) = migrate_db(app_handle.app_handle(), &pool) {
+                error!("Failed to run database migration {e:?}");
+                app_handle
+                    .dialog()
+                    .message(e.to_string())
+                    .kind(MessageDialogKind::Error)
+                    .blocking_show();
+                return Err(Box::from(e.to_string()));
+            };
 
             app_handle.manage(SqliteConnection::new(pool.clone()));
 
