@@ -1,4 +1,5 @@
-import { HttpRequest, patchModel } from '@yaakapp-internal/models';
+import type { HttpRequest } from '@yaakapp-internal/models';
+import { patchModel } from '@yaakapp-internal/models';
 import classNames from 'classnames';
 import { memo, useCallback, useMemo } from 'react';
 import { showPrompt } from '../lib/prompt';
@@ -32,9 +33,12 @@ export const RequestMethodDropdown = memo(function RequestMethodDropdown({
   request,
   className,
 }: Props) {
-  const handleChange = useCallback(async (method: string) => {
-    await patchModel(request, { method });
-  }, []);
+  const handleChange = useCallback(
+    async (method: string) => {
+      await patchModel(request, { method });
+    },
+    [request],
+  );
 
   const itemsAfter = useMemo<DropdownItem[]>(
     () => [
@@ -57,7 +61,7 @@ export const RequestMethodDropdown = memo(function RequestMethodDropdown({
         },
       },
     ],
-    [],
+    [handleChange],
   );
 
   return (
@@ -68,7 +72,7 @@ export const RequestMethodDropdown = memo(function RequestMethodDropdown({
       onChange={handleChange}
     >
       <Button size="xs" className={classNames(className, 'text-text-subtle hover:text')}>
-        <HttpMethodTag request={request}/>
+        <HttpMethodTag request={request} />
       </Button>
     </RadioDropdown>
   );

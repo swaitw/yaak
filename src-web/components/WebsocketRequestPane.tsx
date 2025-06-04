@@ -54,10 +54,9 @@ const TAB_DESCRIPTION = 'description';
 const nonActiveRequestUrlsAtom = atom((get) => {
   const activeRequestId = get(activeRequestIdAtom);
   const requests = get(allRequestsAtom);
-  const urls = requests
+  return requests
     .filter((r) => r.id !== activeRequestId)
     .map((r): GenericCompletionOption => ({ type: 'constant', label: r.url }));
-  return urls;
 });
 
 const memoNotActiveRequestUrlsAtom = deepEqualAtom(nonActiveRequestUrlsAtom);
@@ -227,7 +226,6 @@ export function WebsocketRequestPane({ style, fullHeight, className, activeReque
               onUrlChange={handleUrlChange}
               forceUpdateKey={forceUpdateKey}
               isLoading={activeResponse != null && activeResponse.state !== 'closed'}
-              method={null}
             />
           </div>
           <Tabs

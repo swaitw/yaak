@@ -176,7 +176,6 @@ export function GrpcRequestPane({
         <UrlBar
           key={forceUpdateKey}
           url={activeRequest.url ?? ''}
-          method={null}
           submitIcon={null}
           forceUpdateKey={forceUpdateKey}
           placeholder="localhost:50051"
