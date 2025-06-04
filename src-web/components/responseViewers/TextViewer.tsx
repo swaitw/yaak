@@ -100,8 +100,7 @@ export function TextViewer({ language, text, responseId, requestId, pretty, clas
   ]);
 
   const formattedBody = useFormatText({ text, language, pretty });
-
-  if (formattedBody.data == null) {
+  if (formattedBody == null) {
     return null;
   }
 
@@ -113,7 +112,7 @@ export function TextViewer({ language, text, responseId, requestId, pretty, clas
       body = filteredResponse.data != null ? filteredResponse.data : '';
     }
   } else {
-    body = formattedBody.data;
+    body = formattedBody;
   }
 
   // Decode unicode sequences in the text to readable characters
