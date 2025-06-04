@@ -122,6 +122,11 @@ export function SettingsAppearance() {
         title="Wrap Editor Lines"
         onChange={(editorSoftWrap) => patchModel(settings, { editorSoftWrap })}
       />
+      <Checkbox
+        checked={settings.coloredMethods}
+        title="Colorize Request Methods"
+        onChange={(coloredMethods) => patchModel(settings, { coloredMethods })}
+      />
 
       {type() !== 'macos' && (
         <Checkbox

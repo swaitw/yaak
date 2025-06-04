@@ -9,11 +9,9 @@ import { IconButton } from './core/IconButton';
 import type { InputProps } from './core/Input';
 import { Input } from './core/Input';
 import { HStack } from './core/Stacks';
-import { RequestMethodDropdown } from './RequestMethodDropdown';
 
 type Props = Pick<HttpRequest, 'url'> & {
   className?: string;
-  method: HttpRequest['method'] | null;
   placeholder: string;
   onSend: () => void;
   onUrlChange: (url: string) => void;
@@ -21,10 +19,10 @@ type Props = Pick<HttpRequest, 'url'> & {
   onPasteOverwrite?: InputProps['onPasteOverwrite'];
   onCancel: () => void;
   submitIcon?: IconProps['icon'] | null;
-  onMethodChange?: (method: string) => void;
   isLoading: boolean;
   forceUpdateKey: string;
   rightSlot?: ReactNode;
+  leftSlot?: ReactNode;
   autocomplete?: InputProps['autocomplete'];
   stateKey: InputProps['stateKey'];
 };
@@ -33,16 +31,15 @@ export const UrlBar = memo(function UrlBar({
   forceUpdateKey,
   onUrlChange,
   url,
-  method,
   placeholder,
   className,
   onSend,
   onCancel,
-  onMethodChange,
   onPaste,
   onPasteOverwrite,
   submitIcon = 'send_horizontal',
   autocomplete,
+  leftSlot,
   rightSlot,
   isLoading,
   stateKey,
@@ -87,18 +84,7 @@ export const UrlBar = memo(function UrlBar({
         onChange={onUrlChange}
         defaultValue={url}
         placeholder={placeholder}
-        leftSlot={
-          method != null &&
-          onMethodChange != null && (
-            <div className="py-0.5">
-              <RequestMethodDropdown
-                method={method}
-                onChange={onMethodChange}
-                className="ml-0.5 !h-full"
-              />
-            </div>
-          )
-        }
+        leftSlot={leftSlot}
         rightSlot={
           <HStack space={0.5}>
             {rightSlot && <div className="py-0.5 h-full">{rightSlot}</div>}

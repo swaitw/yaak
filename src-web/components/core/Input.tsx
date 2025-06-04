@@ -53,11 +53,11 @@ export type InputProps = Pick<
 > & {
   className?: string;
   containerClassName?: string;
+  inputWrapperClassName?: string;
   defaultValue?: string | null;
   disableObscureToggle?: boolean;
   fullHeight?: boolean;
   hideLabel?: boolean;
-  inputWrapperClassName?: string;
   help?: ReactNode;
   label: ReactNode;
   labelClassName?: string;

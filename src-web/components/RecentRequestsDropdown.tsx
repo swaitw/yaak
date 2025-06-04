@@ -58,7 +58,7 @@ export function RecentRequestsDropdown({ className }: Props) {
 
       recentRequestItems.push({
         label: resolvedModelName(request),
-        leftSlot: <HttpMethodTag request={request} />,
+        leftSlot: <HttpMethodTag short className="text-xs" request={request} />,
         onSelect: async () => {
           await router.navigate({
             to: '/workspaces/$workspaceId',

@@ -236,7 +236,7 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
       return workspaces;
     }
 
-    const r = [...workspaces].sort((a, b) => {
+    return [...workspaces].sort((a, b) => {
       const aRecentIndex = recentWorkspaces?.indexOf(a.id);
       const bRecentIndex = recentWorkspaces?.indexOf(b.id);
 
@@ -250,7 +250,6 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
         return a.createdAt.localeCompare(b.createdAt);
       }
     });
-    return r;
   }, [recentWorkspaces, workspaces]);
 
   const groups = useMemo<CommandPaletteGroup[]>(() => {
@@ -272,7 +271,7 @@ export function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
         searchText: resolvedModelNameWithFolders(r),
         label: (
           <HStack space={2}>
-            <HttpMethodTag className="text-text-subtlest" request={r} />
+            <HttpMethodTag short className="text-xs" request={r} />
             <div className="truncate">{resolvedModelNameWithFolders(r)}</div>
           </HStack>
         ),

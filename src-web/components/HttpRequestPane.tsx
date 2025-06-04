@@ -41,8 +41,7 @@ import type { GenericCompletionConfig } from './core/Editor/genericCompletion';
 import { InlineCode } from './core/InlineCode';
 import type { Pair } from './core/PairEditor';
 import { PlainInput } from './core/PlainInput';
-import type { TabItem } from './core/Tabs/Tabs';
-import { TabContent, Tabs } from './core/Tabs/Tabs';
+import { TabContent, TabItem, Tabs } from './core/Tabs/Tabs';
 import { EmptyStateText } from './EmptyStateText';
 import { FormMultipartEditor } from './FormMultipartEditor';
 import { FormUrlencodedEditor } from './FormUrlencodedEditor';
@@ -50,6 +49,7 @@ import { GraphQLEditor } from './GraphQLEditor';
 import { HeadersEditor } from './HeadersEditor';
 import { HttpAuthenticationEditor } from './HttpAuthenticationEditor';
 import { MarkdownEditor } from './MarkdownEditor';
+import { RequestMethodDropdown } from './RequestMethodDropdown';
 import { UrlBar } from './UrlBar';
 import { UrlParametersEditor } from './UrlParameterEditor';
 
@@ -138,10 +138,9 @@ export function HttpRequestPane({ style, fullHeight, className, activeRequest }:
     activeRequest.bodyType === BODY_TYPE_FORM_URLENCODED ||
     activeRequest.bodyType === BODY_TYPE_FORM_MULTIPART
   ) {
-    const n = Array.isArray(activeRequest.body?.form)
+    numParams = Array.isArray(activeRequest.body?.form)
       ? activeRequest.body.form.filter((p) => p.name).length
       : 0;
-    numParams = n;
   }
 
   const tabs = useMemo<TabItem[]>(
@@ -314,11 +313,6 @@ export function HttpRequestPane({ style, fullHeight, className, activeRequest }:
     [activeRequest.id, sendRequest],
   );
 
-  const handleMethodChange = useCallback(
-    (method: string) => patchModel(activeRequest, { method }),
-    [activeRequest],
-  );
-
   const handleUrlChange = useCallback(
     (url: string) => patchModel(activeRequest, { url }),
     [activeRequest],
@@ -335,14 +329,17 @@ export function HttpRequestPane({ style, fullHeight, className, activeRequest }:
             stateKey={`url.${activeRequest.id}`}
             key={forceUpdateKey + urlKey}
             url={activeRequest.url}
-            method={activeRequest.method}
             placeholder="https://example.com"
             onPasteOverwrite={handlePaste}
             autocomplete={autocomplete}
             onSend={handleSend}
             onCancel={cancelResponse}
-            onMethodChange={handleMethodChange}
             onUrlChange={handleUrlChange}
+            leftSlot={
+              <div className="py-0.5">
+                <RequestMethodDropdown request={activeRequest} className="ml-0.5 !h-full" />
+              </div>
+            }
             forceUpdateKey={updateKey}
             isLoading={activeResponse != null && activeResponse.state !== 'closed'}
           />
