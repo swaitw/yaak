@@ -2,6 +2,7 @@ import { patchModel, settingsAtom } from '@yaakapp-internal/models';
 import { useAtomValue } from 'jotai';
 import React from 'react';
 import { Checkbox } from '../core/Checkbox';
+import { InlineCode } from '../core/InlineCode';
 import { PlainInput } from '../core/PlainInput';
 import { Select } from '../core/Select';
 import { Separator } from '../core/Separator';
@@ -62,7 +63,11 @@ export function SettingsProxy() {
           <HStack space={1.5}>
             <PlainInput
               size="sm"
-              label="HTTP"
+              label={
+                <>
+                  Proxy for <InlineCode>http://</InlineCode> traffic
+                </>
+              }
               placeholder="localhost:9090"
               defaultValue={settings.proxy?.http}
               onChange={async (http) => {
@@ -83,7 +88,11 @@ export function SettingsProxy() {
             />
             <PlainInput
               size="sm"
-              label="HTTPS"
+              label={
+                <>
+                  Proxy for <InlineCode>https://</InlineCode> traffic
+                </>
+              }
               placeholder="localhost:9090"
               defaultValue={settings.proxy?.https}
               onChange={async (https) => {
