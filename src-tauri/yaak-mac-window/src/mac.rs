@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 use hex_color::HexColor;
 use objc::{msg_send, sel, sel_impl};
 use tauri::{Emitter, Runtime, Window};
@@ -65,12 +66,7 @@ pub(crate) fn update_window_theme<R: Runtime>(window: Window<R>, color: HexColor
     }
 }
 
-fn position_traffic_lights(
-    ns_window_handle: UnsafeWindowHandle,
-    x: f64,
-    y: f64,
-    label: String,
-) {
+fn position_traffic_lights(ns_window_handle: UnsafeWindowHandle, x: f64, y: f64, label: String) {
     if !label.starts_with(MAIN_WINDOW_PREFIX) {
         return;
     }

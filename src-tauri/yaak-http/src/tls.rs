@@ -1,9 +1,9 @@
-use std::sync::Arc;
 use rustls::client::danger::{HandshakeSignatureValid, ServerCertVerified, ServerCertVerifier};
-use rustls::{ClientConfig, DigitallySignedStruct, SignatureScheme};
 use rustls::crypto::ring;
 use rustls::pki_types::{CertificateDer, ServerName, UnixTime};
+use rustls::{ClientConfig, DigitallySignedStruct, SignatureScheme};
 use rustls_platform_verifier::BuilderVerifierExt;
+use std::sync::Arc;
 
 pub fn get_config(validate_certificates: bool) -> ClientConfig {
     let arc_crypto_provider = Arc::new(ring::default_provider());
@@ -12,9 +12,7 @@ pub fn get_config(validate_certificates: bool) -> ClientConfig {
         .unwrap();
     if validate_certificates {
         // Use platform-native verifier to validate certificates
-        config_builder
-            .with_platform_verifier()
-            .with_no_client_auth()
+        config_builder.with_platform_verifier().unwrap().with_no_client_auth()
     } else {
         config_builder
             .dangerous()

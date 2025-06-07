@@ -33,7 +33,7 @@ strip = true  # Automatically strip symbols from the binary.
 cargo-clippy = []
 
 [build-dependencies]
-tauri-build = { version = "2.1.1", features = [] }
+tauri-build = { version = "2.2.0", features = [] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 openssl-sys = { version = "0.9.105", features = ["vendored"] } # For Ubuntu installation to work
@@ -82,18 +82,18 @@ yaak-templates = { workspace = true }
 yaak-ws = { path = "yaak-ws" }
 
 [workspace.dependencies]
-reqwest = "0.12.15"
+reqwest = "0.12.19"
 serde = "1.0.219"
 serde_json = "1.0.140"
-tauri = "2.4.1"
-tauri-plugin = "2.1.1"
-tauri-plugin-dialog = "2.2.0"
+tauri = "2.5.1"
+tauri-plugin = "2.2.0"
+tauri-plugin-dialog = "2.2.2"
 tauri-plugin-shell = "2.2.1"
-tokio = "1.44.2"
+tokio = "1.45.1"
 thiserror = "2.0.12"
-ts-rs = "10.1.0"
-rustls = { version = "0.23.25", default-features = false }
-rustls-platform-verifier = "0.5.1"
+ts-rs = "11.0.1"
+rustls = { version = "0.23.27", default-features = false }
+rustls-platform-verifier = "0.6.0"
 yaak-common = { path = "yaak-common" }
 yaak-http = { path = "yaak-http" }
 yaak-models = { path = "yaak-models" }
