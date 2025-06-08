@@ -2,7 +2,7 @@ import type { Environment } from '@yaakapp-internal/models';
 import classNames from 'classnames';
 import { showColorPicker } from '../lib/showColorPicker';
 
-export function EnvironmentColorCircle({
+export function EnvironmentColorIndicator({
   environment,
   clickToEdit,
 }: {

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { HexColorPicker } from 'react-colorful';
 import { useRandomKey } from '../../hooks/useRandomKey';
 import { PlainInput } from './PlainInput';
@@ -8,23 +7,16 @@ interface Props {
   color: string | null;
 }
 
-export function ColorPicker({ onChange, color: defaultColor }: Props) {
+export function ColorPicker({ onChange, color }: Props) {
   const [updateKey, regenerateKey] = useRandomKey();
-  const [color, setColor] = useState<string | null>(defaultColor);
   return (
-    <form
-      className="flex flex-col gap-3 items-stretch w-full"
-      onSubmit={(e) => {
-        e.preventDefault();
-        onChange(color);
-      }}
-    >
+    <div>
       <HexColorPicker
         color={color ?? undefined}
         className="!w-full"
         onChange={(color) => {
-          setColor(color.toUpperCase());
-          regenerateKey();
+          onChange(color);
+          regenerateKey(); // To force input to change
         }}
       />
       <PlainInput
@@ -32,9 +24,9 @@ export function ColorPicker({ onChange, color: defaultColor }: Props) {
         label="Plain Color"
         forceUpdateKey={updateKey}
         defaultValue={color ?? ''}
-        onChange={(c) => setColor(c.toUpperCase())}
+        onChange={onChange}
         validate={(color) => color.match(/#[0-9a-fA-F]{6}$/) !== null}
       />
-    </form>
+    </div>
   );
 }

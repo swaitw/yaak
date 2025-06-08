@@ -36,7 +36,7 @@ import { PairOrBulkEditor } from './core/PairOrBulkEditor';
 import { Separator } from './core/Separator';
 import { SplitLayout } from './core/SplitLayout';
 import { VStack } from './core/Stacks';
-import { EnvironmentColorCircle } from './EnvironmentColorCircle';
+import { EnvironmentColorIndicator } from './EnvironmentColorIndicator';
 
 interface Props {
   initialEnvironment: Environment | null;
@@ -239,7 +239,7 @@ const EnvironmentEditor = function ({
   return (
     <VStack space={4} className={classNames(className, 'pl-4')}>
       <Heading className="w-full flex items-center gap-0.5">
-        <EnvironmentColorCircle clickToEdit environment={selectedEnvironment ?? null} />
+        <EnvironmentColorIndicator clickToEdit environment={selectedEnvironment ?? null} />
         <div className="mr-2">{selectedEnvironment?.name}</div>
         {isEncryptionEnabled ? (
           promptToEncrypt ? (
@@ -347,7 +347,7 @@ function SidebarButton({
           onContextMenu={handleContextMenu}
           rightSlot={rightSlot}
         >
-          <EnvironmentColorCircle environment={environment} />
+          <EnvironmentColorIndicator environment={environment} />
           {children}
         </Button>
         {outerRightSlot}
@@ -390,7 +390,7 @@ function SidebarButton({
               ]
             : []) as DropdownItem[]),
           {
-            label: 'Set Color',
+            label: environment.color ? 'Change Color' : 'Assign Color',
             leftSlot: <Icon icon="palette" />,
             hidden: environment.base,
             onSelect: async () => showColorPicker(environment),
