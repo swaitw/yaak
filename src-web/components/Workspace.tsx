@@ -4,14 +4,8 @@ import { useAtomValue } from 'jotai';
 import * as m from 'motion/react-m';
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import {
-  useEnsureActiveCookieJar,
-  useSubscribeActiveCookieJarId,
-} from '../hooks/useActiveCookieJar';
-import {
-  activeEnvironmentAtom,
-  useSubscribeActiveEnvironmentId,
-} from '../hooks/useActiveEnvironment';
+import { useEnsureActiveCookieJar, useSubscribeActiveCookieJarId } from '../hooks/useActiveCookieJar';
+import { activeEnvironmentAtom, useSubscribeActiveEnvironmentId } from '../hooks/useActiveEnvironment';
 import { activeRequestAtom } from '../hooks/useActiveRequest';
 import { useSubscribeActiveRequestId } from '../hooks/useActiveRequestId';
 import { activeWorkspaceAtom } from '../hooks/useActiveWorkspace';
@@ -121,7 +115,7 @@ export function Workspace() {
     [sideWidth, floating],
   );
 
-  const environmentBg = useMemo(() => {
+  const environmentBgStyle = useMemo(() => {
     if (activeEnvironment?.color == null) return undefined;
     const background = `linear-gradient(to right, ${activeEnvironment.color} 15%, transparent 40%)`;
     return { background };
@@ -190,11 +184,11 @@ export function Workspace() {
       >
         <div className="absolute inset-0 pointer-events-none">
           <div // Add subtle background
-            style={environmentBg}
+            style={environmentBgStyle}
             className="absolute inset-0 opacity-5"
           />
           <div // Add subtle border bottom
-            style={environmentBg}
+            style={environmentBgStyle}
             className="absolute left-0 right-0 bottom-0 h-[0.5px] opacity-20"
           />
         </div>
