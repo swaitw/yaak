@@ -1,7 +1,8 @@
 # Yaak Plugin API
 
-Yaak is a desktop API client for interacting with REST, GraphQL, Server Sent Events (SSE),
-WebSocket, and gRPC APIs. It's built using Tauri, Rust, and ReactJS.
+Yaak is a desktop [API client](https://yaak.app/blog/yet-another-api-client) for
+interacting with REST, GraphQL, Server Sent Events (SSE), WebSocket, and gRPC APIs. It's
+built using Tauri, Rust, and ReactJS.
 
 Plugins can be created in TypeScript, which are executed alongside Yaak in a NodeJS
 runtime. This package contains the TypeScript type definitions required to make building
