@@ -33,7 +33,7 @@
     "plugins/template-function-response",
     "plugins/template-function-uuid",
     "plugins/template-function-xml",
-    "src-/tauri/yaak-crypto",
+    "src-tauri/yaak-crypto",
     "src-tauri/yaak-git",
     "src-tauri/yaak-license",
     "src-tauri/yaak-mac-window",
