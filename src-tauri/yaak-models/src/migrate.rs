@@ -1,26 +1,16 @@
 use crate::error::Error::MigrationError;
 use crate::error::Result;
-use log::info;
+use include_dir::{include_dir, Dir, DirEntry};
+use log::{debug, info};
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
-use rusqlite::{OptionalExtension, TransactionBehavior, params};
+use rusqlite::{params, OptionalExtension, TransactionBehavior};
 use sha2::{Digest, Sha384};
-use std::fs;
-use std::path::Path;
-use std::result::Result as StdResult;
-use tauri::path::BaseDirectory;
-use tauri::{AppHandle, Manager, Runtime};
 
-pub(crate) fn migrate_db<R: Runtime>(
-    app_handle: &AppHandle<R>,
-    pool: &Pool<SqliteConnectionManager>,
-) -> Result<()> {
-    let migrations_dir = app_handle
-        .path()
-        .resolve("migrations", BaseDirectory::Resource)
-        .expect("failed to resolve resource");
+static MIGRATIONS_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/migrations");
 
-    info!("Running database migrations from: {:?}", migrations_dir);
+pub(crate) fn migrate_db(pool: &Pool<SqliteConnectionManager>) -> Result<()> {
+    info!("Running database migrations");
 
     // Ensure the table exists
     // NOTE: Yaak used to use sqlx for migrations, so we need to mirror that table structure. We
@@ -39,20 +29,22 @@ pub(crate) fn migrate_db<R: Runtime>(
     )?;
 
     // Read and sort all .sql files
-    let mut entries = fs::read_dir(migrations_dir)
-        .expect("Failed to find migrations directory")
-        .filter_map(StdResult::ok)
+    let mut entries = MIGRATIONS_DIR
+        .entries()
+        .into_iter()
         .filter(|e| e.path().extension().map(|ext| ext == "sql").unwrap_or(false))
         .collect::<Vec<_>>();
 
     // Ensure they're in the correct order
-    entries.sort_by_key(|e| e.file_name());
+    entries.sort_by_key(|e| e.path());
 
     // Run each migration in a transaction
+    let mut num_migrations = 0;
     for entry in entries {
+        num_migrations += 1;
         let mut conn = pool.get()?;
         let mut tx = conn.transaction_with_behavior(TransactionBehavior::Immediate)?;
-        match run_migration(entry.path().as_path(), &mut tx) {
+        match run_migration(entry, &mut tx) {
             Ok(_) => tx.commit()?,
             Err(e) => {
                 let msg = format!(
@@ -66,16 +58,15 @@ pub(crate) fn migrate_db<R: Runtime>(
         };
     }
 
-    info!("Finished running migrations");
+    info!("Finished running {} migrations", num_migrations);
 
     Ok(())
 }
 
-fn run_migration(migration_path: &Path, tx: &mut rusqlite::Transaction) -> Result<bool> {
+fn run_migration(migration_path: &DirEntry, tx: &mut rusqlite::Transaction) -> Result<bool> {
     let start = std::time::Instant::now();
-    let (version, description) =
-        split_migration_filename(migration_path.file_name().unwrap().to_str().unwrap())
-            .expect("Failed to parse migration filename");
+    let (version, description) = split_migration_filename(migration_path.path().to_str().unwrap())
+        .expect("Failed to parse migration filename");
 
     // Skip if already applied
     let row: Option<i64> = tx
@@ -85,11 +76,13 @@ fn run_migration(migration_path: &Path, tx: &mut rusqlite::Transaction) -> Resul
         .optional()?;
 
     if row.is_some() {
+        debug!("Skipping migration {description}");
         // Migration was already run
         return Ok(false);
     }
 
-    let sql = fs::read_to_string(migration_path).expect("Failed to read migration file");
+    let sql =
+        migration_path.as_file().unwrap().contents_utf8().expect("Failed to read migration file");
     info!("Applying migration {description}");
 
     // Split on `;`? → optional depending on how your SQL is structured

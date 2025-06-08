@@ -7,6 +7,8 @@ publish = false
 
 [dependencies]
 chrono = { version = "0.4.38", features = ["serde"] }
+hex = "0.4.3"
+include_dir = "0.7"
 log = "0.4.22"
 nanoid = "0.4.0"
 r2d2 = "0.8.10"
@@ -22,7 +24,6 @@ tauri-plugin-dialog = { workspace = true }
 thiserror = "2.0.11"
 tokio = { workspace = true }
 ts-rs = { workspace = true, features = ["chrono-impl", "serde-json-impl"] }
-hex = "0.4.3"
 
 [build-dependencies]
 tauri-plugin = { workspace = true, features = ["build"] }

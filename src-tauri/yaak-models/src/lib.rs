@@ -59,7 +59,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                 .build(manager)
                 .unwrap();
 
-            if let Err(e) = migrate_db(app_handle.app_handle(), &pool) {
+            if let Err(e) = migrate_db(&pool) {
                 error!("Failed to run database migration {e:?}");
                 app_handle
                     .dialog()
