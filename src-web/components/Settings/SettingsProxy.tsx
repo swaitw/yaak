@@ -30,6 +30,7 @@ export function SettingsProxy() {
                 http: '',
                 https: '',
                 auth: { user: '', password: '' },
+                bypass: '',
               },
             });
           } else {
@@ -53,10 +54,11 @@ export function SettingsProxy() {
               const { proxy } = settings;
               const http = proxy?.type === 'enabled' ? proxy.http : '';
               const https = proxy?.type === 'enabled' ? proxy.https : '';
+              const bypass = proxy?.type === 'enabled' ? proxy.bypass : '';
               const auth = proxy?.type === 'enabled' ? proxy.auth : null;
               const disabled = !enabled;
               await patchModel(settings, {
-                proxy: { type: 'enabled', http, https, auth, disabled },
+                proxy: { type: 'enabled', http, https, auth, disabled, bypass },
               });
             }}
           />
@@ -73,6 +75,7 @@ export function SettingsProxy() {
               onChange={async (http) => {
                 const { proxy } = settings;
                 const https = proxy?.type === 'enabled' ? proxy.https : '';
+                const bypass = proxy?.type === 'enabled' ? proxy.bypass : '';
                 const auth = proxy?.type === 'enabled' ? proxy.auth : null;
                 const disabled = proxy?.type === 'enabled' ? proxy.disabled : false;
                 await patchModel(settings, {
@@ -82,6 +85,7 @@ export function SettingsProxy() {
                     https,
                     auth,
                     disabled,
+                    bypass,
                   },
                 });
               }}
@@ -98,10 +102,11 @@ export function SettingsProxy() {
               onChange={async (https) => {
                 const { proxy } = settings;
                 const http = proxy?.type === 'enabled' ? proxy.http : '';
+                const bypass = proxy?.type === 'enabled' ? proxy.bypass : '';
                 const auth = proxy?.type === 'enabled' ? proxy.auth : null;
                 const disabled = proxy?.type === 'enabled' ? proxy.disabled : false;
                 await patchModel(settings, {
-                  proxy: { type: 'enabled', http, https, auth, disabled },
+                  proxy: { type: 'enabled', http, https, auth, disabled, bypass },
                 });
               }}
             />
@@ -115,9 +120,10 @@ export function SettingsProxy() {
               const http = proxy?.type === 'enabled' ? proxy.http : '';
               const https = proxy?.type === 'enabled' ? proxy.https : '';
               const disabled = proxy?.type === 'enabled' ? proxy.disabled : false;
+              const bypass = proxy?.type === 'enabled' ? proxy.bypass : '';
               const auth = enabled ? { user: '', password: '' } : null;
               await patchModel(settings, {
-                proxy: { type: 'enabled', http, https, auth, disabled },
+                proxy: { type: 'enabled', http, https, auth, disabled, bypass },
               });
             }}
           />
@@ -135,10 +141,11 @@ export function SettingsProxy() {
                   const http = proxy?.type === 'enabled' ? proxy.http : '';
                   const https = proxy?.type === 'enabled' ? proxy.https : '';
                   const disabled = proxy?.type === 'enabled' ? proxy.disabled : false;
+                  const bypass = proxy?.type === 'enabled' ? proxy.bypass : '';
                   const password = proxy?.type === 'enabled' ? (proxy.auth?.password ?? '') : '';
                   const auth = { user, password };
                   await patchModel(settings, {
-                    proxy: { type: 'enabled', http, https, auth, disabled },
+                    proxy: { type: 'enabled', http, https, auth, disabled, bypass },
                   });
                 }}
               />
@@ -153,14 +160,38 @@ export function SettingsProxy() {
                   const http = proxy?.type === 'enabled' ? proxy.http : '';
                   const https = proxy?.type === 'enabled' ? proxy.https : '';
                   const disabled = proxy?.type === 'enabled' ? proxy.disabled : false;
+                  const bypass = proxy?.type === 'enabled' ? proxy.bypass : '';
                   const user = proxy?.type === 'enabled' ? (proxy.auth?.user ?? '') : '';
                   const auth = { user, password };
                   await patchModel(settings, {
-                    proxy: { type: 'enabled', http, https, auth, disabled },
+                    proxy: { type: 'enabled', http, https, auth, disabled, bypass },
                   });
                 }}
               />
             </HStack>
+          )}
+          {settings.proxy.type === 'enabled' && (
+            <>
+              <Separator className="my-6" />
+              <PlainInput
+                label="Proxy Bypass"
+                help="Comma-separated list to bypass the proxy."
+                defaultValue={settings.proxy.bypass}
+                placeholder="127.0.0.1, *.example.com, localhost:3000"
+                onChange={async (bypass) => {
+                  const { proxy } = settings;
+                  const http = proxy?.type === 'enabled' ? proxy.http : '';
+                  const https = proxy?.type === 'enabled' ? proxy.https : '';
+                  const disabled = proxy?.type === 'enabled' ? proxy.disabled : false;
+                  const user = proxy?.type === 'enabled' ? (proxy.auth?.user ?? '') : '';
+                  const password = proxy?.type === 'enabled' ? (proxy.auth?.password ?? '') : '';
+                  const auth = { user, password };
+                  await patchModel(settings, {
+                    proxy: { type: 'enabled', http, https, auth, disabled, bypass },
+                  });
+                }}
+              />
+            </>
           )}
         </VStack>
       )}

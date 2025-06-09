@@ -7,7 +7,7 @@ use http::{HeaderMap, HeaderName, HeaderValue};
 use log::{debug, error, warn};
 use mime_guess::Mime;
 use reqwest::redirect::Policy;
-use reqwest::{Method, Response};
+use reqwest::{Method, NoProxy, Response};
 use reqwest::{Proxy, Url, multipart};
 use serde_json::Value;
 use std::collections::BTreeMap;
@@ -120,25 +120,39 @@ pub async fn send_http_request<R: Runtime>(
             https,
             auth,
             disabled,
+            bypass,
         }) if !disabled => {
-            debug!("Using proxy http={http} https={https}");
-            let mut proxy = Proxy::custom(move |url| {
-                let http = if http.is_empty() { None } else { Some(http.to_owned()) };
-                let https = if https.is_empty() { None } else { Some(https.to_owned()) };
-                let proxy_url = match (url.scheme(), http, https) {
-                    ("http", Some(proxy_url), _) => Some(proxy_url),
-                    ("https", _, Some(proxy_url)) => Some(proxy_url),
-                    _ => None,
+            debug!("Using proxy http={http} https={https} bypass={bypass}");
+            if !http.is_empty() {
+                match Proxy::http(http) {
+                    Ok(mut proxy) => {
+                        if let Some(ProxySettingAuth { user, password }) = auth.clone() {
+                            debug!("Using http proxy auth");
+                            proxy = proxy.basic_auth(user.as_str(), password.as_str());
+                        }
+                        proxy = proxy.no_proxy(NoProxy::from_string(&bypass));
+                        client_builder = client_builder.proxy(proxy);
+                    }
+                    Err(e) => {
+                        warn!("Failed to apply http proxy {e:?}");
+                    }
                 };
-                proxy_url
-            });
-
-            if let Some(ProxySettingAuth { user, password }) = auth {
-                debug!("Using proxy auth");
-                proxy = proxy.basic_auth(user.as_str(), password.as_str());
             }
-
-            client_builder = client_builder.proxy(proxy);
+            if !https.is_empty() {
+                match Proxy::https(https) {
+                    Ok(mut proxy) => {
+                        if let Some(ProxySettingAuth { user, password }) = auth {
+                            debug!("Using https proxy auth");
+                            proxy = proxy.basic_auth(user.as_str(), password.as_str());
+                        }
+                        proxy = proxy.no_proxy(NoProxy::from_string(&bypass));
+                        client_builder = client_builder.proxy(proxy);
+                    }
+                    Err(e) => {
+                        warn!("Failed to apply https proxy {e:?}");
+                    }
+                };
+            }
         }
         _ => {} // Nothing to do for this one, as it is the default
     }
