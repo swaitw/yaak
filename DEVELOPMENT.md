@@ -50,11 +50,9 @@ New migrations can be created from the `src-tauri/` directory:
 npm run migration
 ```
 
-Run the app to apply the migrations. 
+Rerun the app to apply the migrations. 
 
-If nothing happens, try `cargo clean` and run the app again.
-
-_Note: Development builds use a separate database location from production builds._
+_Note: For safety, development builds use a separate database location from production builds._
 
 ## Lezer Grammer Generation
 
