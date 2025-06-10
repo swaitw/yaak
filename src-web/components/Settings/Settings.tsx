@@ -8,22 +8,24 @@ import { capitalize } from '../../lib/capitalize';
 import { HStack } from '../core/Stacks';
 import { TabContent, Tabs } from '../core/Tabs/Tabs';
 import { HeaderSize } from '../HeaderSize';
-import { SettingsAppearance } from './SettingsAppearance';
+import { SettingsInterface } from './SettingsInterface';
 import { SettingsGeneral } from './SettingsGeneral';
 import { SettingsLicense } from './SettingsLicense';
 import { SettingsPlugins } from './SettingsPlugins';
 import { SettingsProxy } from './SettingsProxy';
+import { SettingsTheme } from './SettingsTheme';
 
 interface Props {
   hide?: () => void;
 }
 
 const TAB_GENERAL = 'general';
-const TAB_APPEARANCE = 'appearance';
+const TAB_INTERFACE = 'interface';
+const TAB_THEME = 'theme';
 const TAB_PROXY = 'proxy';
 const TAB_PLUGINS = 'plugins';
 const TAB_LICENSE = 'license';
-const tabs = [TAB_GENERAL, TAB_APPEARANCE, TAB_PROXY, TAB_PLUGINS, TAB_LICENSE] as const;
+const tabs = [TAB_GENERAL, TAB_THEME, TAB_INTERFACE, TAB_PROXY, TAB_PLUGINS, TAB_LICENSE] as const;
 export type SettingsTab = (typeof tabs)[number];
 
 export default function Settings({ hide }: Props) {
@@ -73,8 +75,11 @@ export default function Settings({ hide }: Props) {
         <TabContent value={TAB_GENERAL} className="pt-3 overflow-y-auto h-full px-4">
           <SettingsGeneral />
         </TabContent>
-        <TabContent value={TAB_APPEARANCE} className="pt-3 overflow-y-auto h-full px-4">
-          <SettingsAppearance />
+        <TabContent value={TAB_INTERFACE} className="pt-3 overflow-y-auto h-full px-4">
+          <SettingsInterface />
+        </TabContent>
+        <TabContent value={TAB_THEME} className="pt-3 overflow-y-auto h-full px-4">
+          <SettingsTheme />
         </TabContent>
         <TabContent value={TAB_PLUGINS} className="pt-3 overflow-y-auto h-full px-4">
           <SettingsPlugins />
