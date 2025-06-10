@@ -7,6 +7,7 @@
     "*"
   ],
   "permissions": [
+    "core:app:allow-identifier",
     "core:event:allow-emit",
     "core:event:allow-listen",
     "core:event:allow-unlisten",
@@ -52,6 +53,7 @@
     "shell:allow-open",
     "yaak-crypto:default",
     "yaak-git:default",
+    "yaak-fonts:default",
     "yaak-license:default",
     "yaak-mac-window:default",
     "yaak-models:default",

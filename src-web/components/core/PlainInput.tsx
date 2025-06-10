@@ -16,11 +16,15 @@ export type PlainInputProps = Omit<InputProps, 'wrapLines' | 'onKeyDown' | 'type
   };
 
 export function PlainInput({
+  autoFocus,
+  autoSelect,
   className,
   containerClassName,
   defaultValue,
   forceUpdateKey,
+  help,
   hideLabel,
+  hideObscureToggle,
   label,
   labelClassName,
   labelPosition = 'top',
@@ -29,19 +33,16 @@ export function PlainInput({
   onBlur,
   onChange,
   onFocus,
+  onFocusRaw,
+  onKeyDownCapture,
   onPaste,
+  placeholder,
   required,
   rightSlot,
-  hideObscureToggle,
   size = 'md',
-  type = 'text',
   tint,
+  type = 'text',
   validate,
-  autoSelect,
-  placeholder,
-  autoFocus,
-  onKeyDownCapture,
-  onFocusRaw,
 }: PlainInputProps) {
   const [obscured, setObscured] = useStateWithDeps(type === 'password', [type]);
   const [focused, setFocused] = useState(false);
@@ -101,7 +102,7 @@ export function PlainInput({
         labelPosition === 'top' && 'flex-row gap-0.5',
       )}
     >
-      <Label htmlFor={id} className={labelClassName} visuallyHidden={hideLabel} required={required}>
+      <Label htmlFor={id} className={labelClassName} visuallyHidden={hideLabel} required={required} help={help}>
         {label}
       </Label>
       <HStack
@@ -116,6 +117,7 @@ export function PlainInput({
           size === 'md' && 'min-h-md',
           size === 'sm' && 'min-h-sm',
           size === 'xs' && 'min-h-xs',
+          size === '2xs' && 'min-h-2xs',
         )}
       >
         {tint != null && (
