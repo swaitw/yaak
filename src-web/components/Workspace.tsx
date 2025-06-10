@@ -119,7 +119,7 @@ export function Workspace() {
     if (activeEnvironment?.color == null) return undefined;
     const background = `linear-gradient(to right, ${activeEnvironment.color} 15%, transparent 40%)`;
     return { background };
-  }, [activeEnvironment?.color ?? 'n/a']);
+  }, [activeEnvironment?.color]);
 
   // We're loading still
   if (workspaces.length === 0) {

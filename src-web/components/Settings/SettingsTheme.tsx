@@ -11,7 +11,8 @@ import { Editor } from '../core/Editor/Editor';
 import type { IconProps } from '../core/Icon';
 import { Icon } from '../core/Icon';
 import { IconButton } from '../core/IconButton';
-import { Select, SelectProps } from '../core/Select';
+import { Select } from '../core/Select';
+import type { SelectProps } from '../core/Select';
 import { HStack, VStack } from '../core/Stacks';
 
 const buttonColors: ButtonProps['color'][] = [
