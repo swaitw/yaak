@@ -1,5 +1,3 @@
-use crate::error::Error::ApiErr;
-use crate::commands::{PluginSearchResponse, PluginVersion};
 use crate::error::Result;
 use crate::plugin_meta::get_plugin_meta;
 use log::{info, warn};
@@ -7,7 +5,6 @@ use reqwest::{Response, Url};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::str::FromStr;
-use log::info;
 use tauri::{AppHandle, Runtime, is_dev};
 use ts_rs::TS;
 use yaak_common::api_client::yaak_api_client;
