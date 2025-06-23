@@ -1,13 +1,10 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { openUrl } from '@tauri-apps/plugin-opener';
-import { Plugin, pluginsAtom } from '@yaakapp-internal/models';
-import {
-  checkPluginUpdates,
-  installPlugin,
-  PluginVersion,
-  searchPlugins,
-} from '@yaakapp-internal/plugins';
-import { PluginUpdatesResponse } from '@yaakapp-internal/plugins/bindings/gen_api';
+import type { Plugin } from '@yaakapp-internal/models';
+import { pluginsAtom } from '@yaakapp-internal/models';
+import type { PluginVersion } from '@yaakapp-internal/plugins';
+import { checkPluginUpdates, installPlugin, searchPlugins } from '@yaakapp-internal/plugins';
+import type { PluginUpdatesResponse } from '@yaakapp-internal/plugins/bindings/gen_api';
 import { useAtomValue } from 'jotai';
 import React, { useState } from 'react';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
@@ -190,7 +187,7 @@ function PluginSearch() {
                 <TableHeaderCell>Name</TableHeaderCell>
                 <TableHeaderCell>Version</TableHeaderCell>
                 <TableHeaderCell>Description</TableHeaderCell>
-                <TableHeaderCell children="" />
+                <TableHeaderCell />
               </TableRow>
             </TableHead>
             <TableBody>

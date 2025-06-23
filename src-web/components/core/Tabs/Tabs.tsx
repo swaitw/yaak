@@ -3,7 +3,8 @@ import type { ReactNode } from 'react';
 import { memo, useEffect, useRef } from 'react';
 import { ErrorBoundary } from '../../ErrorBoundary';
 import { Icon } from '../Icon';
-import { RadioDropdown, RadioDropdownProps } from '../RadioDropdown';
+import type { RadioDropdownProps } from '../RadioDropdown';
+import { RadioDropdown } from '../RadioDropdown';
 
 export type TabItem =
   | {
@@ -49,7 +50,7 @@ export function Tabs({
     const tabs = ref.current?.querySelectorAll<HTMLDivElement>(`[data-tab]`);
     for (const tab of tabs ?? []) {
       const v = tab.getAttribute('data-tab');
-      let parent = tab.closest('.tabs-container');
+      const parent = tab.closest('.tabs-container');
       if (parent !== ref.current) {
         // Tab is part of a nested tab container, so ignore it
       } else if (v === value) {

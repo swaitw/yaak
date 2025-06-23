@@ -18,7 +18,6 @@ export function useSyncWorkspaceRequestTitle() {
       newTitle += ` [${activeEnvironment.name}]`;
     }
     if (activeRequest) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       newTitle += ` › ${resolvedModelName(activeRequest)}`;
     }
 
