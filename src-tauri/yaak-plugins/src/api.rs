@@ -1,3 +1,4 @@
+use crate::error::Error::ApiErr;
 use crate::error::Result;
 use crate::plugin_meta::get_plugin_meta;
 use log::{info, warn};
@@ -9,7 +10,6 @@ use tauri::{AppHandle, Runtime, is_dev};
 use ts_rs::TS;
 use yaak_common::api_client::yaak_api_client;
 use yaak_models::query_manager::QueryManagerExt;
-use crate::error::Error::ApiErr;
 
 pub async fn get_plugin<R: Runtime>(
     app_handle: &AppHandle<R>,
@@ -108,6 +108,7 @@ fn base_url(path: &str) -> Url {
 pub struct PluginVersion {
     pub id: String,
     pub version: String,
+    pub url: String,
     pub description: Option<String>,
     pub name: String,
     pub display_name: String,

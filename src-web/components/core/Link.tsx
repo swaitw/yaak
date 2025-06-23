@@ -6,12 +6,13 @@ import { Icon } from './Icon';
 
 interface Props extends HTMLAttributes<HTMLAnchorElement> {
   href: string;
+  noUnderline?: boolean;
 }
 
-export function Link({ href, children, className, ...other }: Props) {
+export function Link({ href, children, noUnderline, className, ...other }: Props) {
   const isExternal = href.match(/^https?:\/\//);
 
-  className = classNames(className, 'relative underline hover:text-violet-600');
+  className = classNames(className, 'relative');
 
   if (isExternal) {
     let finalHref = href;
@@ -25,13 +26,17 @@ export function Link({ href, children, className, ...other }: Props) {
         href={finalHref}
         target="_blank"
         rel="noopener noreferrer"
-        className={classNames(className, 'pr-4 inline-flex items-center')}
+        className={classNames(
+          className,
+          'pr-4 inline-flex items-center hover:underline',
+          !noUnderline && 'underline',
+        )}
         onClick={(e) => {
           e.preventDefault();
         }}
         {...other}
       >
-        <span className="underline">{children}</span>
+        <span>{children}</span>
         <Icon className="inline absolute right-0.5 top-[0.3em]" size="xs" icon="external_link" />
       </a>
     );

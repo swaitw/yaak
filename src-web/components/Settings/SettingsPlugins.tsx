@@ -18,6 +18,7 @@ import { useUninstallPlugin } from '../../hooks/useUninstallPlugin';
 import { Button } from '../core/Button';
 import { IconButton } from '../core/IconButton';
 import { InlineCode } from '../core/InlineCode';
+import { Link } from '../core/Link';
 import { LoadingIcon } from '../core/LoadingIcon';
 import { PlainInput } from '../core/PlainInput';
 import { HStack } from '../core/Stacks';
@@ -115,7 +116,15 @@ function PluginTableRow({
 
   return (
     <TableRow>
-      <TableCell className="font-semibold">{pluginInfo.data.displayName}</TableCell>
+      <TableCell className="font-semibold">
+        {plugin.url ? (
+          <Link noUnderline href={plugin.url}>
+            {pluginInfo.data.displayName}
+          </Link>
+        ) : (
+          pluginInfo.data.displayName
+        )}
+      </TableCell>
       <TableCell>
         <InlineCode>{pluginInfo.data?.version}</InlineCode>
       </TableCell>
@@ -187,7 +196,11 @@ function PluginSearch() {
             <TableBody>
               {results.data.plugins.map((plugin) => (
                 <TableRow key={plugin.id}>
-                  <TableCell className="font-semibold">{plugin.displayName}</TableCell>
+                  <TableCell className="font-semibold">
+                    <Link noUnderline href={plugin.url}>
+                      {plugin.displayName}
+                    </Link>
+                  </TableCell>
                   <TableCell>
                     <InlineCode>{plugin.version}</InlineCode>
                   </TableCell>

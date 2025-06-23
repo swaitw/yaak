@@ -11,6 +11,7 @@ export function useUninstallPlugin() {
       const confirmed = await showConfirmDelete({
         id: 'uninstall-plugin-' + name,
         title: 'Uninstall Plugin',
+        confirmText: 'Uninstall',
         description: (
           <>
             Permanently uninstall <InlineCode>{name}</InlineCode>?

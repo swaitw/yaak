@@ -52,7 +52,7 @@ pub async fn download_and_install<R: Runtime>(
             checked_at: Some(Utc::now().naive_utc()),
             directory: plugin_dir_str.clone(),
             enabled: true,
-            url: None,
+            url: Some(plugin_version.url.clone()),
             ..Default::default()
         },
         &UpdateSource::Background,
