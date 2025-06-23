@@ -494,7 +494,7 @@ function DocsExplorer({
 			return null;
 		}
 
-		const field = schemaPointer as GraphQLField<any, any>;
+		const field = schemaPointer as unknown as GraphQLField<any, any>;
 		const returnType = extractActualType(field.type);
 
 		return (
