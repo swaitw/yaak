@@ -39,7 +39,7 @@ pub struct PluginManager {
     kill_tx: tokio::sync::watch::Sender<bool>,
     ws_service: Arc<PluginRuntimeServerWebsocket>,
     vendored_plugin_dir: PathBuf,
-    installed_plugin_dir: PathBuf,
+    pub(crate) installed_plugin_dir: PathBuf,
 }
 
 #[derive(Clone)]
@@ -62,8 +62,11 @@ impl PluginManager {
             .resolve("vendored/plugins", BaseDirectory::Resource)
             .expect("failed to resolve plugin directory resource");
 
-        let installed_plugin_dir =
-            app_handle.path().app_data_dir().expect("failed to get app data dir");
+        let installed_plugin_dir = app_handle
+            .path()
+            .app_data_dir()
+            .expect("failed to get app data dir")
+            .join("installed-plugins");
 
         let plugin_manager = PluginManager {
             plugins: Default::default(),
@@ -209,7 +212,7 @@ impl PluginManager {
             None => return Err(ClientNotInitializedErr),
             Some(tx) => tx,
         };
-        let plugin_handle = PluginHandle::new(dir, tx.clone());
+        let plugin_handle = PluginHandle::new(dir, tx.clone())?;
         let dir_path = Path::new(dir);
         let is_vendored = dir_path.starts_with(self.vendored_plugin_dir.as_path());
         let is_installed = dir_path.starts_with(self.installed_plugin_dir.as_path());
@@ -231,13 +234,10 @@ impl PluginManager {
         // Add the new plugin
         self.plugins.lock().await.push(plugin_handle.clone());
 
-        let resp = match event.payload {
+        let _ = match event.payload {
             InternalEventPayload::BootResponse(resp) => resp,
             _ => return Err(UnknownEventErr),
         };
-
-        // Set the boot response
-        plugin_handle.set_boot_response(&resp).await;
 
         Ok(())
     }
@@ -317,7 +317,7 @@ impl PluginManager {
 
     pub async fn get_plugin_by_name(&self, name: &str) -> Option<PluginHandle> {
         for plugin in self.plugins.lock().await.iter().cloned() {
-            let info = plugin.info().await;
+            let info = plugin.info();
             if info.name == name {
                 return Some(plugin);
             }
