@@ -1,5 +1,5 @@
 use crate::error::Result;
-use crate::platform::get_ua_platform;
+use crate::platform::{get_ua_arch, get_ua_platform};
 use reqwest::Client;
 use std::time::Duration;
 use tauri::http::{HeaderMap, HeaderValue};
@@ -8,7 +8,8 @@ use tauri::{AppHandle, Runtime};
 pub fn yaak_api_client<R: Runtime>(app_handle: &AppHandle<R>) -> Result<Client> {
     let platform = get_ua_platform();
     let version = app_handle.package_info().version.clone();
-    let ua = format!("Yaak/{version} ({platform})");
+    let arch = get_ua_arch();
+    let ua = format!("Yaak/{version} ({platform}; {arch})");
     let mut default_headers = HeaderMap::new();
     default_headers.insert("Accept", HeaderValue::from_str("application/json").unwrap());
 

@@ -2,12 +2,12 @@ use std::time::SystemTime;
 
 use crate::error::Result;
 use crate::history::get_num_launches;
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Utc};
 use log::debug;
 use reqwest::Method;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use tauri::{AppHandle, Emitter, Manager, Runtime, WebviewWindow};
+use yaak_common::api_client::yaak_api_client;
 use yaak_common::platform::get_os;
 use yaak_license::{LicenseCheckStatus, check_license};
 use yaak_models::query_manager::QueryManagerExt;
@@ -28,6 +28,7 @@ pub struct YaakNotifier {
 #[serde(default, rename_all = "camelCase")]
 pub struct YaakNotification {
     timestamp: DateTime<Utc>,
+    timeout: Option<f64>,
     id: String,
     message: String,
     action: Option<YaakNotificationAction>,
@@ -81,8 +82,8 @@ impl YaakNotifier {
         let settings = window.db().get_settings();
         let num_launches = get_num_launches(app_handle).await;
         let info = app_handle.package_info().clone();
-        let req = reqwest::Client::default()
-            .request(Method::GET, "https://notify.yaak.app/notifications")
+        let req = yaak_api_client(app_handle)?
+            .request(Method::GET, "http://localhost:9444/notifications")
             .query(&[
                 ("version", info.version.to_string().as_str()),
                 ("launches", num_launches.to_string().as_str()),
@@ -96,22 +97,9 @@ impl YaakNotifier {
             return Ok(());
         }
 
-        let result = resp.json::<Value>().await?;
-
-        // Support both single and multiple notifications.
-        // TODO: Remove support for single after April 2025
-        let notifications = match result {
-            Value::Array(a) => a
-                .into_iter()
-                .map(|a| serde_json::from_value(a).unwrap())
-                .collect::<Vec<YaakNotification>>(),
-            a @ _ => vec![serde_json::from_value(a).unwrap()],
-        };
-
-        for notification in notifications {
-            let age = notification.timestamp.signed_duration_since(Utc::now());
+        for notification in resp.json::<Vec<YaakNotification>>().await? {
             let seen = get_kv(app_handle).await?;
-            if seen.contains(&notification.id) || (age > Duration::days(2)) {
+            if seen.contains(&notification.id) {
                 debug!("Already seen notification {}", notification.id);
                 continue;
             }

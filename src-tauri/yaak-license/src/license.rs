@@ -7,6 +7,7 @@ use std::ops::Add;
 use std::time::Duration;
 use tauri::{AppHandle, Emitter, Manager, Runtime, WebviewWindow, is_dev};
 use ts_rs::TS;
+use yaak_common::api_client::yaak_api_client;
 use yaak_common::platform::get_os;
 use yaak_models::query_manager::QueryManagerExt;
 use yaak_models::util::UpdateSource;
@@ -170,7 +171,7 @@ pub async fn check_license<R: Runtime>(window: &WebviewWindow<R>) -> Result<Lice
         (true, _) => {
             info!("Checking license activation");
             // A license has been activated, so let's check the license server
-            let client = reqwest::Client::new();
+            let client = yaak_api_client(window.app_handle())?;
             let path = format!("/licenses/activations/{activation_id}/check");
             let response = client.post(build_url(&path)).json(&payload).send().await?;
 
