@@ -1,4 +1,4 @@
-import {
+import type {
   Context,
   FormInputSelectOption,
   GetHttpAuthenticationConfigRequest,
@@ -6,6 +6,7 @@ import {
   PluginDefinition,
 } from '@yaakapp/api';
 import {
+  genPkceCodeVerifier,
   DEFAULT_PKCE_METHOD,
   getAuthorizationCode,
   PKCE_PLAIN,
@@ -14,7 +15,8 @@ import {
 import { getClientCredentials } from './grants/clientCredentials';
 import { getImplicit } from './grants/implicit';
 import { getPassword } from './grants/password';
-import { AccessToken, deleteToken, getToken, resetDataDirKey } from './store';
+import type { AccessToken } from './store';
+import { deleteToken, getToken, resetDataDirKey } from './store';
 
 type GrantType = 'authorization_code' | 'implicit' | 'password' | 'client_credentials';
 
@@ -219,9 +221,9 @@ export const plugin: PluginDefinition = {
       },
       {
         type: 'text',
-        name: 'pkceCodeVerifier',
+        name: 'pkceCodeChallenge',
         label: 'Code Verifier',
-        placeholder: 'Automatically generated if not provided',
+        placeholder: 'Automatically generated when not set',
         optional: true,
         dynamic: hiddenIfNot(['authorization_code'], ({ usePkce }) => !!usePkce),
       },
@@ -325,8 +327,8 @@ export const plugin: PluginDefinition = {
           credentialsInBody,
           pkce: values.usePkce
             ? {
-                challengeMethod: stringArg(values, 'pkceChallengeMethod'),
-                codeVerifier: stringArgOrNull(values, 'pkceCodeVerifier'),
+                challengeMethod: stringArg(values, 'pkceChallengeMethod') || DEFAULT_PKCE_METHOD,
+                codeVerifier: stringArg(values, 'pkceCodeVerifier') || genPkceCodeVerifier(),
               }
             : null,
           tokenName: tokenName,

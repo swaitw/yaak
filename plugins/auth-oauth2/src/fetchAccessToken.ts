@@ -1,8 +1,8 @@
-import { Context, HttpRequest, HttpUrlParameter } from '@yaakapp/api';
+import type { Context, HttpRequest, HttpUrlParameter } from '@yaakapp/api';
 import { readFileSync } from 'node:fs';
-import { AccessTokenRawResponse } from './store';
+import type { AccessTokenRawResponse } from './store';
 
-export async function getAccessToken(
+export async function fetchAccessToken(
   ctx: Context,
   {
     accessTokenUrl,

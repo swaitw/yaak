@@ -1,7 +1,8 @@
-import { Context } from '@yaakapp/api';
-import { getAccessToken } from '../getAccessToken';
+import type { Context } from '@yaakapp/api';
+import { fetchAccessToken } from '../fetchAccessToken';
 import { getOrRefreshAccessToken } from '../getOrRefreshAccessToken';
-import { AccessToken, storeToken } from '../store';
+import type { AccessToken} from '../store';
+import { storeToken } from '../store';
 
 export async function getPassword(
   ctx: Context,
@@ -37,7 +38,7 @@ export async function getPassword(
     return token;
   }
 
-  const response = await getAccessToken(ctx, {
+  const response = await fetchAccessToken(ctx, {
     accessTokenUrl,
     clientId,
     clientSecret,

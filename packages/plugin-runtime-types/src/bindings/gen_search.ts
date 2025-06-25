@@ -2,4 +2,4 @@
 
 export type PluginMetadata = { version: string, name: string, displayName: string, description: string | null, homepageUrl: string | null, repositoryUrl: string | null, };
 
-export type PluginVersion = { id: string, version: string, description: string | null, name: string, displayName: string, homepageUrl: string | null, repositoryUrl: string | null, checksum: string, readme: string | null, yanked: boolean, };
+export type PluginVersion = { id: string, version: string, url: string, description: string | null, name: string, displayName: string, homepageUrl: string | null, repositoryUrl: string | null, checksum: string, readme: string | null, yanked: boolean, };

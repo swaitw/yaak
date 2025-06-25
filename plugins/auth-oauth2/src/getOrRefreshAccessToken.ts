@@ -1,29 +1,34 @@
-import { Context, HttpRequest } from '@yaakapp/api';
+import type { Context, HttpRequest } from '@yaakapp/api';
 import { readFileSync } from 'node:fs';
-import { AccessToken, AccessTokenRawResponse, deleteToken, getToken, storeToken } from './store';
+import { isTokenExpired } from './getAccessTokenIfNotExpired';
+import type { AccessToken, AccessTokenRawResponse } from './store';
+import { deleteToken, getToken, storeToken } from './store';
 
-export async function getOrRefreshAccessToken(ctx: Context, contextId: string, {
-  scope,
-  accessTokenUrl,
-  credentialsInBody,
-  clientId,
-  clientSecret,
-  forceRefresh,
-}: {
-  scope: string | null;
-  accessTokenUrl: string;
-  credentialsInBody: boolean;
-  clientId: string;
-  clientSecret: string;
-  forceRefresh?: boolean;
-}): Promise<AccessToken | null> {
+export async function getOrRefreshAccessToken(
+  ctx: Context,
+  contextId: string,
+  {
+    scope,
+    accessTokenUrl,
+    credentialsInBody,
+    clientId,
+    clientSecret,
+    forceRefresh,
+  }: {
+    scope: string | null;
+    accessTokenUrl: string;
+    credentialsInBody: boolean;
+    clientId: string;
+    clientSecret: string;
+    forceRefresh?: boolean;
+  },
+): Promise<AccessToken | null> {
   const token = await getToken(ctx, contextId);
   if (token == null) {
     return null;
   }
 
-  const now = Date.now();
-  const isExpired = token.expiresAt && now > token.expiresAt;
+  const isExpired = isTokenExpired(token);
 
   // Return the current access token if it's still valid
   if (!isExpired && !forceRefresh) {
@@ -79,7 +84,9 @@ export async function getOrRefreshAccessToken(ctx: Context, contextId: string, {
   console.log('[oauth2] Got refresh token response', resp.status);
 
   if (resp.status < 200 || resp.status >= 300) {
-    throw new Error('Failed to refresh access token with status=' + resp.status + ' and body=' + body);
+    throw new Error(
+      'Failed to refresh access token with status=' + resp.status + ' and body=' + body,
+    );
   }
 
   let response;
@@ -90,7 +97,9 @@ export async function getOrRefreshAccessToken(ctx: Context, contextId: string, {
   }
 
   if (response.error) {
-    throw new Error(`Failed to fetch access token with ${response.error} -> ${response.error_description}`);
+    throw new Error(
+      `Failed to fetch access token with ${response.error} -> ${response.error_description}`,
+    );
   }
 
   const newResponse: AccessTokenRawResponse = {

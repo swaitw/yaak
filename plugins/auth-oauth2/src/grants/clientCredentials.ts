@@ -1,5 +1,6 @@
-import { Context } from '@yaakapp/api';
-import { getAccessToken } from '../getAccessToken';
+import type { Context } from '@yaakapp/api';
+import { fetchAccessToken } from '../fetchAccessToken';
+import { isTokenExpired } from '../getAccessTokenIfNotExpired';
 import { getToken, storeToken } from '../store';
 
 export async function getClientCredentials(
@@ -22,13 +23,11 @@ export async function getClientCredentials(
   },
 ) {
   const token = await getToken(ctx, contextId);
-  if (token) {
-    // resolve(token.response.access_token);
-    // TODO: Refresh token if expired
-    // return;
+  if (token && !isTokenExpired(token)) {
+    return token;
   }
 
-  const response = await getAccessToken(ctx, {
+  const response = await fetchAccessToken(ctx, {
     grantType: 'client_credentials',
     accessTokenUrl,
     audience,

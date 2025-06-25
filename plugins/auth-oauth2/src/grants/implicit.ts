@@ -1,7 +1,9 @@
-import { Context } from '@yaakapp/api';
-import { AccessToken, AccessTokenRawResponse, getToken, storeToken } from '../store';
+import type { Context } from '@yaakapp/api';
+import { isTokenExpired } from '../getAccessTokenIfNotExpired';
+import type { AccessToken, AccessTokenRawResponse} from '../store';
+import { getToken, storeToken } from '../store';
 
-export function getImplicit(
+export async function getImplicit(
   ctx: Context,
   contextId: string,
   {
@@ -24,31 +26,30 @@ export function getImplicit(
     tokenName: 'access_token' | 'id_token';
   },
 ): Promise<AccessToken> {
-  return new Promise(async (resolve, reject) => {
-    const token = await getToken(ctx, contextId);
-    if (token) {
-      // resolve(token.response.access_token);
-      // TODO: Refresh token if expired
-      // return;
-    }
+  const token = await getToken(ctx, contextId);
+  if (token != null && !isTokenExpired(token)) {
+    return token;
+  }
 
-    const authorizationUrl = new URL(`${authorizationUrlRaw ?? ''}`);
-    authorizationUrl.searchParams.set('response_type', 'token');
-    authorizationUrl.searchParams.set('client_id', clientId);
-    if (redirectUri) authorizationUrl.searchParams.set('redirect_uri', redirectUri);
-    if (scope) authorizationUrl.searchParams.set('scope', scope);
-    if (state) authorizationUrl.searchParams.set('state', state);
-    if (audience) authorizationUrl.searchParams.set('audience', audience);
-    if (responseType.includes('id_token')) {
-      authorizationUrl.searchParams.set(
-        'nonce',
-        String(Math.floor(Math.random() * 9999999999999) + 1),
-      );
-    }
+  const authorizationUrl = new URL(`${authorizationUrlRaw ?? ''}`);
+  authorizationUrl.searchParams.set('response_type', 'token');
+  authorizationUrl.searchParams.set('client_id', clientId);
+  if (redirectUri) authorizationUrl.searchParams.set('redirect_uri', redirectUri);
+  if (scope) authorizationUrl.searchParams.set('scope', scope);
+  if (state) authorizationUrl.searchParams.set('state', state);
+  if (audience) authorizationUrl.searchParams.set('audience', audience);
+  if (responseType.includes('id_token')) {
+    authorizationUrl.searchParams.set(
+      'nonce',
+      String(Math.floor(Math.random() * 9999999999999) + 1),
+    );
+  }
 
-    const authorizationUrlStr = authorizationUrl.toString();
+  // eslint-disable-next-line no-async-promise-executor
+  const newToken = await new Promise<AccessToken>(async (resolve, reject) => {
     let foundAccessToken = false;
-    let { close } = await ctx.window.openUrl({
+    const authorizationUrlStr = authorizationUrl.toString();
+    const { close } = await ctx.window.openUrl({
       url: authorizationUrlStr,
       label: 'oauth-authorization-url',
       async onClose() {
@@ -76,11 +77,13 @@ export function getImplicit(
 
         const response = Object.fromEntries(params) as unknown as AccessTokenRawResponse;
         try {
-          resolve(await storeToken(ctx, contextId, response));
+          resolve(storeToken(ctx, contextId, response));
         } catch (err) {
           reject(err);
         }
       },
     });
   });
+
+  return newToken;
 }
