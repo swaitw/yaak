@@ -6,12 +6,12 @@ use log::error;
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
 use std::fs::create_dir_all;
+use std::sync::mpsc;
 use std::time::Duration;
 use tauri::async_runtime::Mutex;
 use tauri::plugin::TauriPlugin;
 use tauri::{Emitter, Manager, Runtime, generate_handler};
 use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
-use tokio::sync::mpsc;
 
 mod commands;
 
@@ -72,11 +72,11 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             app_handle.manage(SqliteConnection::new(pool.clone()));
 
             {
-                let (tx, mut rx) = mpsc::channel(128);
+                let (tx, rx) = mpsc::channel();
                 app_handle.manage(QueryManager::new(pool, tx));
                 let app_handle = app_handle.clone();
                 tauri::async_runtime::spawn(async move {
-                    while let Some(p) = rx.recv().await {
+                    for p in rx {
                         let name = match p.change {
                             ModelChangeEvent::Upsert => "upserted_model",
                             ModelChangeEvent::Delete => "deleted_model",

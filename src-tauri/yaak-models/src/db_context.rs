@@ -2,13 +2,14 @@ use crate::connection_or_tx::ConnectionOrTx;
 use crate::error::Error::DBRowNotFound;
 use crate::models::{AnyModel, UpsertModelInfo};
 use crate::util::{ModelChangeEvent, ModelPayload, UpdateSource};
+use log::error;
 use rusqlite::OptionalExtension;
 use sea_query::{
     Asterisk, Expr, IntoColumnRef, IntoIden, IntoTableRef, OnConflict, Query, SimpleExpr,
     SqliteQueryBuilder,
 };
 use sea_query_rusqlite::RusqliteBinder;
-use tokio::sync::mpsc;
+use std::sync::mpsc;
 
 pub struct DbContext<'a> {
     pub(crate) events_tx: mpsc::Sender<ModelPayload>,
@@ -150,16 +151,15 @@ impl<'a> DbContext<'a> {
             update_source: source.clone(),
             change: ModelChangeEvent::Upsert,
         };
-        self.events_tx.try_send(payload).unwrap();
+
+        if let Err(e) = self.events_tx.send(payload.clone()) {
+            error!("Failed to send model change {source:?}: {e:?}");
+        }
 
         Ok(m)
     }
 
-    pub(crate) fn delete<'s, M>(
-        &self,
-        m: &M,
-        update_source: &UpdateSource,
-    ) -> crate::error::Result<M>
+    pub(crate) fn delete<'s, M>(&self, m: &M, source: &UpdateSource) -> crate::error::Result<M>
     where
         M: Into<AnyModel> + Clone + UpsertModelInfo,
     {
@@ -171,11 +171,13 @@ impl<'a> DbContext<'a> {
 
         let payload = ModelPayload {
             model: m.clone().into(),
-            update_source: update_source.clone(),
+            update_source: source.clone(),
             change: ModelChangeEvent::Delete,
         };
 
-        self.events_tx.try_send(payload).unwrap();
+        if let Err(e) = self.events_tx.send(payload) {
+            error!("Failed to send model change {source:?}: {e:?}");
+        }
         Ok(m.clone())
     }
 }

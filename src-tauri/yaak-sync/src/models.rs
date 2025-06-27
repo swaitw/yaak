@@ -1,6 +1,7 @@
 use crate::error::Error::UnknownModel;
 use crate::error::Result;
 use chrono::NaiveDateTime;
+use log::warn;
 use serde::{Deserialize, Serialize};
 use sha1::{Digest, Sha1};
 use std::fs;
@@ -37,9 +38,21 @@ impl SyncModel {
 
         let ext = file_path.extension().unwrap_or_default();
         if ext == "yml" || ext == "yaml" {
-            Ok(Some((serde_yaml::from_str(&content_str)?, checksum)))
+            Ok(match serde_yaml::from_str::<SyncModel>(&content_str) {
+                Ok(m) => Some((m, checksum)),
+                Err(e) => {
+                    warn!("Error parsing {:?} {:?}", file_path.file_name(), e);
+                    None
+                }
+            })
         } else if ext == "json" {
-            Ok(Some((serde_json::from_str(&content_str)?, checksum)))
+            Ok(match serde_json::from_str::<SyncModel>(&content_str) {
+                Ok(m) => Some((m, checksum)),
+                Err(e) => {
+                    warn!("Error parsing {:?} {:?}", file_path.file_name(), e);
+                    None
+                }
+            })
         } else {
             Ok(None)
         }
