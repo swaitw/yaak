@@ -22,7 +22,7 @@ impl<'a> DbContext<'a> {
                 let x = self.upsert_workspace(&v, source)?;
                 imported_resources.workspaces.push(x.clone());
             }
-            info!("Upserted {} workspaces", imported_resources.environments.len());
+            info!("Upserted {} workspaces", imported_resources.workspaces.len());
         }
 
         if http_requests.len() > 0 {

@@ -1302,7 +1302,7 @@ pub fn run() {
                         tokio::time::sleep(Duration::from_millis(4000)).await;
                         let val: State<'_, Mutex<YaakNotifier>> = w.state();
                         let mut n = val.lock().await;
-                        if let Err(e) = n.check(&w).await {
+                        if let Err(e) = n.maybe_check(&w).await {
                             warn!("Failed to check for notifications {}", e)
                         }
                     });

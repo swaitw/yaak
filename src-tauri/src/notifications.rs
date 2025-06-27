@@ -63,7 +63,7 @@ impl YaakNotifier {
         Ok(())
     }
 
-    pub async fn check<R: Runtime>(&mut self, window: &WebviewWindow<R>) -> Result<()> {
+    pub async fn maybe_check<R: Runtime>(&mut self, window: &WebviewWindow<R>) -> Result<()> {
         let app_handle = window.app_handle();
         let ignore_check = self.last_check.elapsed().unwrap().as_secs() < MAX_UPDATE_CHECK_SECONDS;
 
@@ -83,7 +83,7 @@ impl YaakNotifier {
         let num_launches = get_num_launches(app_handle).await;
         let info = app_handle.package_info().clone();
         let req = yaak_api_client(app_handle)?
-            .request(Method::GET, "http://localhost:9444/notifications")
+            .request(Method::GET, "https://notify.yaak.app/notifications")
             .query(&[
                 ("version", info.version.to_string().as_str()),
                 ("launches", num_launches.to_string().as_str()),

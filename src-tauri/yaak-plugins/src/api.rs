@@ -17,7 +17,7 @@ pub async fn get_plugin<R: Runtime>(
     version: Option<String>,
 ) -> Result<PluginVersion> {
     info!("Getting plugin: {name} {version:?}");
-    let mut url = base_url(&format!("/{name}"));
+    let mut url = build_url(&format!("/{name}"));
     if let Some(version) = version {
         let mut query_pairs = url.query_pairs_mut();
         query_pairs.append_pair("version", &version);
@@ -36,7 +36,7 @@ pub async fn download_plugin_archive<R: Runtime>(
     let name = plugin_version.name.clone();
     let version = plugin_version.version.clone();
     info!("Downloading plugin: {name} {version}");
-    let mut url = base_url(&format!("/{}/download", name));
+    let mut url = build_url(&format!("/{}/download", name));
     {
         let mut query_pairs = url.query_pairs_mut();
         query_pairs.append_pair("version", &version);
@@ -67,7 +67,7 @@ pub async fn check_plugin_updates<R: Runtime>(
         })
         .collect();
 
-    let url = base_url("/updates");
+    let url = build_url("/updates");
     let body = serde_json::to_vec(&PluginUpdatesResponse {
         plugins: name_versions,
     })?;
@@ -84,7 +84,7 @@ pub async fn search_plugins<R: Runtime>(
     app_handle: &AppHandle<R>,
     query: &str,
 ) -> Result<PluginSearchResponse> {
-    let mut url = base_url("/search");
+    let mut url = build_url("/search");
     {
         let mut query_pairs = url.query_pairs_mut();
         query_pairs.append_pair("query", query);
@@ -93,7 +93,7 @@ pub async fn search_plugins<R: Runtime>(
     Ok(resp.json().await?)
 }
 
-fn base_url(path: &str) -> Url {
+fn build_url(path: &str) -> Url {
     let base_url = if is_dev() {
         "http://localhost:9444/api/v1/plugins"
     } else {
