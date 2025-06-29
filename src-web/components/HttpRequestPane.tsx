@@ -35,6 +35,7 @@ import { prepareImportQuerystring } from '../lib/prepareImportQuerystring';
 import { resolvedModelName } from '../lib/resolvedModelName';
 import { showToast } from '../lib/toast';
 import { BinaryFileEditor } from './BinaryFileEditor';
+import { ConfirmLargeRequestBody } from './ConfirmLargeRequestBody';
 import { CountBadge } from './core/CountBadge';
 import { Editor } from './core/Editor/Editor';
 import type { GenericCompletionConfig } from './core/Editor/genericCompletion';
@@ -373,72 +374,74 @@ export function HttpRequestPane({ style, fullHeight, className, activeRequest }:
               />
             </TabContent>
             <TabContent value={TAB_BODY}>
-              {activeRequest.bodyType === BODY_TYPE_JSON ? (
-                <Editor
-                  forceUpdateKey={forceUpdateKey}
-                  autocompleteFunctions
-                  autocompleteVariables
-                  placeholder="..."
-                  heightMode={fullHeight ? 'full' : 'auto'}
-                  defaultValue={`${activeRequest.body?.text ?? ''}`}
-                  language="json"
-                  onChange={handleBodyTextChange}
-                  stateKey={`json.${activeRequest.id}`}
-                />
-              ) : activeRequest.bodyType === BODY_TYPE_XML ? (
-                <Editor
-                  forceUpdateKey={forceUpdateKey}
-                  autocompleteFunctions
-                  autocompleteVariables
-                  placeholder="..."
-                  heightMode={fullHeight ? 'full' : 'auto'}
-                  defaultValue={`${activeRequest.body?.text ?? ''}`}
-                  language="xml"
-                  onChange={handleBodyTextChange}
-                  stateKey={`xml.${activeRequest.id}`}
-                />
-              ) : activeRequest.bodyType === BODY_TYPE_GRAPHQL ? (
-                <GraphQLEditor
-                  forceUpdateKey={forceUpdateKey}
-                  baseRequest={activeRequest}
-                  request={activeRequest}
-                  onChange={handleBodyChange}
-                />
-              ) : activeRequest.bodyType === BODY_TYPE_FORM_URLENCODED ? (
-                <FormUrlencodedEditor
-                  forceUpdateKey={forceUpdateKey}
-                  request={activeRequest}
-                  onChange={handleBodyChange}
-                />
-              ) : activeRequest.bodyType === BODY_TYPE_FORM_MULTIPART ? (
-                <FormMultipartEditor
-                  forceUpdateKey={forceUpdateKey}
-                  request={activeRequest}
-                  onChange={handleBodyChange}
-                />
-              ) : activeRequest.bodyType === BODY_TYPE_BINARY ? (
-                <BinaryFileEditor
-                  requestId={activeRequest.id}
-                  contentType={contentType}
-                  body={activeRequest.body}
-                  onChange={(body) => patchModel(activeRequest, { body })}
-                  onChangeContentType={handleContentTypeChange}
-                />
-              ) : typeof activeRequest.bodyType === 'string' ? (
-                <Editor
-                  forceUpdateKey={forceUpdateKey}
-                  autocompleteFunctions
-                  autocompleteVariables
-                  language={languageFromContentType(contentType)}
-                  placeholder="..."
-                  heightMode={fullHeight ? 'full' : 'auto'}
-                  defaultValue={`${activeRequest.body?.text ?? ''}`}
-                  onChange={handleBodyTextChange}
-                  stateKey={`other.${activeRequest.id}`}
-                />
-              ) : (
-                <EmptyStateText>No Body</EmptyStateText>
-              )}
+              <ConfirmLargeRequestBody request={activeRequest}>
+                {activeRequest.bodyType === BODY_TYPE_JSON ? (
+                  <Editor
+                    forceUpdateKey={forceUpdateKey}
+                    autocompleteFunctions
+                    autocompleteVariables
+                    placeholder="..."
+                    heightMode={fullHeight ? 'full' : 'auto'}
+                    defaultValue={`${activeRequest.body?.text ?? ''}`}
+                    language="json"
+                    onChange={handleBodyTextChange}
+                    stateKey={`json.${activeRequest.id}`}
+                  />
+                ) : activeRequest.bodyType === BODY_TYPE_XML ? (
+                  <Editor
+                    forceUpdateKey={forceUpdateKey}
+                    autocompleteFunctions
+                    autocompleteVariables
+                    placeholder="..."
+                    heightMode={fullHeight ? 'full' : 'auto'}
+                    defaultValue={`${activeRequest.body?.text ?? ''}`}
+                    language="xml"
+                    onChange={handleBodyTextChange}
+                    stateKey={`xml.${activeRequest.id}`}
+                  />
+                ) : activeRequest.bodyType === BODY_TYPE_GRAPHQL ? (
+                  <GraphQLEditor
+                    forceUpdateKey={forceUpdateKey}
+                    baseRequest={activeRequest}
+                    request={activeRequest}
+                    onChange={handleBodyChange}
+                  />
+                ) : activeRequest.bodyType === BODY_TYPE_FORM_URLENCODED ? (
+                  <FormUrlencodedEditor
+                    forceUpdateKey={forceUpdateKey}
+                    request={activeRequest}
+                    onChange={handleBodyChange}
+                  />
+                ) : activeRequest.bodyType === BODY_TYPE_FORM_MULTIPART ? (
+                  <FormMultipartEditor
+                    forceUpdateKey={forceUpdateKey}
+                    request={activeRequest}
+                    onChange={handleBodyChange}
+                  />
+                ) : activeRequest.bodyType === BODY_TYPE_BINARY ? (
+                  <BinaryFileEditor
+                    requestId={activeRequest.id}
+                    contentType={contentType}
+                    body={activeRequest.body}
+                    onChange={(body) => patchModel(activeRequest, { body })}
+                    onChangeContentType={handleContentTypeChange}
+                  />
+                ) : typeof activeRequest.bodyType === 'string' ? (
+                  <Editor
+                    forceUpdateKey={forceUpdateKey}
+                    autocompleteFunctions
+                    autocompleteVariables
+                    language={languageFromContentType(contentType)}
+                    placeholder="..."
+                    heightMode={fullHeight ? 'full' : 'auto'}
+                    defaultValue={`${activeRequest.body?.text ?? ''}`}
+                    onChange={handleBodyTextChange}
+                    stateKey={`other.${activeRequest.id}`}
+                  />
+                ) : (
+                  <EmptyStateText>No Body</EmptyStateText>
+                )}
+              </ConfirmLargeRequestBody>
             </TabContent>
             <TabContent value={TAB_DESCRIPTION}>
               <div className="grid grid-rows-[auto_minmax(0,1fr)] h-full">
