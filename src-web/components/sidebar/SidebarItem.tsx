@@ -20,14 +20,12 @@ import { HttpMethodTag } from '../core/HttpMethodTag';
 import { HttpStatusTag } from '../core/HttpStatusTag';
 import { Icon } from '../core/Icon';
 import { LoadingIcon } from '../core/LoadingIcon';
+import type { DragItem} from './dnd';
+import { ItemTypes } from './dnd';
 import type { SidebarTreeNode } from './Sidebar';
 import { sidebarSelectedIdAtom } from './SidebarAtoms';
 import { SidebarItemContextMenu } from './SidebarItemContextMenu';
 import type { SidebarItemsProps } from './SidebarItems';
-
-enum ItemTypes {
-  REQUEST = 'request',
-}
 
 export type SidebarItemProps = {
   className?: string;
@@ -43,11 +41,6 @@ export type SidebarItemProps = {
   latestGrpcConnection: GrpcConnection | null;
   latestWebsocketConnection: WebsocketConnection | null;
 } & Pick<SidebarItemsProps, 'onSelect'>;
-
-type DragItem = {
-  id: string;
-  itemName: string;
-};
 
 export const SidebarItem = memo(function SidebarItem({
   itemName,
@@ -69,9 +62,10 @@ export const SidebarItem = memo(function SidebarItem({
 
   const [, connectDrop] = useDrop<DragItem, void>(
     {
-      accept: ItemTypes.REQUEST,
+      accept: [ItemTypes.REQUEST, ItemTypes.SIDEBAR],
       hover: (_, monitor) => {
         if (!ref.current) return;
+        if (!monitor.isOver()) return;
         const hoverBoundingRect = ref.current?.getBoundingClientRect();
         const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
         const clientOffset = monitor.getClientOffset();
