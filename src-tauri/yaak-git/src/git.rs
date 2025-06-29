@@ -265,7 +265,7 @@ pub fn git_status(dir: &Path) -> Result<GitStatusSummary> {
             None => None,
             Some(t) => match t.get_path(&Path::new(&rela_path)) {
                 Ok(entry) => {
-                    let obj = entry.to_object(&repo).unwrap();
+                    let obj = entry.to_object(&repo)?;
                     let content = obj.as_blob().unwrap().content();
                     let name = Path::new(entry.name().unwrap_or_default());
                     SyncModel::from_bytes(content.into(), name)?.map(|m| m.0)

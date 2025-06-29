@@ -232,6 +232,7 @@ export function Sidebar({ className }: Props) {
   const handleEnd = useCallback<SidebarItemProps['onEnd']>(
     async (itemId) => {
       setHoveredTree(null);
+      setDraggingId(null);
       handleClearSelected();
 
       if (hoveredTree == null || hoveredIndex == null) {
@@ -278,9 +279,8 @@ export function Sidebar({ className }: Props) {
         );
       } else {
         const sortPriority = afterPriority - (afterPriority - beforePriority) / 2;
-        return patchModelById(child.model, child.id, { sortPriority, folderId });
+        await patchModelById(child.model, child.id, { sortPriority, folderId });
       }
-      setDraggingId(null);
     },
     [handleClearSelected, hoveredTree, hoveredIndex, treeParentMap],
   );
