@@ -6,8 +6,11 @@ use thiserror::Error;
 pub enum Error {
     #[error("Yaml error: {0}")]
     YamlParseError(#[from] serde_yaml::Error),
+    
+    #[error("Sync parse error: {0}")]
+    ParseError(String),
 
-    #[error("Yaml error: {0}")]
+    #[error(transparent)]
     ModelError(#[from] yaak_models::error::Error),
 
     #[error("Unknown model: {0}")]
@@ -16,7 +19,7 @@ pub enum Error {
     #[error("I/o error: {0}")]
     IoError(#[from] io::Error),
 
-    #[error("Yaml error: {0}")]
+    #[error("JSON error: {0}")]
     JsonParseError(#[from] serde_json::Error),
 
     #[error("Invalid sync file: {0}")]

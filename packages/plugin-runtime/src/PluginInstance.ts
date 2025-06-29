@@ -1,30 +1,32 @@
-import { PluginWindowContext, TemplateFunctionArg } from '@yaakapp-internal/plugins';
-import type {
+import {
   BootRequest,
-  Context,
+  BootResponse,
   DeleteKeyValueResponse,
   FindHttpResponsesResponse,
   FormInput,
+  GetCookieValueRequest,
+  GetCookieValueResponse,
   GetHttpRequestByIdResponse,
   GetKeyValueResponse,
   HttpAuthenticationAction,
   HttpRequestAction,
   InternalEvent,
   InternalEventPayload,
-  JsonPrimitive,
-  PluginDefinition,
+  ListCookieNamesResponse,
+  PluginWindowContext,
   PromptTextResponse,
   RenderHttpRequestResponse,
   SendHttpRequestResponse,
   TemplateFunction,
+  TemplateFunctionArg,
   TemplateRenderResponse,
-} from '@yaakapp/api';
+} from '@yaakapp-internal/plugins';
+import { Context, PluginDefinition } from '@yaakapp/api';
+import { JsonValue } from '@yaakapp/api/lib/bindings/serde_json/JsonValue';
 import console from 'node:console';
 import { readFileSync, type Stats, statSync, watch } from 'node:fs';
 import path from 'node:path';
-// import util from 'node:util';
 import { EventChannel } from './EventChannel';
-// import { interceptStdout } from './interceptStdout';
 import { migrateTemplateFunctionSelectOptions } from './migrations';
 
 export interface PluginWorkerData {
@@ -51,21 +53,28 @@ export class PluginInstance {
 
     // Reload plugin if the JS or package.json changes
     const windowContextNone: PluginWindowContext = { type: 'none' };
+
+    this.#mod = {};
+    this.#pkg = JSON.parse(readFileSync(this.#pathPkg(), 'utf8'));
+
+    const bootResponse: BootResponse = {
+      name: this.#pkg.name ?? 'unknown',
+      version: this.#pkg.version ?? '0.0.1',
+    };
+
     const fileChangeCallback = async () => {
       this.#importModule();
-      return this.#sendPayload(windowContextNone, { type: 'reload_response' }, null);
+      return this.#sendPayload(
+        windowContextNone,
+        { type: 'reload_response', ...bootResponse },
+        null,
+      );
     };
 
     if (this.#workerData.bootRequest.watch) {
       watchFile(this.#pathMod(), fileChangeCallback);
       watchFile(this.#pathPkg(), fileChangeCallback);
     }
-
-    this.#mod = {};
-    this.#pkg = JSON.parse(readFileSync(this.#pathPkg(), 'utf8'));
-
-    // TODO: Re-implement this now that we're not using workers
-    // prefixStdout(`[plugin][${this.#pkg.name}] %s`);
 
     this.#importModule();
   }
@@ -281,15 +290,9 @@ export class PluginInstance {
         this.#importModule();
       }
     } catch (err) {
-      console.log('Plugin call threw exception', payload.type, err);
-      this.#sendPayload(
-        windowContext,
-        {
-          type: 'error_response',
-          error: `${err}`,
-        },
-        replyId,
-      );
+      const error = `${err}`.replace(/^Error:\s*/g, '');
+      console.log('Plugin call threw exception', payload.type, '→', error);
+      this.#sendPayload(windowContext, { type: 'error_response', error }, replyId);
       return;
     }
 
@@ -495,6 +498,27 @@ export class PluginInstance {
           return httpRequest;
         },
       },
+      cookies: {
+        getValue: async (args: GetCookieValueRequest) => {
+          const payload = {
+            type: 'get_cookie_value_request',
+            ...args,
+          } as const;
+          const { value } = await this.#sendAndWaitForReply<GetCookieValueResponse>(
+            event.windowContext,
+            payload,
+          );
+          return value;
+        },
+        listNames: async () => {
+          const payload = { type: 'list_cookie_names_request' } as const;
+          const { names } = await this.#sendAndWaitForReply<ListCookieNamesResponse>(
+            event.windowContext,
+            payload,
+          );
+          return names;
+        },
+      },
       templates: {
         /**
          * Invoke Yaak's template engine to render a value. If the value is a nested type
@@ -552,7 +576,7 @@ function genId(len = 5): string {
 /** Recursively apply form input defaults to a set of values */
 function applyFormInputDefaults(
   inputs: TemplateFunctionArg[],
-  values: { [p: string]: JsonPrimitive | undefined },
+  values: { [p: string]: JsonValue | undefined },
 ) {
   for (const input of inputs) {
     if ('inputs' in input) {

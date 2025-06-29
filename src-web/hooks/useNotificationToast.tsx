@@ -13,6 +13,7 @@ export function useNotificationToast() {
     id: string;
     timestamp: string;
     message: string;
+    timeout?: number | null;
     action?: null | {
       url: string;
       label: string;
@@ -23,7 +24,7 @@ export function useNotificationToast() {
     const actionLabel = payload.action?.label;
     showToast({
       id: payload.id,
-      timeout: null,
+      timeout: payload.timeout ?? undefined,
       message: payload.message,
       onClose: () => {
         markRead(payload.id)

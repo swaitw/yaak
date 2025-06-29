@@ -8,13 +8,15 @@ import {
   useEnsureActiveCookieJar,
   useSubscribeActiveCookieJarId,
 } from '../hooks/useActiveCookieJar';
-import { useSubscribeActiveEnvironmentId } from '../hooks/useActiveEnvironment';
+import {
+  activeEnvironmentAtom,
+  useSubscribeActiveEnvironmentId,
+} from '../hooks/useActiveEnvironment';
 import { activeRequestAtom } from '../hooks/useActiveRequest';
 import { useSubscribeActiveRequestId } from '../hooks/useActiveRequestId';
 import { activeWorkspaceAtom } from '../hooks/useActiveWorkspace';
 import { useFloatingSidebarHidden } from '../hooks/useFloatingSidebarHidden';
 import { useHotKey } from '../hooks/useHotKey';
-import { useImportData } from '../hooks/useImportData';
 import { useSubscribeRecentCookieJars } from '../hooks/useRecentCookieJars';
 import { useSubscribeRecentEnvironments } from '../hooks/useRecentEnvironments';
 import { useSubscribeRecentRequests } from '../hooks/useRecentRequests';
@@ -25,6 +27,7 @@ import { useSidebarWidth } from '../hooks/useSidebarWidth';
 import { useSyncWorkspaceRequestTitle } from '../hooks/useSyncWorkspaceRequestTitle';
 import { useToggleCommandPalette } from '../hooks/useToggleCommandPalette';
 import { duplicateRequestAndNavigate } from '../lib/duplicateRequestAndNavigate';
+import { importData } from '../lib/importData';
 import { jotaiStore } from '../lib/jotai';
 import { Banner } from './core/Banner';
 import { Button } from './core/Button';
@@ -32,6 +35,7 @@ import { HotKeyList } from './core/HotKeyList';
 import { FeedbackLink } from './core/Link';
 import { HStack } from './core/Stacks';
 import { CreateDropdown } from './CreateDropdown';
+import { ErrorBoundary } from './ErrorBoundary';
 import { GrpcConnectionLayout } from './GrpcConnectionLayout';
 import { HeaderSize } from './HeaderSize';
 import { HttpRequestLayout } from './HttpRequestLayout';
@@ -41,7 +45,6 @@ import { Sidebar } from './sidebar/Sidebar';
 import { SidebarActions } from './sidebar/SidebarActions';
 import { WebsocketRequestLayout } from './WebsocketRequestLayout';
 import { WorkspaceHeader } from './WorkspaceHeader';
-import { ErrorBoundary } from './ErrorBoundary';
 
 const side = { gridArea: 'side' };
 const head = { gridArea: 'head' };
@@ -56,6 +59,7 @@ export function Workspace() {
   const { setWidth, width, resetWidth } = useSidebarWidth();
   const [sidebarHidden, setSidebarHidden] = useSidebarHidden();
   const [floatingSidebarHidden, setFloatingSidebarHidden] = useFloatingSidebarHidden();
+  const activeEnvironment = useAtomValue(activeEnvironmentAtom);
   const floating = useShouldFloatSidebar();
   const [isResizing, setIsResizing] = useState<boolean>(false);
   const moveState = useRef<{ move: (e: MouseEvent) => void; up: (e: MouseEvent) => void } | null>(
@@ -117,6 +121,12 @@ export function Workspace() {
     [sideWidth, floating],
   );
 
+  const environmentBgStyle = useMemo(() => {
+    if (activeEnvironment?.color == null) return undefined;
+    const background = `linear-gradient(to right, ${activeEnvironment.color} 15%, transparent 40%)`;
+    return { background };
+  }, [activeEnvironment?.color]);
+
   // We're loading still
   if (workspaces.length === 0) {
     return null;
@@ -163,7 +173,7 @@ export function Workspace() {
             </ErrorBoundary>
           </div>
           <ResizeHandle
-            className="-translate-x-3"
+            className="-translate-x-0.5"
             justify="end"
             side="right"
             isResizing={isResizing}
@@ -175,9 +185,19 @@ export function Workspace() {
       <HeaderSize
         data-tauri-drag-region
         size="lg"
-        className="x-theme-appHeader bg-surface"
+        className="relative x-theme-appHeader bg-surface"
         style={head}
       >
+        <div className="absolute inset-0 pointer-events-none">
+          <div // Add subtle background
+            style={environmentBgStyle}
+            className="absolute inset-0 opacity-5"
+          />
+          <div // Add subtle border bottom
+            style={environmentBgStyle}
+            className="absolute left-0 right-0 bottom-0 h-[0.5px] opacity-20"
+          />
+        </div>
         <WorkspaceHeader className="pointer-events-none" />
       </HeaderSize>
       <ErrorBoundary name="Workspace Body">
@@ -190,16 +210,21 @@ export function Workspace() {
 function WorkspaceBody() {
   const activeRequest = useAtomValue(activeRequestAtom);
   const activeWorkspace = useAtomValue(activeWorkspaceAtom);
-  const importData = useImportData();
 
   if (activeWorkspace == null) {
     return (
-      <div className="m-auto">
+      <m.div
+        className="m-auto"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        // Delay the entering because the workspaces might load after a slight delay
+        transition={{ delay: 0.5 }}
+      >
         <Banner color="warning" className="max-w-[30rem]">
           The active workspace was not found. Select a workspace from the header menu or report this
           bug to <FeedbackLink />
         </Banner>
-      </div>
+      </m.div>
     );
   }
 

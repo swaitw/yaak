@@ -11,26 +11,26 @@ use crate::events::{
     GetHttpRequestActionsResponse, GetTemplateFunctionsResponse, ImportRequest, ImportResponse,
     InternalEvent, InternalEventPayload, JsonPrimitive, PluginWindowContext, RenderPurpose,
 };
+use crate::native_template_functions::template_function_secure;
 use crate::nodejs::start_nodejs_plugin_runtime;
 use crate::plugin_handle::PluginHandle;
 use crate::server_ws::PluginRuntimeServerWebsocket;
 use log::{error, info, warn};
 use std::collections::HashMap;
 use std::env;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Duration;
 use tauri::path::BaseDirectory;
-use tauri::{AppHandle, Manager, Runtime, WebviewWindow};
+use tauri::{AppHandle, Manager, Runtime, WebviewWindow, is_dev};
 use tokio::fs::read_dir;
 use tokio::net::TcpListener;
-use tokio::sync::{mpsc, Mutex};
-use tokio::time::{timeout, Instant};
+use tokio::sync::{Mutex, mpsc};
+use tokio::time::{Instant, timeout};
 use yaak_models::query_manager::QueryManagerExt;
 use yaak_models::util::generate_id;
 use yaak_templates::error::Error::RenderError;
 use yaak_templates::error::Result as TemplateResult;
-use crate::native_template_functions::template_function_secure;
 
 #[derive(Clone)]
 pub struct PluginManager {
@@ -38,12 +38,13 @@ pub struct PluginManager {
     plugins: Arc<Mutex<Vec<PluginHandle>>>,
     kill_tx: tokio::sync::watch::Sender<bool>,
     ws_service: Arc<PluginRuntimeServerWebsocket>,
+    vendored_plugin_dir: PathBuf,
+    pub(crate) installed_plugin_dir: PathBuf,
 }
 
 #[derive(Clone)]
 struct PluginCandidate {
     dir: String,
-    watch: bool,
 }
 
 impl PluginManager {
@@ -56,11 +57,24 @@ impl PluginManager {
         let ws_service =
             PluginRuntimeServerWebsocket::new(events_tx, client_disconnect_tx, client_connect_tx);
 
+        let vendored_plugin_dir = app_handle
+            .path()
+            .resolve("vendored/plugins", BaseDirectory::Resource)
+            .expect("failed to resolve plugin directory resource");
+
+        let installed_plugin_dir = app_handle
+            .path()
+            .app_data_dir()
+            .expect("failed to get app data dir")
+            .join("installed-plugins");
+
         let plugin_manager = PluginManager {
             plugins: Default::default(),
             subscribers: Default::default(),
             ws_service: Arc::new(ws_service.clone()),
             kill_tx: kill_server_tx,
+            vendored_plugin_dir,
+            installed_plugin_dir,
         };
 
         // Forward events to subscribers
@@ -135,14 +149,13 @@ impl PluginManager {
         &self,
         app_handle: &AppHandle<R>,
     ) -> Vec<PluginCandidate> {
-        let bundled_plugins_dir = &app_handle
-            .path()
-            .resolve("vendored/plugins", BaseDirectory::Resource)
-            .expect("failed to resolve plugin directory resource");
-
-        let plugins_dir = match env::var("YAAK_PLUGINS_DIR") {
-            Ok(d) => &PathBuf::from(d),
-            Err(_) => bundled_plugins_dir,
+        let plugins_dir = if is_dev() {
+            // Use plugins directly for easy development
+            env::current_dir()
+                .map(|cwd| cwd.join("../plugins").canonicalize().unwrap())
+                .unwrap_or_else(|_| self.vendored_plugin_dir.to_path_buf())
+        } else {
+            self.vendored_plugin_dir.to_path_buf()
         };
 
         info!("Loading bundled plugins from {plugins_dir:?}");
@@ -151,22 +164,14 @@ impl PluginManager {
             .await
             .expect(format!("Failed to read plugins dir: {:?}", plugins_dir).as_str())
             .iter()
-            .map(|d| {
-                let is_vendored = plugins_dir.starts_with(bundled_plugins_dir);
-                PluginCandidate {
-                    dir: d.into(),
-                    watch: !is_vendored,
-                }
-            })
+            .map(|d| PluginCandidate { dir: d.into() })
             .collect();
 
-        let plugins =
-            app_handle.db().list_plugins().unwrap_or_default();
+        let plugins = app_handle.db().list_plugins().unwrap_or_default();
         let installed_plugin_dirs: Vec<PluginCandidate> = plugins
             .iter()
             .map(|p| PluginCandidate {
                 dir: p.directory.to_owned(),
-                watch: true,
             })
             .collect();
 
@@ -200,7 +205,6 @@ impl PluginManager {
         &self,
         window_context: &PluginWindowContext,
         dir: &str,
-        watch: bool,
     ) -> Result<()> {
         info!("Adding plugin by dir {dir}");
         let maybe_tx = self.ws_service.app_to_plugin_events_tx.lock().await;
@@ -208,7 +212,10 @@ impl PluginManager {
             None => return Err(ClientNotInitializedErr),
             Some(tx) => tx,
         };
-        let plugin_handle = PluginHandle::new(dir, tx.clone());
+        let plugin_handle = PluginHandle::new(dir, tx.clone())?;
+        let dir_path = Path::new(dir);
+        let is_vendored = dir_path.starts_with(self.vendored_plugin_dir.as_path());
+        let is_installed = dir_path.starts_with(self.installed_plugin_dir.as_path());
 
         // Boot the plugin
         let event = timeout(
@@ -218,7 +225,7 @@ impl PluginManager {
                 &plugin_handle,
                 &InternalEventPayload::BootRequest(BootRequest {
                     dir: dir.to_string(),
-                    watch,
+                    watch: !is_vendored && !is_installed,
                 }),
             ),
         )
@@ -227,13 +234,10 @@ impl PluginManager {
         // Add the new plugin
         self.plugins.lock().await.push(plugin_handle.clone());
 
-        let resp = match event.payload {
+        let _ = match event.payload {
             InternalEventPayload::BootResponse(resp) => resp,
             _ => return Err(UnknownEventErr),
         };
-
-        // Set the boot response
-        plugin_handle.set_boot_response(&resp).await;
 
         Ok(())
     }
@@ -253,10 +257,7 @@ impl PluginManager {
                     continue;
                 }
             }
-            if let Err(e) = self
-                .add_plugin_by_dir(window_context, candidate.dir.as_str(), candidate.watch)
-                .await
-            {
+            if let Err(e) = self.add_plugin_by_dir(window_context, candidate.dir.as_str()).await {
                 warn!("Failed to add plugin {} {e:?}", candidate.dir);
             }
         }
@@ -316,7 +317,7 @@ impl PluginManager {
 
     pub async fn get_plugin_by_name(&self, name: &str) -> Option<PluginHandle> {
         for plugin in self.plugins.lock().await.iter().cloned() {
-            let info = plugin.info().await;
+            let info = plugin.info();
             if info.name == name {
                 return Some(plugin);
             }
@@ -527,6 +528,7 @@ impl PluginManager {
             InternalEventPayload::EmptyResponse(_) => {
                 Err(PluginErr("Auth plugin returned empty".to_string()))
             }
+            InternalEventPayload::ErrorResponse(e) => Err(PluginErr(e.error)),
             e => Err(PluginErr(format!("Auth plugin returned invalid event {:?}", e))),
         }
     }
@@ -537,7 +539,7 @@ impl PluginManager {
         auth_name: &str,
         action_index: i32,
         values: HashMap<String, JsonPrimitive>,
-        request_id: &str,
+        model_id: &str,
     ) -> Result<()> {
         let results = self.get_http_authentication_summaries(window).await?;
         let plugin = results
@@ -545,7 +547,7 @@ impl PluginManager {
             .find_map(|(p, r)| if r.name == auth_name { Some(p) } else { None })
             .ok_or(PluginNotFoundErr(auth_name.into()))?;
 
-        let context_id = format!("{:x}", md5::compute(request_id.to_string()));
+        let context_id = format!("{:x}", md5::compute(model_id.to_string()));
         self.send_to_plugin_and_wait(
             &PluginWindowContext::new(window),
             &plugin,
@@ -598,6 +600,7 @@ impl PluginManager {
             InternalEventPayload::EmptyResponse(_) => {
                 Err(PluginErr("Auth plugin returned empty".to_string()))
             }
+            InternalEventPayload::ErrorResponse(e) => Err(PluginErr(e.error)),
             e => Err(PluginErr(format!("Auth plugin returned invalid event {:?}", e))),
         }
     }
@@ -606,15 +609,12 @@ impl PluginManager {
         &self,
         window_context: &PluginWindowContext,
         fn_name: &str,
-        args: HashMap<String, String>,
+        values: HashMap<String, serde_json::Value>,
         purpose: RenderPurpose,
     ) -> TemplateResult<String> {
         let req = CallTemplateFunctionRequest {
             name: fn_name.to_string(),
-            args: CallTemplateFunctionArgs {
-                purpose,
-                values: args,
-            },
+            args: CallTemplateFunctionArgs { purpose, values },
         };
 
         let events = self

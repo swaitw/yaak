@@ -15,6 +15,9 @@ pub enum Error {
     #[error(transparent)]
     ModelError(#[from] yaak_models::error::Error),
 
+    #[error(transparent)]
+    CommonError(#[from] yaak_common::error::Error),
+
     #[error("Internal server error")]
     ServerError,
 }

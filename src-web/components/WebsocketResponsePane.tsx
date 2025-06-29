@@ -55,10 +55,9 @@ export function WebsocketResponsePane({ activeRequest }: Props) {
     if (hexDump) {
       return activeEvent?.message ? hexy(activeEvent?.message) : '';
     }
-    const text = activeEvent?.message
+    return activeEvent?.message
       ? new TextDecoder('utf-8').decode(Uint8Array.from(activeEvent.message))
       : '';
-    return text;
   }, [activeEvent?.message, hexDump]);
 
   const language = languageFromContentType(null, message);
@@ -152,7 +151,7 @@ export function WebsocketResponsePane({ activeRequest }: Props) {
                           title="Copy message"
                           icon="copy"
                           size="xs"
-                          onClick={() => copyToClipboard(formattedMessage.data ?? '')}
+                          onClick={() => copyToClipboard(formattedMessage ?? '')}
                         />
                       </HStack>
                     )}
@@ -183,7 +182,7 @@ export function WebsocketResponsePane({ activeRequest }: Props) {
                   ) : (
                     <Editor
                       language={language}
-                      defaultValue={formattedMessage.data ?? ''}
+                      defaultValue={formattedMessage ?? ''}
                       wrapLines={false}
                       readOnly={true}
                       stateKey={null}
