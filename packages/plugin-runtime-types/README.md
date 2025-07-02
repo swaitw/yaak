@@ -24,5 +24,5 @@ the [Quick Start Guide](https://feedback.yaak.app/help/articles/6911763-plugins-
 If you prefer starting from scratch, manually install the types package:
 
 ```shell
-npm install @yaakapp/api
+npm install -D @yaakapp/api
 ```

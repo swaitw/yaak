@@ -20,7 +20,7 @@ pub enum Error {
 
     #[error("Model error: {0}")]
     GenericError(String),
-    
+
     #[error("DB Migration Failed: {0}")]
     MigrationError(String),
 
@@ -29,9 +29,6 @@ pub enum Error {
 
     #[error("Multiple base environments for {0}. Delete duplicates before continuing.")]
     MultipleBaseEnvironments(String),
-
-    #[error("Database row not found: {0}")]
-    DBRowNotFound(String),
 
     #[error("unknown error")]
     Unknown,

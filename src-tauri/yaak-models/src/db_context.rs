@@ -1,5 +1,4 @@
 use crate::connection_or_tx::ConnectionOrTx;
-use crate::error::Error::DBRowNotFound;
 use crate::models::{AnyModel, UpsertModelInfo};
 use crate::util::{ModelChangeEvent, ModelPayload, UpdateSource};
 use log::error;
@@ -25,10 +24,13 @@ impl<'a> DbContext<'a> {
     where
         M: Into<AnyModel> + Clone + UpsertModelInfo,
     {
-        match self.find_optional::<M>(col, value) {
-            Some(v) => Ok(v),
-            None => Err(DBRowNotFound(format!("{:?}", M::table_name()))),
-        }
+        let (sql, params) = Query::select()
+            .from(M::table_name())
+            .column(Asterisk)
+            .cond_where(Expr::col(col).eq(value))
+            .build_rusqlite(SqliteQueryBuilder);
+        let mut stmt = self.conn.prepare(sql.as_str()).expect("Failed to prepare query");
+        Ok(stmt.query_row(&*params.as_params(), M::from_row)?)
     }
 
     pub(crate) fn find_optional<'s, M>(
