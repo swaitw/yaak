@@ -123,7 +123,7 @@ pub struct Settings {
 }
 
 impl UpsertModelInfo for Settings {
-    fn table_name() -> impl IntoTableRef + Debug {
+    fn table_name() -> impl IntoTableRef + IntoIden {
         SettingsIden::Table
     }
 
@@ -252,7 +252,7 @@ pub struct Workspace {
 }
 
 impl UpsertModelInfo for Workspace {
-    fn table_name() -> impl IntoTableRef + Debug {
+    fn table_name() -> impl IntoTableRef + IntoIden {
         WorkspaceIden::Table
     }
 
@@ -355,7 +355,7 @@ pub struct WorkspaceMeta {
 }
 
 impl UpsertModelInfo for WorkspaceMeta {
-    fn table_name() -> impl IntoTableRef + Debug {
+    fn table_name() -> impl IntoTableRef + IntoIden {
         WorkspaceMetaIden::Table
     }
 
@@ -456,7 +456,7 @@ pub struct CookieJar {
 }
 
 impl UpsertModelInfo for CookieJar {
-    fn table_name() -> impl IntoTableRef + Debug {
+    fn table_name() -> impl IntoTableRef + IntoIden {
         CookieJarIden::Table
     }
 
@@ -535,7 +535,7 @@ pub struct Environment {
 }
 
 impl UpsertModelInfo for Environment {
-    fn table_name() -> impl IntoTableRef + Debug {
+    fn table_name() -> impl IntoTableRef + IntoIden {
         EnvironmentIden::Table
     }
 
@@ -655,7 +655,7 @@ pub struct Folder {
 }
 
 impl UpsertModelInfo for Folder {
-    fn table_name() -> impl IntoTableRef + Debug {
+    fn table_name() -> impl IntoTableRef + IntoIden {
         FolderIden::Table
     }
 
@@ -786,7 +786,7 @@ pub struct HttpRequest {
 }
 
 impl UpsertModelInfo for HttpRequest {
-    fn table_name() -> impl IntoTableRef + Debug {
+    fn table_name() -> impl IntoTableRef + IntoIden {
         HttpRequestIden::Table
     }
 
@@ -913,7 +913,7 @@ pub struct WebsocketConnection {
 }
 
 impl UpsertModelInfo for WebsocketConnection {
-    fn table_name() -> impl IntoTableRef + Debug {
+    fn table_name() -> impl IntoTableRef + IntoIden {
         WebsocketConnectionIden::Table
     }
 
@@ -1027,7 +1027,7 @@ pub struct WebsocketRequest {
 }
 
 impl UpsertModelInfo for WebsocketRequest {
-    fn table_name() -> impl IntoTableRef + Debug {
+    fn table_name() -> impl IntoTableRef + IntoIden {
         WebsocketRequestIden::Table
     }
 
@@ -1152,7 +1152,7 @@ pub struct WebsocketEvent {
 }
 
 impl UpsertModelInfo for WebsocketEvent {
-    fn table_name() -> impl IntoTableRef + Debug {
+    fn table_name() -> impl IntoTableRef + IntoIden {
         WebsocketEventIden::Table
     }
 
@@ -1269,7 +1269,7 @@ pub struct HttpResponse {
 }
 
 impl UpsertModelInfo for HttpResponse {
-    fn table_name() -> impl IntoTableRef + Debug {
+    fn table_name() -> impl IntoTableRef + IntoIden {
         HttpResponseIden::Table
     }
 
@@ -1377,7 +1377,7 @@ pub struct GraphQlIntrospection {
 }
 
 impl UpsertModelInfo for GraphQlIntrospection {
-    fn table_name() -> impl IntoTableRef + Debug {
+    fn table_name() -> impl IntoTableRef + IntoIden {
         GraphQlIntrospectionIden::Table
     }
 
@@ -1461,7 +1461,7 @@ pub struct GrpcRequest {
 }
 
 impl UpsertModelInfo for GrpcRequest {
-    fn table_name() -> impl IntoTableRef + Debug {
+    fn table_name() -> impl IntoTableRef + IntoIden {
         GrpcRequestIden::Table
     }
 
@@ -1588,7 +1588,7 @@ pub struct GrpcConnection {
 }
 
 impl UpsertModelInfo for GrpcConnection {
-    fn table_name() -> impl IntoTableRef + Debug {
+    fn table_name() -> impl IntoTableRef + IntoIden {
         GrpcConnectionIden::Table
     }
 
@@ -1708,7 +1708,7 @@ pub struct GrpcEvent {
 }
 
 impl UpsertModelInfo for GrpcEvent {
-    fn table_name() -> impl IntoTableRef + Debug {
+    fn table_name() -> impl IntoTableRef + IntoIden {
         GrpcEventIden::Table
     }
 
@@ -1799,7 +1799,7 @@ pub struct Plugin {
 }
 
 impl UpsertModelInfo for Plugin {
-    fn table_name() -> impl IntoTableRef + Debug {
+    fn table_name() -> impl IntoTableRef + IntoIden {
         PluginIden::Table
     }
 
@@ -1881,7 +1881,7 @@ pub struct SyncState {
 }
 
 impl UpsertModelInfo for SyncState {
-    fn table_name() -> impl IntoTableRef + Debug {
+    fn table_name() -> impl IntoTableRef + IntoIden {
         SyncStateIden::Table
     }
 
@@ -1964,7 +1964,7 @@ pub struct KeyValue {
 }
 
 impl UpsertModelInfo for KeyValue {
-    fn table_name() -> impl IntoTableRef + Debug {
+    fn table_name() -> impl IntoTableRef + IntoIden {
         KeyValueIden::Table
     }
 
@@ -2181,7 +2181,7 @@ impl AnyModel {
 }
 
 pub trait UpsertModelInfo {
-    fn table_name() -> impl IntoTableRef + Debug;
+    fn table_name() -> impl IntoTableRef + IntoIden;
     fn id_column() -> impl IntoIden + Eq + Clone;
     fn generate_id() -> String;
     fn order_by() -> (impl IntoColumnRef, Order);

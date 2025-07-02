@@ -64,7 +64,7 @@ impl<'a> DbContext<'a> {
             return self.resolve_auth_for_folder(&folder);
         }
 
-        let workspace = self.get_workspace("invalid")?;
+        let workspace = self.get_workspace(&http_request.workspace_id)?;
         Ok(self.resolve_auth_for_workspace(&workspace))
     }
 
