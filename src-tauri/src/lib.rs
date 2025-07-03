@@ -1255,6 +1255,7 @@ pub fn run() {
             //
             // Migrated commands
             crate::commands::cmd_decrypt_template,
+            crate::commands::cmd_get_themes,
             crate::commands::cmd_secure_template,
             crate::commands::cmd_show_workspace_key,
         ])

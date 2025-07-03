@@ -33,7 +33,7 @@ listen<ModelPayload>('upserted_model', async (event) => {
 
 async function configureTheme() {
   const settings = await getSettings();
-  const theme = getResolvedTheme(
+  const theme = await getResolvedTheme(
     preferredAppearance,
     settings.appearance,
     settings.themeLight,
@@ -41,7 +41,7 @@ async function configureTheme() {
   );
   addThemeStylesToDocument(theme.active);
   setThemeOnDocument(theme.active);
-  if (theme.active.surface != null) {
-    setWindowTheme(theme.active.surface.hexNoAlpha());
+  if (theme.active.base.surface != null) {
+    setWindowTheme(theme.active.base.surface);
   }
 }

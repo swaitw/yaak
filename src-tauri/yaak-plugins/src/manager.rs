@@ -8,8 +8,9 @@ use crate::events::{
     CallTemplateFunctionArgs, CallTemplateFunctionRequest, CallTemplateFunctionResponse,
     EmptyPayload, FilterRequest, FilterResponse, GetHttpAuthenticationConfigRequest,
     GetHttpAuthenticationConfigResponse, GetHttpAuthenticationSummaryResponse,
-    GetHttpRequestActionsResponse, GetTemplateFunctionsResponse, ImportRequest, ImportResponse,
-    InternalEvent, InternalEventPayload, JsonPrimitive, PluginWindowContext, RenderPurpose,
+    GetHttpRequestActionsResponse, GetTemplateFunctionsResponse, GetThemesRequest,
+    GetThemesResponse, ImportRequest, ImportResponse, InternalEvent, InternalEventPayload,
+    JsonPrimitive, PluginWindowContext, RenderPurpose,
 };
 use crate::native_template_functions::template_function_secure;
 use crate::nodejs::start_nodejs_plugin_runtime;
@@ -402,6 +403,27 @@ impl PluginManager {
         self.unsubscribe(rx_id.as_str()).await;
 
         Ok(events)
+    }
+
+    pub async fn get_themes<R: Runtime>(
+        &self,
+        window: &WebviewWindow<R>,
+    ) -> Result<Vec<GetThemesResponse>> {
+        let reply_events = self
+            .send_and_wait(
+                &PluginWindowContext::new(window),
+                &InternalEventPayload::GetThemesRequest(GetThemesRequest {}),
+            )
+            .await?;
+
+        let mut themes = Vec::new();
+        for event in reply_events {
+            if let InternalEventPayload::GetThemesResponse(resp) = event.payload {
+                themes.push(resp.clone());
+            }
+        }
+
+        Ok(themes)
     }
 
     pub async fn get_http_request_actions<R: Runtime>(

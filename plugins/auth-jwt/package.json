@@ -1,5 +1,5 @@
 {
-  "name": "@yaakapp/auth-jwt",
+  "name": "@yaak/auth-jwt",
   "private": true,
   "version": "0.0.1",
   "scripts": {
