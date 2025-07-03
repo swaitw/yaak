@@ -27,7 +27,8 @@ configureTheme().then(
 
 // Listen for settings changes, the re-compute theme
 listen<ModelPayload>('upserted_model', async (event) => {
-  if (event.payload.model.model !== 'settings') return;
+  const model = event.payload.model.model;
+  if (model !== 'settings' && model !== 'plugin') return;
   await configureTheme();
 }).catch(console.error);
 
