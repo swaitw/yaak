@@ -12,7 +12,7 @@ export type { Context } from './Context';
  */
 export type PluginDefinition = {
   importer?: ImporterPlugin;
-  theme?: ThemePlugin;
+  themes?: ThemePlugin[];
   filter?: FilterPlugin;
   authentication?: AuthenticationPlugin;
   httpRequestActions?: HttpRequestActionPlugin[];

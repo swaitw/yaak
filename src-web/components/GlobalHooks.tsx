@@ -3,7 +3,6 @@ import type { InternalEvent } from '@yaakapp-internal/plugins';
 import type { ShowToastRequest } from '@yaakapp/api';
 import { useSubscribeActiveWorkspaceId } from '../hooks/useActiveWorkspace';
 import { useActiveWorkspaceChangedToast } from '../hooks/useActiveWorkspaceChangedToast';
-import { useGenerateThemeCss } from '../hooks/useGenerateThemeCss';
 import { useSubscribeHttpAuthentication } from '../hooks/useHttpAuthentication';
 import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { useNotificationToast } from '../hooks/useNotificationToast';
@@ -18,7 +17,6 @@ import { showToast } from '../lib/toast';
 export function GlobalHooks() {
   useSyncZoomSetting();
   useSyncFontSizeSetting();
-  useGenerateThemeCss();
 
   useSubscribeActiveWorkspaceId();
 

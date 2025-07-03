@@ -1,6 +1,0 @@
-node_modules/
-dist/
-.eslintrc.cjs
-.prettierrc.cjs
-src-web/postcss.config.cjs
-src-web/vite.config.ts

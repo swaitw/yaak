@@ -1,8 +1,3 @@
-import { Index } from "../themes";
-import { Context } from "./Context";
+import { Theme } from '../bindings/gen_events';
 
-export type ThemePlugin = {
-  name: string;
-  description?: string;
-  getTheme(ctx: Context, fileContents: string): Promise<Index>;
-};
+export type ThemePlugin = Theme;

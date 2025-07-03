@@ -9,6 +9,7 @@ import { getAnyModel, patchModelById } from '@yaakapp-internal/models';
 import classNames from 'classnames';
 import { useAtom, useAtomValue } from 'jotai';
 import React, { useCallback, useRef, useState } from 'react';
+import { useDrop } from 'react-dnd';
 import { useKey, useKeyPressEvent } from 'react-use';
 import { activeRequestIdAtom } from '../../hooks/useActiveRequestId';
 import { activeWorkspaceAtom } from '../../hooks/useActiveWorkspace';
@@ -22,6 +23,8 @@ import { router } from '../../lib/router';
 import { setWorkspaceSearchParams } from '../../lib/setWorkspaceSearchParams';
 import { ContextMenu } from '../core/Dropdown';
 import { GitDropdown } from '../GitDropdown';
+import type { DragItem } from './dnd';
+import { ItemTypes } from './dnd';
 import { sidebarSelectedIdAtom, sidebarTreeAtom } from './SidebarAtoms';
 import type { SidebarItemProps } from './SidebarItem';
 import { SidebarItems } from './SidebarItems';
@@ -204,15 +207,22 @@ export function Sidebar({ className }: Props) {
     [hasFocus, selectableRequests, selectedId, setSelectedId, setSelectedTree],
   );
 
+  const handleMoveToSidebarEnd = useCallback(() => {
+    setHoveredTree(tree);
+    // Put at the end of the top tree
+    setHoveredIndex(tree?.children?.length ?? 0);
+  }, [tree]);
+
   const handleMove = useCallback<SidebarItemProps['onMove']>(
-    async (id, side) => {
+    (id, side) => {
       let hoveredTree = treeParentMap[id] ?? null;
       const dragIndex = hoveredTree?.children.findIndex((n) => n.id === id) ?? -99;
       const hoveredItem = hoveredTree?.children[dragIndex] ?? null;
       let hoveredIndex = dragIndex + (side === 'above' ? 0 : 1);
 
-      const isHoveredItemCollapsed =
-        hoveredItem != null ? getSidebarCollapsedMap()[hoveredItem.id] : false;
+      const collapsedMap = getSidebarCollapsedMap();
+      const isHoveredItemCollapsed = hoveredItem != null ? collapsedMap[hoveredItem.id] : false;
+
       if (hoveredItem?.model === 'folder' && side === 'below' && !isHoveredItemCollapsed) {
         // Move into the folder if it's open and we're moving below it
         hoveredTree = hoveredTree?.children.find((n) => n.id === id) ?? null;
@@ -232,6 +242,7 @@ export function Sidebar({ className }: Props) {
   const handleEnd = useCallback<SidebarItemProps['onEnd']>(
     async (itemId) => {
       setHoveredTree(null);
+      setDraggingId(null);
       handleClearSelected();
 
       if (hoveredTree == null || hoveredIndex == null) {
@@ -278,9 +289,8 @@ export function Sidebar({ className }: Props) {
         );
       } else {
         const sortPriority = afterPriority - (afterPriority - beforePriority) / 2;
-        return patchModelById(child.model, child.id, { sortPriority, folderId });
+        await patchModelById(child.model, child.id, { sortPriority, folderId });
       }
-      setDraggingId(null);
     },
     [handleClearSelected, hoveredTree, hoveredIndex, treeParentMap],
   );
@@ -297,6 +307,20 @@ export function Sidebar({ className }: Props) {
   }, []);
 
   const mainContextMenuItems = useCreateDropdownItems({ folderId: null });
+
+  const [, connectDrop] = useDrop<DragItem, void>(
+    {
+      accept: ItemTypes.REQUEST,
+      hover: (_, monitor) => {
+        if (sidebarRef.current == null) return;
+        if (!monitor.isOver({ shallow: true })) return;
+        handleMoveToSidebarEnd();
+      },
+    },
+    [handleMoveToSidebarEnd],
+  );
+
+  connectDrop(sidebarRef);
 
   // Not ready to render yet
   if (tree == null) {

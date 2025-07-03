@@ -1,9 +1,12 @@
 use crate::error::Result;
-use tauri::{command, AppHandle, Manager, Runtime, WebviewWindow};
+use tauri::{command, AppHandle, Manager, Runtime, State, WebviewWindow};
 use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
 use yaak_crypto::manager::EncryptionManagerExt;
-use yaak_plugins::events::PluginWindowContext;
-use yaak_plugins::native_template_functions::{decrypt_secure_template_function, encrypt_secure_template_function};
+use yaak_plugins::events::{GetThemesResponse, PluginWindowContext};
+use yaak_plugins::manager::PluginManager;
+use yaak_plugins::native_template_functions::{
+    decrypt_secure_template_function, encrypt_secure_template_function,
+};
 
 #[command]
 pub(crate) async fn cmd_show_workspace_key<R: Runtime>(
@@ -37,4 +40,12 @@ pub(crate) async fn cmd_secure_template<R: Runtime>(
 ) -> Result<String> {
     let window_context = &PluginWindowContext::new(&window);
     Ok(encrypt_secure_template_function(&app_handle, window_context, template)?)
+}
+
+#[command]
+pub(crate) async fn cmd_get_themes<R: Runtime>(
+    window: WebviewWindow<R>,
+    plugin_manager: State<'_, PluginManager>,
+) -> Result<Vec<GetThemesResponse>> {
+    Ok(plugin_manager.get_themes(&window).await?)
 }

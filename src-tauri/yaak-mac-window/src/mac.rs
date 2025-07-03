@@ -1,4 +1,5 @@
-use hex_color::HexColor;
+#![allow(deprecated)]
+use csscolorparser::Color;
 use objc::{msg_send, sel, sel_impl};
 use tauri::{Emitter, Runtime, Window};
 
@@ -34,7 +35,7 @@ pub(crate) fn update_window_title<R: Runtime>(window: Window<R>, title: String) 
     }
 }
 
-pub(crate) fn update_window_theme<R: Runtime>(window: Window<R>, color: HexColor) {
+pub(crate) fn update_window_theme<R: Runtime>(window: Window<R>, color: Color) {
     use cocoa::appkit::{
         NSAppearance, NSAppearanceNameVibrantDark, NSAppearanceNameVibrantLight, NSWindow,
     };
@@ -65,12 +66,7 @@ pub(crate) fn update_window_theme<R: Runtime>(window: Window<R>, color: HexColor
     }
 }
 
-fn position_traffic_lights(
-    ns_window_handle: UnsafeWindowHandle,
-    x: f64,
-    y: f64,
-    label: String,
-) {
+fn position_traffic_lights(ns_window_handle: UnsafeWindowHandle, x: f64, y: f64, label: String) {
     if !label.starts_with(MAIN_WINDOW_PREFIX) {
         return;
     }

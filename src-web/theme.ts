@@ -27,13 +27,14 @@ configureTheme().then(
 
 // Listen for settings changes, the re-compute theme
 listen<ModelPayload>('upserted_model', async (event) => {
-  if (event.payload.model.model !== 'settings') return;
+  const model = event.payload.model.model;
+  if (model !== 'settings' && model !== 'plugin') return;
   await configureTheme();
 }).catch(console.error);
 
 async function configureTheme() {
   const settings = await getSettings();
-  const theme = getResolvedTheme(
+  const theme = await getResolvedTheme(
     preferredAppearance,
     settings.appearance,
     settings.themeLight,
@@ -41,7 +42,7 @@ async function configureTheme() {
   );
   addThemeStylesToDocument(theme.active);
   setThemeOnDocument(theme.active);
-  if (theme.active.surface != null) {
-    setWindowTheme(theme.active.surface.hexNoAlpha());
+  if (theme.active.base.surface != null) {
+    setWindowTheme(theme.active.base.surface);
   }
 }

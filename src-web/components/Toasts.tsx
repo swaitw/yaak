@@ -10,7 +10,7 @@ export type ToastInstance = {
   id: string;
   uniqueKey: string;
   message: ReactNode;
-  timeout: 3000 | 5000 | 8000 | null;
+  timeout: 3000 | 5000 | 8000 | (number & {}) | null;
   onClose?: ToastProps['onClose'];
 } & Omit<ToastProps, 'onClose' | 'open' | 'children' | 'timeout'>;
 
