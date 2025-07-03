@@ -1,5 +1,5 @@
 {
-  "name": "@yaakapp/auth-basic",
+  "name": "@yaak/auth-basic",
   "private": true,
   "version": "0.0.1",
   "scripts": {

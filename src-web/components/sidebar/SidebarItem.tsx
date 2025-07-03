@@ -220,7 +220,7 @@ export const SidebarItem = memo(function SidebarItem({
 
   return (
     <li ref={ref} draggable>
-      <div className={classNames(className, 'block relative group/item px-1.5 pb-0.5')}>
+      <div className={classNames(className, 'block relative group/item pl-2 pb-0.5')}>
         {showContextMenu && (
           <SidebarItemContextMenu
             child={child}

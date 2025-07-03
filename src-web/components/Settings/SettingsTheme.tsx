@@ -4,15 +4,13 @@ import React from 'react';
 import { activeWorkspaceAtom } from '../../hooks/useActiveWorkspace';
 import { useResolvedAppearance } from '../../hooks/useResolvedAppearance';
 import { useResolvedTheme } from '../../hooks/useResolvedTheme';
-import { getThemes } from '../../lib/theme/themes';
-import { isThemeDark } from '../../lib/theme/window';
 import type { ButtonProps } from '../core/Button';
 import { Editor } from '../core/Editor/Editor';
 import type { IconProps } from '../core/Icon';
 import { Icon } from '../core/Icon';
 import { IconButton } from '../core/IconButton';
-import { Select } from '../core/Select';
 import type { SelectProps } from '../core/Select';
+import { Select } from '../core/Select';
 import { HStack, VStack } from '../core/Stacks';
 
 const buttonColors: ButtonProps['color'][] = [
@@ -44,29 +42,27 @@ const icons: IconProps['icon'][] = [
   'send_horizontal',
 ];
 
-const { themes } = getThemes();
-
 export function SettingsTheme() {
   const workspace = useAtomValue(activeWorkspaceAtom);
   const settings = useAtomValue(settingsAtom);
   const appearance = useResolvedAppearance();
   const activeTheme = useResolvedTheme();
 
-  if (settings == null || workspace == null) {
+  if (settings == null || workspace == null || activeTheme.data == null) {
     return null;
   }
 
-  const lightThemes: SelectProps<string>['options'] = themes
-    .filter((theme) => !isThemeDark(theme))
+  const lightThemes: SelectProps<string>['options'] = activeTheme.data.themes
+    .filter((theme) => !theme.dark)
     .map((theme) => ({
-      label: theme.name,
+      label: theme.label,
       value: theme.id,
     }));
 
-  const darkThemes: SelectProps<string>['options'] = themes
-    .filter((theme) => isThemeDark(theme))
+  const darkThemes: SelectProps<string>['options'] = activeTheme.data.themes
+    .filter((theme) => theme.dark)
     .map((theme) => ({
-      label: theme.name,
+      label: theme.label,
       value: theme.id,
     }));
 
@@ -94,7 +90,7 @@ export function SettingsTheme() {
             label="Light Theme"
             size="sm"
             className="flex-1"
-            value={activeTheme.light.id}
+            value={activeTheme.data.light.id}
             options={lightThemes}
             onChange={(themeLight) => patchModel(settings, { themeLight })}
           />
@@ -107,7 +103,7 @@ export function SettingsTheme() {
             label="Dark Theme"
             leftSlot={<Icon icon="moon" color="secondary" />}
             size="sm"
-            value={activeTheme.dark.id}
+            value={activeTheme.data.dark.id}
             options={darkThemes}
             onChange={(themeDark) => patchModel(settings, { themeDark })}
           />
@@ -120,7 +116,7 @@ export function SettingsTheme() {
       >
         <HStack className="text" space={1.5}>
           <Icon icon={appearance === 'dark' ? 'moon' : 'sun'} />
-          <strong>{activeTheme.active.name}</strong>
+          <strong>{activeTheme.data.active.label}</strong>
           <em>(preview)</em>
         </HStack>
         <HStack space={1.5} className="w-full">

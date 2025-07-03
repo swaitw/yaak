@@ -1,5 +1,5 @@
 {
-  "name": "@yaakapp/importer-curl",
+  "name": "@yaak/importer-curl",
   "private": true,
   "version": "0.0.1",
   "scripts": {

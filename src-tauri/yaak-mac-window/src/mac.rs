@@ -1,5 +1,5 @@
 #![allow(deprecated)]
-use hex_color::HexColor;
+use csscolorparser::Color;
 use objc::{msg_send, sel, sel_impl};
 use tauri::{Emitter, Runtime, Window};
 
@@ -35,7 +35,7 @@ pub(crate) fn update_window_title<R: Runtime>(window: Window<R>, title: String) 
     }
 }
 
-pub(crate) fn update_window_theme<R: Runtime>(window: Window<R>, color: HexColor) {
+pub(crate) fn update_window_theme<R: Runtime>(window: Window<R>, color: Color) {
     use cocoa::appkit::{
         NSAppearance, NSAppearanceNameVibrantDark, NSAppearanceNameVibrantLight, NSWindow,
     };

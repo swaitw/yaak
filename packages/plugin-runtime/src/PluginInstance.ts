@@ -163,6 +163,15 @@ export class PluginInstance {
         return;
       }
 
+      if (payload.type === 'get_themes_request' && Array.isArray(this.#mod?.themes)) {
+        const replyPayload: InternalEventPayload = {
+          type: 'get_themes_response',
+          themes: this.#mod.themes,
+        };
+        this.#sendPayload(windowContext, replyPayload, replyId);
+        return;
+      }
+
       if (
         payload.type === 'get_template_functions_request' &&
         Array.isArray(this.#mod?.templateFunctions)

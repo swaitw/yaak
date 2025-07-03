@@ -1,4 +1,4 @@
-import { CallTemplateFunctionArgs, Context, PluginDefinition } from '@yaakapp/api';
+import type { CallTemplateFunctionArgs, Context, PluginDefinition } from '@yaakapp/api';
 import { v1, v3, v4, v5, v6, v7 } from 'uuid';
 
 export const plugin: PluginDefinition = {
