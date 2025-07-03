@@ -692,9 +692,9 @@ impl PluginManager {
         content_type: &str,
     ) -> Result<FilterResponse> {
         let plugin_name = if content_type.to_lowercase().contains("json") {
-            "@yaakapp/filter-jsonpath"
+            "@yaak/filter-jsonpath"
         } else {
-            "@yaakapp/filter-xpath"
+            "@yaak/filter-xpath"
         };
 
         let plugin = self
