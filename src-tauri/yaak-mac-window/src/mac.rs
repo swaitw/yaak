@@ -40,7 +40,7 @@ pub(crate) fn update_window_theme<R: Runtime>(window: Window<R>, color: Color) {
         NSAppearance, NSAppearanceNameVibrantDark, NSAppearanceNameVibrantLight, NSWindow,
     };
 
-    let brightness = (color.r as u64 + color.g as u64 + color.b as u64) / 3;
+    let brightness = (color.r as f64 + color.g as f64 + color.b as f64) / 3.0;
     let label = window.label().to_string();
 
     unsafe {
@@ -49,7 +49,7 @@ pub(crate) fn update_window_theme<R: Runtime>(window: Window<R>, color: Color) {
         let _ = window.run_on_main_thread(move || {
             let handle = window_handle;
 
-            let selected_appearance = if brightness >= 128 {
+            let selected_appearance = if brightness >= 0.5 {
                 NSAppearance(NSAppearanceNameVibrantLight)
             } else {
                 NSAppearance(NSAppearanceNameVibrantDark)

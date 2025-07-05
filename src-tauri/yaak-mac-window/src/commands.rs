@@ -1,4 +1,5 @@
-use tauri::{Runtime, Window, command};
+use log::warn;
+use tauri::{command, Runtime, Window};
 
 #[command]
 pub(crate) fn set_title<R: Runtime>(window: Window<R>, title: &str) {
@@ -23,7 +24,7 @@ pub(crate) fn set_theme<R: Runtime>(window: Window<R>, bg_color: &str) {
                 crate::mac::update_window_theme(window, color);
             }
             Err(err) => {
-                log::warn!("Failed to parse background color '{}': {}", bg_color, err)
+                warn!("Failed to parse background color '{}': {}", bg_color, err)
             }
         }
     }
