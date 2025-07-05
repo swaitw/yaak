@@ -1,7 +1,7 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashSet};
 use std::env::temp_dir;
 use std::ops::Deref;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
 use crate::client::AutoReflectionClient;
@@ -46,6 +46,9 @@ pub async fn fill_pool_from_files(
         desc_path.to_string_lossy().to_string(),
     ];
 
+    let mut include_dirs = HashSet::new();
+    let mut include_protos = HashSet::new();
+
     for p in paths {
         if !p.exists() {
             continue;
@@ -53,22 +56,37 @@ pub async fn fill_pool_from_files(
 
         // Dirs are added as includes
         if p.is_dir() {
-            args.push("-I".to_string());
-            args.push(p.to_string_lossy().to_string());
+            include_dirs.insert(p.to_string_lossy().to_string());
             continue;
         }
 
         let parent = p.as_path().parent();
         if let Some(parent_path) = parent {
-            args.push("-I".to_string());
-            args.push(parent_path.to_string_lossy().to_string());
-            args.push("-I".to_string());
-            args.push(parent_path.parent().unwrap().to_string_lossy().to_string());
+            match find_parent_proto_dir(parent_path) {
+                None => {
+                    // Add parent/grandparent as fallback
+                    include_dirs.insert(parent_path.to_string_lossy().to_string());
+                    if let Some(grandparent_path) = parent_path.parent() {
+                        include_dirs.insert(grandparent_path.to_string_lossy().to_string());
+                    }
+                }
+                Some(p) => {
+                    include_dirs.insert(p.to_string_lossy().to_string());
+                }
+            };
         } else {
             debug!("ignoring {:?} since it does not exist.", parent)
         }
 
-        args.push(p.to_string_lossy().to_string());
+        include_protos.insert(p.to_string_lossy().to_string());
+    }
+
+    for d in include_dirs.clone() {
+        args.push("-I".to_string());
+        args.push(d);
+    }
+    for p in include_protos.clone() {
+        args.push(p);
     }
 
     let out = app_handle
@@ -370,5 +388,24 @@ mod topology {
             }
             assert_eq!(iter.next(), None);
         }
+    }
+}
+
+fn find_parent_proto_dir(start_path: impl AsRef<Path>) -> Option<PathBuf> {
+    let mut dir = start_path.as_ref().canonicalize().ok()?;
+
+    loop {
+        if let Some(name) = dir.file_name().and_then(|n| n.to_str()) {
+            if name == "proto" {
+                return Some(dir);
+            }
+        }
+
+        let parent = dir.parent()?;
+        if parent == dir {
+            return None; // Reached root
+        }
+
+        dir = parent.to_path_buf();
     }
 }
