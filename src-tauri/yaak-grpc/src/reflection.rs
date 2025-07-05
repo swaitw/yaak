@@ -89,7 +89,7 @@ pub async fn fill_pool_from_files(
         args.push(p);
     }
 
-    info!("Invoking protoc with {}", args.join("\n  "));
+    info!("Invoking protoc with {}", args.join(" "));
 
     let out = app_handle
         .shell()
