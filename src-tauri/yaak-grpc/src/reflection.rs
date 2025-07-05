@@ -7,7 +7,7 @@ use std::str::FromStr;
 use crate::client::AutoReflectionClient;
 use anyhow::anyhow;
 use async_recursion::async_recursion;
-use log::{debug, warn};
+use log::{debug, info, warn};
 use prost::Message;
 use prost_reflect::{DescriptorPool, MethodDescriptor};
 use prost_types::{FileDescriptorProto, FileDescriptorSet};
@@ -88,6 +88,8 @@ pub async fn fill_pool_from_files(
     for p in include_protos.clone() {
         args.push(p);
     }
+
+    info!("Invoking protoc with {}", args.join("\n  "));
 
     let out = app_handle
         .shell()
