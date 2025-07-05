@@ -1,4 +1,3 @@
-use log::warn;
 use tauri::{command, Runtime, Window};
 
 #[command]
@@ -19,6 +18,7 @@ pub(crate) fn set_title<R: Runtime>(window: Window<R>, title: &str) {
 pub(crate) fn set_theme<R: Runtime>(window: Window<R>, bg_color: &str) {
     #[cfg(target_os = "macos")]
     {
+        use log::warn;
         match csscolorparser::parse(bg_color.trim()) {
             Ok(color) => {
                 crate::mac::update_window_theme(window, color);
