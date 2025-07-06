@@ -1,10 +1,12 @@
 {
   "name": "@yaak/auth-basic",
+  "displayName": "Basic Authentication",
+  "description": "Authenticate requests using Basic Auth",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.1.0",
   "scripts": {
     "build": "yaakcli build ./src/index.ts",
-    "dev": "yaakcli dev ./src/index.js",
+    "dev": "yaakcli dev",
     "lint": "tsc --noEmit"
   }
 }

@@ -81,7 +81,7 @@ mkdirSync(dstDir, { recursive: true });
 
 function tryExecSync(cmd) {
   try {
-    return execSync(cmd).toString('utf-8');
+    return execSync(cmd, { stdio: 'inherit' }).toString('utf-8');
   } catch (_) {
     return '';
   }

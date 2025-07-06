@@ -1,10 +1,12 @@
 {
   "name": "@yaak/importer-curl",
+  "displayName": "cURL Importer",
+  "description": "Import requests from cURL commands",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.1.0",
   "scripts": {
-    "build": "yaakcli build ./src/index.js",
-    "dev": "yaakcli dev ./src/index.js",
+    "build": "yaakcli build",
+    "dev": "yaakcli dev",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
