@@ -15,8 +15,10 @@ import {
 } from 'graphql';
 import { useAtomValue } from 'jotai';
 import { ReactNode, useState } from 'react';
-import { graphqlSchemaAtom } from '../atoms/graphqlSchemaAtom';
+import { graphqlDocStateAtom, graphqlSchemaAtom } from '../atoms/graphqlSchemaAtom';
+import { jotaiStore } from '../lib/jotai';
 import { Icon } from './core/Icon';
+import { IconButton } from './core/IconButton';
 import { Markdown } from './Markdown';
 
 type ExplorerItem =
@@ -43,7 +45,16 @@ export function GraphQLDocsExplorer() {
   const allTypes = graphqlSchema.getTypeMap();
 
   return (
-    <div>
+    <div className="relative w-full">
+      <IconButton
+        icon="x"
+        size="sm"
+        className="!absolute right-2 top-0"
+        title="Close documenation explorer"
+        onClick={() => {
+          jotaiStore.set(graphqlDocStateAtom, false);
+        }}
+      />
       {activeItem == null ? (
         <div className="flex flex-col gap-3 overflow-auto h-full">
           <Heading>Root Types</Heading>
@@ -72,6 +83,7 @@ export function GraphQLDocsExplorer() {
               const t = allTypes[typeName]!;
               return (
                 <GqlTypeLink
+                  key={t.name}
                   color="notice"
                   item={{ kind: 'type', type: t, from: null }}
                   setItem={setActiveItem}
