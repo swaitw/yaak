@@ -17,6 +17,7 @@ import { useAtomValue } from 'jotai';
 import { ReactNode, useState } from 'react';
 import { graphqlDocStateAtom, graphqlSchemaAtom } from '../atoms/graphqlSchemaAtom';
 import { jotaiStore } from '../lib/jotai';
+import { CountBadge } from './core/CountBadge';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { Markdown } from './Markdown';
@@ -76,7 +77,9 @@ export function GraphQLDocsExplorer() {
             setItem={setActiveItem}
             className="!my-0"
           />
-          <Subheading>All Schema Types</Subheading>
+          <Subheading>
+            All Schema Types <CountBadge count={Object.keys(allTypes).length} />
+          </Subheading>
           <Markdown>{graphqlSchema.description ?? null}</Markdown>
           <div className="flex flex-col gap-1">
             {Object.keys(allTypes).map((typeName) => {
@@ -144,6 +147,11 @@ function GqlTypeInfo({
 
   if (isScalarType(item.type)) {
     return heading;
+  } else if (isNonNullType(item.type) || isListType(item.type)) {
+    // kinda a hack, but we'll just unwrap there and show the named type
+    return (
+      <GqlTypeInfo item={{ ...item, kind: 'type', type: item.type.ofType }} setItem={setItem} />
+    );
   } else if (isInterfaceType(item.type)) {
     const fields = item.type.getFields();
     const possibleTypes = graphqlSchema?.getPossibleTypes(item.type) ?? [];
@@ -152,7 +160,9 @@ function GqlTypeInfo({
       <div>
         {heading}
 
-        <Subheading>Fields</Subheading>
+        <Subheading>
+          Fields <CountBadge count={Object.keys(fields).length} />
+        </Subheading>
         {Object.keys(fields).map((fieldName) => {
           const field = fields[fieldName]!;
           const fieldItem: ExplorerItem = { kind: 'field', type: field, from: item };
@@ -249,7 +259,9 @@ function GqlTypeInfo({
       <div>
         {heading}
 
-        <Subheading>Fields</Subheading>
+        <Subheading>
+          Fields <CountBadge count={Object.keys(fields).length} />
+        </Subheading>
         {Object.keys(fields).map((fieldName) => {
           const field = fields[fieldName];
           if (field == null) return null;
@@ -276,7 +288,9 @@ function GqlTypeInfo({
       <div>
         {heading}
 
-        <Subheading>Fields</Subheading>
+        <Subheading>
+          Fields <CountBadge count={Object.keys(fields).length} />
+        </Subheading>
         {Object.keys(fields).map((fieldName) => {
           const field = fields[fieldName];
           if (field == null) return null;
@@ -299,12 +313,27 @@ function GqlTypeInfo({
     );
   } else if (item.kind === 'type' && isObjectType(item.type)) {
     const fields = item.type.getFields();
+    const interfaces = item.type.getInterfaces();
 
     return (
       <div>
         {heading}
+        {interfaces.length > 0 && (
+          <>
+            <Subheading>Implements</Subheading>
+            {interfaces.map((i) => (
+              <GqlTypeRow
+                key={i.name}
+                item={{ kind: 'type', type: i, from: item }}
+                setItem={setItem}
+              />
+            ))}
+          </>
+        )}
 
-        <Subheading>Fields</Subheading>
+        <Subheading>
+          Fields <CountBadge count={Object.keys(fields).length} />
+        </Subheading>
         {Object.keys(fields).map((fieldName) => {
           const field = fields[fieldName];
           if (field == null) return null;
@@ -415,7 +444,7 @@ function GqlTypeRow({
     child = (
       <>
         <div>
-          {name && <span className={name.color}>{name.value}:</span>}{' '}
+          {name && <span className="text-primary">{name.value}:</span>}{' '}
           <GqlTypeLink color="notice" item={item} setItem={setItem} />
         </div>
         <Markdown className="!text-text-subtle">{item.type.description ?? null}</Markdown>
@@ -492,9 +521,9 @@ function GqlTypeLabel({ item, children }: { item: ExplorerItem; children?: strin
 }
 
 function Subheading({ children }: { children: ReactNode }) {
-  return <h2 className="font-bold text-lg mt-6">{children}</h2>;
+  return <h2 className="font-bold text-lg mt-6 flex items-center">{children}</h2>;
 }
 
 function Heading({ children }: { children: ReactNode }) {
-  return <h1 className="font-bold text-2xl">{children}</h1>;
+  return <h1 className="font-bold text-2xl flex items-center">{children}</h1>;
 }
