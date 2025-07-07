@@ -32,6 +32,7 @@ const icons = {
   check_square_unchecked: lucide.SquareIcon,
   chevron_down: lucide.ChevronDownIcon,
   chevron_right: lucide.ChevronRightIcon,
+  chevron_left: lucide.ChevronLeftIcon,
   circle_alert: lucide.CircleAlertIcon,
   circle_fading_arrow_up: lucide.CircleFadingArrowUpIcon,
   clock: lucide.ClockIcon,

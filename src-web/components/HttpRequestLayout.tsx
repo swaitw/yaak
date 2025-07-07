@@ -2,13 +2,11 @@ import type { CSSProperties } from 'react';
 import React from 'react';
 import type { HttpRequest } from '@yaakapp-internal/models';
 import { SplitLayout } from './core/SplitLayout';
+import { GraphQLDocsExplorer } from './GraphQLDocsExplorer';
 import { HttpRequestPane } from './HttpRequestPane';
 import { HttpResponsePane } from './HttpResponsePane';
-import { GraphQLDocsExplorer } from "./GraphQLDocsExplorer";
-import {
-	useAtomValue
-} from 'jotai';
-import { graphqlDocStateAtom } from "../atoms/graphqlSchemaAtom";
+import { useAtomValue } from 'jotai';
+import { graphqlDocStateAtom } from '../atoms/graphqlSchemaAtom';
 
 interface Props {
   activeRequest: HttpRequest;
@@ -16,9 +14,7 @@ interface Props {
 }
 
 export function HttpRequestLayout({ activeRequest, style }: Props) {
-    const {
-        bodyType,
-    } = activeRequest;
+  const { bodyType } = activeRequest;
   const isDocOpen = useAtomValue(graphqlDocStateAtom);
 
   return (
@@ -34,23 +30,19 @@ export function HttpRequestLayout({ activeRequest, style }: Props) {
         />
       )}
       secondSlot={
-            bodyType === 'graphql' && isDocOpen
-            ? () => (
-                    <SplitLayout
-                        name="http_response_layout"
-                        className="gap-1.5"
-                        firstSlot={
-                            ({ style }) => <HttpResponsePane activeRequestId={activeRequest.id} style={style} />
-                        }
-                        secondSlot={
-                            () => <GraphQLDocsExplorer />
-                        }
-                    />
-                )
-            : (
-                ({ style }) => <HttpResponsePane activeRequestId={activeRequest.id} style={style} />
+        bodyType === 'graphql' && isDocOpen
+          ? () => (
+              <SplitLayout
+                name="http_response_layout"
+                className="gap-1.5"
+                firstSlot={({ style }) => (
+                  <HttpResponsePane activeRequestId={activeRequest.id} style={style} />
+                )}
+                secondSlot={() => <GraphQLDocsExplorer key={activeRequest.id} />}
+              />
             )
-        }
+          : ({ style }) => <HttpResponsePane activeRequestId={activeRequest.id} style={style} />
+      }
     />
   );
 }

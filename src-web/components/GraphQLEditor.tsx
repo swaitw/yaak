@@ -16,8 +16,8 @@ import { Editor } from './core/Editor/Editor';
 import { FormattedError } from './core/FormattedError';
 import { Icon } from './core/Icon';
 import { Separator } from './core/Separator';
-import { useAtom } from "jotai";
-import { graphqlDocStateAtom, graphqlSchemaAtom } from "../atoms/graphqlSchemaAtom";
+import { useAtom } from 'jotai';
+import { graphqlDocStateAtom, graphqlSchemaAtom } from '../atoms/graphqlSchemaAtom';
 
 type Props = Pick<EditorProps, 'heightMode' | 'className' | 'forceUpdateKey'> & {
   baseRequest: HttpRequest;
@@ -71,25 +71,7 @@ export function GraphQLEditor({ request, onChange, baseRequest, ...extraEditorPr
 
   const actions = useMemo<EditorProps['actions']>(
     () => [
-      <div
-        key="actions"
-        className="flex flex-row !opacity-100 !shadow"
-      >
-        <div>
-          { schema === undefined ? null /* Initializing */ : (
-            <Button
-              onClick={() => setGraphqlDocStateAtomValue(!isDocOpen)}
-              size="sm"
-              variant="border"
-              title="Open Documentation"
-              className="me-1"
-            >
-              <Icon
-                icon="book_open_text"
-              />
-            </Button>
-          ) }
-        </div>
+      <div key="actions" className="flex flex-row !opacity-100 !shadow">
         <div key="introspection" className="!opacity-100">
           {schema === undefined ? null /* Initializing */ : (
             <Dropdown
@@ -136,7 +118,14 @@ export function GraphQLEditor({ request, onChange, baseRequest, ...extraEditorPr
                   type: 'content',
                 },
                 {
-                  label: 'Refetch',
+                  label: `${isDocOpen ? 'Hide' : 'Show'} Documentation`,
+                  leftSlot: <Icon icon="book_open_text" />,
+                  onSelect: () => {
+                    setGraphqlDocStateAtomValue(!isDocOpen);
+                  },
+                },
+                {
+                  label: 'Introspect Schema',
                   leftSlot: <Icon icon="refresh" />,
                   onSelect: refetch,
                 },
@@ -193,7 +182,7 @@ export function GraphQLEditor({ request, onChange, baseRequest, ...extraEditorPr
       schema,
       setAutoIntrospectDisabled,
       isDocOpen,
-      setGraphqlDocStateAtomValue
+      setGraphqlDocStateAtomValue,
     ],
   );
 
