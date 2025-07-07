@@ -4,14 +4,14 @@ import classNames from 'classnames';
 import type { GraphQLField, GraphQLInputField, GraphQLType } from 'graphql';
 import {
   getNamedType,
+  isEnumType,
   isInputObjectType,
+  isInterfaceType,
   isListType,
   isNonNullType,
   isObjectType,
   isScalarType,
-  isEnumType,
   isUnionType,
-  isInterfaceType,
 } from 'graphql';
 import { useAtomValue } from 'jotai';
 import { ReactNode, useState } from 'react';
@@ -45,27 +45,40 @@ export function GraphQLDocsExplorer() {
   return (
     <div>
       {activeItem == null ? (
-        <div className="flex flex-col gap-3">
-          <Subheading>Root Types</Subheading>
-          <GqlTypeRow name="query" item={qryItem} setItem={setActiveItem} className="!my-0" />
-          <GqlTypeRow name="mutation" item={mutItem} setItem={setActiveItem} className="!my-0" />
+        <div className="flex flex-col gap-3 overflow-auto h-full">
+          <Heading>Root Types</Heading>
           <GqlTypeRow
-            name="subscription"
+            name={{ value: 'query', color: 'primary' }}
+            item={qryItem}
+            setItem={setActiveItem}
+            className="!my-0"
+          />
+          <GqlTypeRow
+            name={{ value: 'mutation', color: 'primary' }}
+            item={mutItem}
+            setItem={setActiveItem}
+            className="!my-0"
+          />
+          <GqlTypeRow
+            name={{ value: 'subscription', color: 'primary' }}
             item={subItem}
             setItem={setActiveItem}
             className="!my-0"
           />
           <Subheading>All Schema Types</Subheading>
-          {Object.keys(allTypes).map((typeName) => {
-            const t = allTypes[typeName]!;
-            return (
-              <GqlTypeLink
-                color="notice"
-                item={{ kind: 'type', type: t, from: null }}
-                setItem={setActiveItem}
-              />
-            );
-          })}
+          <Markdown>{graphqlSchema.description ?? null}</Markdown>
+          <div className="flex flex-col gap-1">
+            {Object.keys(allTypes).map((typeName) => {
+              const t = allTypes[typeName]!;
+              return (
+                <GqlTypeLink
+                  color="notice"
+                  item={{ kind: 'type', type: t, from: null }}
+                  setItem={setActiveItem}
+                />
+              );
+            })}
+          </div>
         </div>
       ) : (
         <div className="h-full grid grid-rows-[auto_minmax(0,1fr)] gap-y-3">
@@ -113,7 +126,7 @@ function GqlTypeInfo({
   const heading = (
     <div className="mb-3">
       <h1 className="text-2xl font-semibold">{name}</h1>
-      <Markdown className="!text-text-subtle italic">{description ?? 'No description'}</Markdown>
+      <Markdown className="!text-text-subtle italic">{description || 'No description'}</Markdown>
     </div>
   );
 
@@ -133,7 +146,11 @@ function GqlTypeInfo({
           const fieldItem: ExplorerItem = { kind: 'field', type: field, from: item };
           return (
             <div key={`${field.type}::${field.name}`} className="my-4">
-              <GqlTypeRow item={fieldItem} setItem={setItem} name={fieldName} />
+              <GqlTypeRow
+                item={fieldItem}
+                setItem={setItem}
+                name={{ value: fieldName, color: 'primary' }}
+              />
             </div>
           );
         })}
@@ -182,7 +199,7 @@ function GqlTypeInfo({
           {values.map((v) => (
             <div key={v.name} className="my-4">
               <span className="text-primary">{v.value}</span>
-              <Markdown className="!text-text-subtle">{v.description ?? ''}</Markdown>
+              <Markdown className="!text-text-subtle">{v.description ?? null}</Markdown>
             </div>
           ))}
         </div>
@@ -204,7 +221,7 @@ function GqlTypeInfo({
             {item.type.args.map((a) => (
               <div key={a.type + '::' + a.name} className="my-4">
                 <GqlTypeRow
-                  name={a.name}
+                  name={{ value: a.name, color: 'info' }}
                   item={{ kind: 'input_field', type: a, from: item }}
                   setItem={setItem}
                 />
@@ -231,7 +248,11 @@ function GqlTypeInfo({
           };
           return (
             <div key={`${field.type}::${field.name}`} className="my-4">
-              <GqlTypeRow item={fieldItem} setItem={setItem} name={fieldName} />
+              <GqlTypeRow
+                item={fieldItem}
+                setItem={setItem}
+                name={{ value: fieldName, color: 'primary' }}
+              />
             </div>
           );
         })}
@@ -254,7 +275,11 @@ function GqlTypeInfo({
           };
           return (
             <div key={`${field.type}::${field.name}`} className="my-4">
-              <GqlTypeRow item={fieldItem} setItem={setItem} name={fieldName} />
+              <GqlTypeRow
+                item={fieldItem}
+                setItem={setItem}
+                name={{ value: fieldName, color: 'primary' }}
+              />
             </div>
           );
         })}
@@ -274,7 +299,11 @@ function GqlTypeInfo({
           const fieldItem: ExplorerItem = { kind: 'field', type: field, from: item };
           return (
             <div key={`${field.type}::${field.name}`} className="my-4">
-              <GqlTypeRow item={fieldItem} setItem={setItem} name={fieldName} />
+              <GqlTypeRow
+                item={fieldItem}
+                setItem={setItem}
+                name={{ value: fieldName, color: 'primary' }}
+              />
             </div>
           );
         })}
@@ -295,7 +324,7 @@ function GqlTypeRow({
   hideDescription,
 }: {
   item: ExplorerItem;
-  name?: string;
+  name?: { value: string; color: Color };
   description?: string | null;
   setItem: (t: ExplorerItem) => void;
   className?: string;
@@ -309,12 +338,26 @@ function GqlTypeRow({
     child = (
       <>
         <div>
-          {name && <span className="text-primary">{name}:</span>}{' '}
+          {name && (
+            <span
+              className={classNames(
+                name?.color === 'danger' && 'text-danger',
+                name?.color === 'primary' && 'text-primary',
+                name?.color === 'success' && 'text-success',
+                name?.color === 'warning' && 'text-warning',
+                name?.color === 'notice' && 'text-notice',
+                name?.color === 'info' && 'text-info',
+              )}
+            >
+              {name.value}:
+            </span>
+          )}{' '}
           <GqlTypeLink color="notice" item={item} setItem={setItem} />
         </div>
         {!hideDescription && (
           <Markdown className="!text-text-subtle">
-            {(description === undefined ? getNamedType(item.type).description : description) ?? ''}
+            {(description === undefined ? getNamedType(item.type).description : description) ??
+              null}
           </Markdown>
         )}
       </>
@@ -329,7 +372,7 @@ function GqlTypeRow({
       <div>
         <div>
           <GqlTypeLink color="info" item={item} setItem={setItem}>
-            {name}
+            {name?.value}
           </GqlTypeLink>
           {item.type.args.length > 0 && (
             <>
@@ -353,21 +396,17 @@ function GqlTypeRow({
           <span className="text-text-subtle">:</span>{' '}
           <GqlTypeLink color="notice" item={returnItem} setItem={setItem} />
         </div>
-        {item.type.description && (
-          <Markdown className="!text-text-subtle mt-0.5">{item.type.description}</Markdown>
-        )}
+        <Markdown className="!text-text-subtle mt-0.5">{item.type.description ?? null}</Markdown>
       </div>
     );
   } else if (item.kind === 'input_field') {
     child = (
       <>
         <div>
-          {name && <span className="text-primary">{name}:</span>}{' '}
+          {name && <span className={name.color}>{name.value}:</span>}{' '}
           <GqlTypeLink color="notice" item={item} setItem={setItem} />
         </div>
-        {item.type.description && (
-          <Markdown className="!text-text-subtle">{item.type.description}</Markdown>
-        )}
+        <Markdown className="!text-text-subtle">{item.type.description ?? null}</Markdown>
       </>
     );
   }
@@ -442,4 +481,8 @@ function GqlTypeLabel({ item, children }: { item: ExplorerItem; children?: strin
 
 function Subheading({ children }: { children: ReactNode }) {
   return <h2 className="font-bold text-lg mt-6">{children}</h2>;
+}
+
+function Heading({ children }: { children: ReactNode }) {
+  return <h1 className="font-bold text-2xl">{children}</h1>;
 }

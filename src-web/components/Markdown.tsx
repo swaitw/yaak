@@ -3,7 +3,14 @@ import remarkGfm from 'remark-gfm';
 import { ErrorBoundary } from './ErrorBoundary';
 import { Prose } from './Prose';
 
-export function Markdown({ children, className }: { children: string; className?: string }) {
+interface Props {
+  children: string | null;
+  className?: string;
+}
+
+export function Markdown({ children, className }: Props) {
+  if (children == null) return null;
+
   return (
     <Prose className={className}>
       <ErrorBoundary name="Markdown">
