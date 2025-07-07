@@ -9,7 +9,6 @@ console.log('Copying Yaak plugins to', pluginsDir);
 for (const name of readdirSync(pluginsDir)) {
   const dir = path.join(pluginsDir, name);
   if (name.startsWith('.')) continue;
-  console.log('Building plugin', dir);
   execSync('npm run build', { cwd: dir });
   const destDir = path.join(__dirname, '../src-tauri/vendored/plugins/', name);
   console.log(`Copying ${name} to ${destDir}`);
