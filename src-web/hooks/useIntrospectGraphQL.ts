@@ -125,3 +125,8 @@ export function useIntrospectGraphQL(
 
   return { schema, isLoading, error, refetch, clear };
 }
+
+export function useCurrentGraphQLSchema(request: HttpRequest) {
+  const { schema } = useIntrospectGraphQL(request, { disabled: true });
+  return schema;
+}

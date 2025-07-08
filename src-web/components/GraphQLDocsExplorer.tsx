@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { Color } from '@yaakapp-internal/plugins';
 import classNames from 'classnames';
-import type { GraphQLField, GraphQLInputField, GraphQLType } from 'graphql';
+import type { GraphQLField, GraphQLInputField, GraphQLSchema, GraphQLType } from 'graphql';
 import {
   getNamedType,
   isEnumType,
@@ -13,14 +13,19 @@ import {
   isScalarType,
   isUnionType,
 } from 'graphql';
-import { useAtomValue } from 'jotai';
-import { ReactNode, useState } from 'react';
-import { graphqlDocStateAtom, graphqlSchemaAtom } from '../atoms/graphqlSchemaAtom';
+import { CSSProperties, memo, ReactNode, useState } from 'react';
+import { showGraphQLDocExplorerAtom } from '../atoms/graphqlSchemaAtom';
 import { jotaiStore } from '../lib/jotai';
 import { CountBadge } from './core/CountBadge';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { Markdown } from './Markdown';
+
+interface Props {
+  style?: CSSProperties;
+  schema: GraphQLSchema;
+  className?: string;
+}
 
 type ExplorerItem =
   | { kind: 'type'; type: GraphQLType; from: ExplorerItem }
@@ -28,84 +33,68 @@ type ExplorerItem =
   | { kind: 'input_field'; type: GraphQLInputField; from: ExplorerItem }
   | null;
 
-export function GraphQLDocsExplorer() {
-  const graphqlSchema = useAtomValue(graphqlSchemaAtom);
+export const GraphQLDocsExplorer = memo(function ({ style, schema, className }: Props) {
   const [activeItem, setActiveItem] = useState<ExplorerItem>(null);
 
-  if (!graphqlSchema) {
-    return <div className="p-4">No GraphQL schema available</div>;
-  }
-
-  const qryType = graphqlSchema.getQueryType();
-  const mutType = graphqlSchema.getMutationType();
-  const subType = graphqlSchema.getSubscriptionType();
+  const qryType = schema.getQueryType();
+  const mutType = schema.getMutationType();
+  const subType = schema.getSubscriptionType();
 
   const qryItem: ExplorerItem = qryType ? { kind: 'type', type: qryType, from: null } : null;
   const mutItem: ExplorerItem = mutType ? { kind: 'type', type: mutType, from: null } : null;
   const subItem: ExplorerItem = subType ? { kind: 'type', type: subType, from: null } : null;
-  const allTypes = graphqlSchema.getTypeMap();
+  const allTypes = schema.getTypeMap();
 
   return (
-    <div className="relative w-full">
-      <IconButton
-        icon="x"
-        size="sm"
-        className="!absolute right-2 top-0"
-        title="Close documenation explorer"
-        onClick={() => {
-          jotaiStore.set(graphqlDocStateAtom, false);
-        }}
-      />
-      {activeItem == null ? (
-        <div className="flex flex-col gap-3 overflow-auto h-full">
-          <Heading>Root Types</Heading>
-          <GqlTypeRow
-            name={{ value: 'query', color: 'primary' }}
-            item={qryItem}
-            setItem={setActiveItem}
-            className="!my-0"
-          />
-          <GqlTypeRow
-            name={{ value: 'mutation', color: 'primary' }}
-            item={mutItem}
-            setItem={setActiveItem}
-            className="!my-0"
-          />
-          <GqlTypeRow
-            name={{ value: 'subscription', color: 'primary' }}
-            item={subItem}
-            setItem={setActiveItem}
-            className="!my-0"
-          />
-          <Subheading>
-            All Schema Types <CountBadge count={Object.keys(allTypes).length} />
-          </Subheading>
-          <Markdown>{graphqlSchema.description ?? null}</Markdown>
-          <div className="flex flex-col gap-1">
-            {Object.keys(allTypes).map((typeName) => {
-              const t = allTypes[typeName]!;
-              return (
-                <GqlTypeLink
-                  key={t.name}
-                  color="notice"
-                  item={{ kind: 'type', type: t, from: null }}
-                  setItem={setActiveItem}
-                />
-              );
-            })}
+    <div className={classNames(className, 'py-3 mx-3')} style={style}>
+      <div className="h-full border border-dashed border-border rounded-lg">
+        <GraphQLExplorerHeader item={activeItem} setItem={setActiveItem} />
+        {activeItem == null ? (
+          <div className="flex flex-col gap-3 overflow-y-auto h-full w-full p-3">
+            <Heading>Root Types</Heading>
+            <GqlTypeRow
+              name={{ value: 'query', color: 'primary' }}
+              item={qryItem}
+              setItem={setActiveItem}
+              className="!my-0"
+            />
+            <GqlTypeRow
+              name={{ value: 'mutation', color: 'primary' }}
+              item={mutItem}
+              setItem={setActiveItem}
+              className="!my-0"
+            />
+            <GqlTypeRow
+              name={{ value: 'subscription', color: 'primary' }}
+              item={subItem}
+              setItem={setActiveItem}
+              className="!my-0"
+            />
+            <Subheading count={Object.keys(allTypes).length}>All Schema Types</Subheading>
+            <DocMarkdown>{schema.description ?? null}</DocMarkdown>
+            <div className="flex flex-col gap-1">
+              {Object.keys(allTypes).map((typeName) => {
+                const t = allTypes[typeName]!;
+                return (
+                  <GqlTypeLink
+                    key={t.name}
+                    color="notice"
+                    item={{ kind: 'type', type: t, from: null }}
+                    setItem={setActiveItem}
+                  />
+                );
+              })}
+            </div>
           </div>
-        </div>
-      ) : (
-        <div className="h-full grid grid-rows-[auto_minmax(0,1fr)] gap-y-3">
-          <GraphQLExplorerHeader item={activeItem} setItem={setActiveItem} />
-          <div className="overflow-auto h-full max-h-full">
-            <GqlTypeInfo item={activeItem} setItem={setActiveItem} />
+        ) : (
+          <div className="overflow-y-auto h-full w-full px-3 grid grid-cols-[minmax(0,1fr)]">
+            <GqlTypeInfo item={activeItem} setItem={setActiveItem} schema={schema} />
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
-}
+});
 
 function GraphQLExplorerHeader({
   item,
@@ -114,12 +103,32 @@ function GraphQLExplorerHeader({
   item: ExplorerItem;
   setItem: (t: ExplorerItem) => void;
 }) {
-  if (item == null) return null;
-
   return (
-    <nav className="flex items-center gap-1">
-      <Icon icon="chevron_left" color="secondary" />
-      <GqlTypeLink item={item.from} setItem={setItem} />
+    <nav className="pl-2 pr-1 h-md grid grid-rows-1 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 overflow-x-auto min-w-0 hide-scrollbars">
+      <div className="w-full">
+        {item == null ? (
+          <div className="flex items-center gap-2">
+            <Icon icon="house" color="secondary" />
+            <div className="text-text-subtle whitespace-nowrap _truncate">Schema Documentation</div>
+          </div>
+        ) : (
+          <GqlTypeLink
+            item={item.from}
+            setItem={setItem}
+            className="text-text-subtle !font-sans !text-base"
+            leftSlot={<Icon icon="chevron_left" color="secondary" />}
+          />
+        )}
+      </div>
+      <IconButton
+        icon="x"
+        size="sm"
+        className="text-text-subtle"
+        title="Close documenation explorer"
+        onClick={() => {
+          jotaiStore.set(showGraphQLDocExplorerAtom, false);
+        }}
+      />
     </nav>
   );
 }
@@ -127,11 +136,12 @@ function GraphQLExplorerHeader({
 function GqlTypeInfo({
   item,
   setItem,
+  schema,
 }: {
   item: ExplorerItem | null;
   setItem: (t: ExplorerItem) => void;
+  schema: GraphQLSchema;
 }) {
-  const graphqlSchema = useAtomValue(graphqlSchemaAtom);
   if (item == null) return null;
 
   const name = item.kind === 'type' ? getNamedType(item.type).name : item.type.name;
@@ -140,8 +150,8 @@ function GqlTypeInfo({
 
   const heading = (
     <div className="mb-3">
-      <h1 className="text-2xl font-semibold">{name}</h1>
-      <Markdown className="!text-text-subtle italic">{description || 'No description'}</Markdown>
+      <Heading>{name}</Heading>
+      <DocMarkdown>{description || 'No description'}</DocMarkdown>
     </div>
   );
 
@@ -150,19 +160,21 @@ function GqlTypeInfo({
   } else if (isNonNullType(item.type) || isListType(item.type)) {
     // kinda a hack, but we'll just unwrap there and show the named type
     return (
-      <GqlTypeInfo item={{ ...item, kind: 'type', type: item.type.ofType }} setItem={setItem} />
+      <GqlTypeInfo
+        item={{ ...item, kind: 'type', type: item.type.ofType }}
+        setItem={setItem}
+        schema={schema}
+      />
     );
   } else if (isInterfaceType(item.type)) {
     const fields = item.type.getFields();
-    const possibleTypes = graphqlSchema?.getPossibleTypes(item.type) ?? [];
+    const possibleTypes = schema.getPossibleTypes(item.type) ?? [];
 
     return (
       <div>
         {heading}
 
-        <Subheading>
-          Fields <CountBadge count={Object.keys(fields).length} />
-        </Subheading>
+        <Subheading count={Object.keys(fields).length}>Fields</Subheading>
         {Object.keys(fields).map((fieldName) => {
           const field = fields[fieldName]!;
           const fieldItem: ExplorerItem = { kind: 'field', type: field, from: item };
@@ -180,7 +192,7 @@ function GqlTypeInfo({
         {possibleTypes.length > 0 && (
           <>
             <Subheading>Implemented By</Subheading>
-            {possibleTypes.map((t) => (
+            {possibleTypes.map((t: any) => (
               <GqlTypeRow
                 key={t.name}
                 item={{ kind: 'type', type: t, from: item }}
@@ -208,23 +220,15 @@ function GqlTypeInfo({
     const values = item.type.getValues();
 
     return (
-      <div className="flex flex-col gap-3">
+      <div>
         {heading}
-
-        <div>
-          <Subheading>Type</Subheading>
-          <GqlTypeRow item={{ kind: 'type', type: item.type, from: item }} setItem={setItem} />
-        </div>
-
-        <div>
-          <Subheading>Values</Subheading>
-          {values.map((v) => (
-            <div key={v.name} className="my-4">
-              <span className="text-primary">{v.value}</span>
-              <Markdown className="!text-text-subtle">{v.description ?? null}</Markdown>
-            </div>
-          ))}
-        </div>
+        <Subheading>Values</Subheading>
+        {values.map((v) => (
+          <div key={v.name} className="my-4 font-mono text-editor _truncate">
+            <span className="text-primary">{v.value}</span>
+            <DocMarkdown>{v.description ?? null}</DocMarkdown>
+          </div>
+        ))}
       </div>
     );
   } else if (item.kind === 'field') {
@@ -234,7 +238,11 @@ function GqlTypeInfo({
 
         <div>
           <Subheading>Type</Subheading>
-          <GqlTypeRow item={{ kind: 'type', type: item.type.type, from: item }} setItem={setItem} />
+          <GqlTypeRow
+            className="mt-4"
+            item={{ kind: 'type', type: item.type.type, from: item }}
+            setItem={setItem}
+          />
         </div>
 
         {item.type.args.length > 0 && (
@@ -259,9 +267,7 @@ function GqlTypeInfo({
       <div>
         {heading}
 
-        <Subheading>
-          Fields <CountBadge count={Object.keys(fields).length} />
-        </Subheading>
+        <Subheading count={Object.keys(fields).length}>Fields</Subheading>
         {Object.keys(fields).map((fieldName) => {
           const field = fields[fieldName];
           if (field == null) return null;
@@ -288,9 +294,7 @@ function GqlTypeInfo({
       <div>
         {heading}
 
-        <Subheading>
-          Fields <CountBadge count={Object.keys(fields).length} />
-        </Subheading>
+        <Subheading count={Object.keys(fields).length}>Fields</Subheading>
         {Object.keys(fields).map((fieldName) => {
           const field = fields[fieldName];
           if (field == null) return null;
@@ -331,9 +335,7 @@ function GqlTypeInfo({
           </>
         )}
 
-        <Subheading>
-          Fields <CountBadge count={Object.keys(fields).length} />
-        </Subheading>
+        <Subheading count={Object.keys(fields).length}>Fields</Subheading>
         {Object.keys(fields).map((fieldName) => {
           const field = fields[fieldName];
           if (field == null) return null;
@@ -378,7 +380,7 @@ function GqlTypeRow({
   if (item.kind === 'type') {
     child = (
       <>
-        <div>
+        <div className="font-mono text-editor">
           {name && (
             <span
               className={classNames(
@@ -390,16 +392,16 @@ function GqlTypeRow({
                 name?.color === 'info' && 'text-info',
               )}
             >
-              {name.value}:
+              {name.value}:&nbsp;
             </span>
-          )}{' '}
+          )}
           <GqlTypeLink color="notice" item={item} setItem={setItem} />
         </div>
         {!hideDescription && (
-          <Markdown className="!text-text-subtle">
+          <DocMarkdown>
             {(description === undefined ? getNamedType(item.type).description : description) ??
               null}
-          </Markdown>
+          </DocMarkdown>
         )}
       </>
     );
@@ -411,7 +413,7 @@ function GqlTypeRow({
     };
     child = (
       <div>
-        <div>
+        <div className="font-mono text-editor">
           <GqlTypeLink color="info" item={item} setItem={setItem}>
             {name?.value}
           </GqlTypeLink>
@@ -421,9 +423,10 @@ function GqlTypeRow({
               {item.type.args.map((arg) => (
                 <div
                   key={`${arg.type}::${arg.name}`}
-                  className={classNames(item.type.args.length == 1 ? 'inline' : 'pl-3')}
+                  className={classNames(item.type.args.length == 1 && 'inline-flex')}
                 >
-                  <span className="text-primary">{arg.name}:</span>{' '}
+                  {item.type.args.length > 1 && <>&nbsp;&nbsp;</>}
+                  <span className="text-primary">{arg.name}:</span>&nbsp;
                   <GqlTypeLink
                     color="notice"
                     item={{ kind: 'type', type: arg.type, from: item.from }}
@@ -431,28 +434,30 @@ function GqlTypeRow({
                   />
                 </div>
               ))}
-              <span className="text-text-subtle">)</span>{' '}
+              <span className="text-text-subtle">)</span>
             </>
           )}
           <span className="text-text-subtle">:</span>{' '}
           <GqlTypeLink color="notice" item={returnItem} setItem={setItem} />
         </div>
-        <Markdown className="!text-text-subtle mt-0.5">{item.type.description ?? null}</Markdown>
+        <DocMarkdown className="!text-text-subtle mt-0.5">
+          {item.type.description ?? null}
+        </DocMarkdown>
       </div>
     );
   } else if (item.kind === 'input_field') {
     child = (
       <>
-        <div>
+        <div className="font-mono text-editor">
           {name && <span className="text-primary">{name.value}:</span>}{' '}
           <GqlTypeLink color="notice" item={item} setItem={setItem} />
         </div>
-        <Markdown className="!text-text-subtle">{item.type.description ?? null}</Markdown>
+        <DocMarkdown>{item.type.description ?? null}</DocMarkdown>
       </>
     );
   }
 
-  return <div className={className}>{child}</div>;
+  return <div className={classNames(className, 'w-full min-w-0')}>{child}</div>;
 }
 
 function GqlTypeLink({
@@ -460,37 +465,52 @@ function GqlTypeLink({
   setItem,
   color,
   children,
+  leftSlot,
+  className,
 }: {
   item: ExplorerItem;
   color?: Color;
   setItem: (item: ExplorerItem) => void;
-  children?: string;
+  children?: ReactNode;
+  leftSlot?: ReactNode;
+  className?: string;
 }) {
   if (item?.kind === 'type' && isListType(item.type)) {
     return (
-      <>
+      <span className="font-mono text-editor">
         <span className="text-text-subtle">[</span>
-        <GqlTypeLink item={{ ...item, type: item.type.ofType }} setItem={setItem} color={color}>
-          {children}
-        </GqlTypeLink>
+        <GqlTypeLink
+          item={{ ...item, type: item.type.ofType }}
+          setItem={setItem}
+          color={color}
+          leftSlot={leftSlot}
+          children={children}
+        />
         <span className="text-text-subtle">]</span>
-      </>
+      </span>
     );
   } else if (item?.kind === 'type' && isNonNullType(item.type)) {
     return (
-      <>
-        <GqlTypeLink item={{ ...item, type: item.type.ofType }} setItem={setItem} color={color}>
-          {children}
-        </GqlTypeLink>
+      <span className="font-mono text-editor">
+        <GqlTypeLink
+          item={{ ...item, type: item.type.ofType }}
+          setItem={setItem}
+          color={color}
+          leftSlot={leftSlot}
+          children={children}
+        />
         <span className="text-text-subtle">!</span>
-      </>
+      </span>
     );
   }
 
   return (
     <button
       className={classNames(
-        'hover:underline text-left mr-auto',
+        className,
+        'hover:underline text-left mr-auto gap-2 max-w-full',
+        'inline-flex items-center',
+        'font-mono text-editor _truncate',
         color === 'danger' && 'text-danger',
         color === 'primary' && 'text-primary',
         color === 'success' && 'text-success',
@@ -500,12 +520,13 @@ function GqlTypeLink({
       )}
       onClick={() => setItem(item)}
     >
+      {leftSlot}
       <GqlTypeLabel item={item} children={children} />
     </button>
   );
 }
 
-function GqlTypeLabel({ item, children }: { item: ExplorerItem; children?: string }) {
+function GqlTypeLabel({ item, children }: { item: ExplorerItem; children?: ReactNode }) {
   let inner;
   if (children) {
     inner = children;
@@ -517,13 +538,24 @@ function GqlTypeLabel({ item, children }: { item: ExplorerItem; children?: strin
     inner = getNamedType(item.type.type).name;
   }
 
-  return <>{inner}</>;
+  return <div className="_truncate">{inner}</div>;
 }
 
-function Subheading({ children }: { children: ReactNode }) {
-  return <h2 className="font-bold text-lg mt-6 flex items-center">{children}</h2>;
+function Subheading({ children, count }: { children: ReactNode; count?: number }) {
+  return (
+    <h2 className="font-bold text-lg mt-6 flex items-center">
+      <div className="_truncate min-w-0">{children}</div>
+      {count && <CountBadge count={count} />}
+    </h2>
+  );
 }
 
 function Heading({ children }: { children: ReactNode }) {
-  return <h1 className="font-bold text-2xl flex items-center">{children}</h1>;
+  return <h1 className="font-bold text-2xl _truncate">{children}</h1>;
+}
+
+function DocMarkdown({ children, className }: { children: string | null; className?: string }) {
+  return (
+    <Markdown className={classNames(className, '!text-text-subtle italic')}>{children}</Markdown>
+  );
 }

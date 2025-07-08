@@ -3,8 +3,10 @@ import type { HttpRequest } from '@yaakapp-internal/models';
 import { updateSchema } from 'cm6-graphql';
 
 import { formatSdl } from 'format-graphql';
+import { useAtom } from 'jotai';
 import { useEffect, useMemo, useRef } from 'react';
 import { useLocalStorage } from 'react-use';
+import { showGraphQLDocExplorerAtom } from '../atoms/graphqlSchemaAtom';
 import { useIntrospectGraphQL } from '../hooks/useIntrospectGraphQL';
 import { useStateWithDeps } from '../hooks/useStateWithDeps';
 import { showDialog } from '../lib/dialog';
@@ -16,8 +18,6 @@ import { Editor } from './core/Editor/Editor';
 import { FormattedError } from './core/FormattedError';
 import { Icon } from './core/Icon';
 import { Separator } from './core/Separator';
-import { useAtom } from 'jotai';
-import { graphqlDocStateAtom, graphqlSchemaAtom } from '../atoms/graphqlSchemaAtom';
 
 type Props = Pick<EditorProps, 'heightMode' | 'className' | 'forceUpdateKey'> & {
   baseRequest: HttpRequest;
@@ -47,8 +47,7 @@ export function GraphQLEditor({ request, onChange, baseRequest, ...extraEditorPr
 
     return { query: request.body.query ?? '', variables: request.body.variables ?? '' };
   }, [extraEditorProps.forceUpdateKey]);
-  const [, setGraphqlSchemaAtomValue] = useAtom(graphqlSchemaAtom);
-  const [isDocOpen, setGraphqlDocStateAtomValue] = useAtom(graphqlDocStateAtom);
+  const [isDocOpen, setGraphqlDocStateAtomValue] = useAtom(showGraphQLDocExplorerAtom);
 
   const handleChangeQuery = (query: string) => {
     const newBody = { query, variables: currentBody.variables || undefined };
@@ -66,8 +65,7 @@ export function GraphQLEditor({ request, onChange, baseRequest, ...extraEditorPr
   useEffect(() => {
     if (editorViewRef.current == null) return;
     updateSchema(editorViewRef.current, schema ?? undefined);
-    setGraphqlSchemaAtomValue(schema);
-  }, [schema, setGraphqlSchemaAtomValue]);
+  }, [schema]);
 
   const actions = useMemo<EditorProps['actions']>(
     () => [
