@@ -24,6 +24,7 @@ import {
 import type { CSSProperties, HTMLAttributes, KeyboardEvent, ReactNode } from 'react';
 import { Fragment, memo, useCallback, useMemo, useRef, useState } from 'react';
 import { showGraphQLDocExplorerAtom } from '../atoms/graphqlSchemaAtom';
+import { useContainerSize } from '../hooks/useContainerQuery';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useRandomKey } from '../hooks/useRandomKey';
 import { useStateWithDeps } from '../hooks/useStateWithDeps';
@@ -61,11 +62,18 @@ export const GraphQLDocsExplorer = memo(function GraphQLDocsExplorer({
   const mutItem: ExplorerItem = mutType ? { kind: 'type', type: mutType, from: null } : null;
   const subItem: ExplorerItem = subType ? { kind: 'type', type: subType, from: null } : null;
   const allTypes = schema.getTypeMap();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const containerSize = useContainerSize(containerRef);
 
   return (
-    <div className={classNames(className, 'py-3 mx-3')} style={style}>
-      <div className="grid grid-rows-[auto_minmax(0,1fr)] h-full border border-dashed border-border rounded-lg">
-        <GraphQLExplorerHeader item={activeItem} setItem={setActiveItem} schema={schema} />
+    <div ref={containerRef} className={classNames(className, 'py-3 mx-3')} style={style}>
+      <div className="grid grid-rows-[auto_minmax(0,1fr)] h-full border border-dashed border-border rounded-lg overflow-hidden">
+        <GraphQLExplorerHeader
+          containerHeight={containerSize.height}
+          item={activeItem}
+          setItem={setActiveItem}
+          schema={schema}
+        />
         {activeItem == null ? (
           <div className="flex flex-col gap-3 overflow-y-auto h-full w-full px-3 pb-6">
             <Heading>Root Types</Heading>
@@ -120,10 +128,12 @@ function GraphQLExplorerHeader({
   item,
   setItem,
   schema,
+  containerHeight,
 }: {
   item: ExplorerItem;
   setItem: (t: ExplorerItem) => void;
   schema: GraphQLSchema;
+  containerHeight: number;
 }) {
   const findIt = (t: ExplorerItem): ExplorerItem[] => {
     if (t == null) return [null];
@@ -131,28 +141,37 @@ function GraphQLExplorerHeader({
   };
   const crumbs = findIt(item);
   return (
-    <nav className="relative pl-2 pr-1 h-lg grid grid-rows-1 grid-cols-[auto_minmax(0,1fr)_auto] items-center min-w-0 gap-1">
-      <div className="mr-3 whitespace-nowrap flex items-center gap-2 hide-scrollbars text-text-subtle overflow-x-auto hide-scrollbars text-sm">
-        <Icon icon="book_open_text" />
-        {crumbs.map((crumb, i) => {
-          return (
-            <Fragment key={i}>
-              {i > 0 && <Icon icon="chevron_right" className="text-text-subtlest" />}
-              {crumb === item || item == null ? (
-                <GqlTypeLabel item={item} />
-              ) : crumb === item ? null : (
-                <GqlTypeLink
-                  key={i}
-                  item={crumb}
-                  setItem={setItem}
-                  className="!font-sans !text-sm"
-                />
-              )}
-            </Fragment>
-          );
-        })}
+    <nav className="pl-2 pr-1 h-lg grid grid-rows-1 grid-cols-[minmax(0,1fr)_auto] items-center min-w-0 gap-1">
+      <div className="@container w-full relative pl-2 pr-1 h-lg grid grid-rows-1 grid-cols-[minmax(0,min-content)_auto] items-center gap-1">
+        <div className="whitespace-nowrap flex items-center gap-2 text-text-subtle text-sm overflow-x-auto hide-scrollbars">
+          <Icon icon="book_open_text" />
+          {crumbs.map((crumb, i) => {
+            return (
+              <Fragment key={i}>
+                {i > 0 && <Icon icon="chevron_right" className="text-text-subtlest" />}
+                {crumb === item || item == null ? (
+                  <GqlTypeLabel noTruncate item={item} />
+                ) : crumb === item ? null : (
+                  <GqlTypeLink
+                    key={i}
+                    noTruncate
+                    item={crumb}
+                    setItem={setItem}
+                    className="!font-sans !text-sm flex-shrink-0"
+                  />
+                )}
+              </Fragment>
+            );
+          })}
+        </div>
+        <GqlSchemaSearch
+          maxHeight={containerHeight}
+          currentItem={item}
+          schema={schema}
+          setItem={(item) => setItem(item)}
+          className="hidden @[10rem]:block"
+        />
       </div>
-      <GqlSchemaSearch currentItem={item} schema={schema} setItem={(item) => setItem(item)} />
       <div className="ml-auto flex gap-1 [&>*]:text-text-subtle">
         <IconButton
           icon="x"
@@ -255,7 +274,7 @@ function GqlTypeInfo({
         {heading}
         <Subheading>Values</Subheading>
         {values.map((v) => (
-          <div key={v.name} className="my-4 font-mono text-editor _truncate">
+          <div key={v.name} className="my-4 font-mono text-editor truncate">
             <span className="text-primary">{v.value}</span>
             <DocMarkdown>{v.description ?? null}</DocMarkdown>
           </div>
@@ -475,6 +494,7 @@ function GqlTypeLink({
   rightSlot,
   onNavigate,
   className,
+  noTruncate,
 }: {
   item: ExplorerItem;
   color?: Color;
@@ -484,6 +504,7 @@ function GqlTypeLink({
   leftSlot?: ReactNode;
   rightSlot?: ReactNode;
   className?: string;
+  noTruncate?: boolean;
 }) {
   if (item?.kind === 'type' && isListType(item.type)) {
     return (
@@ -524,7 +545,8 @@ function GqlTypeLink({
         className,
         'hover:underline text-left mr-auto gap-2 max-w-full',
         'inline-flex items-center',
-        'font-mono text-editor _truncate',
+        'font-mono text-editor',
+        !noTruncate && 'truncate',
         color === 'danger' && 'text-danger',
         color === 'primary' && 'text-primary',
         color === 'success' && 'text-success',
@@ -538,7 +560,9 @@ function GqlTypeLink({
       }}
     >
       {leftSlot}
-      <GqlTypeLabel item={item}>{children}</GqlTypeLabel>
+      <GqlTypeLabel item={item} noTruncate={noTruncate}>
+        {children}
+      </GqlTypeLabel>
       {rightSlot}
     </button>
   );
@@ -548,10 +572,12 @@ function GqlTypeLabel({
   item,
   children,
   className,
+  noTruncate,
 }: {
   item: ExplorerItem;
   children?: ReactNode;
   className?: string;
+  noTruncate?: boolean;
 }) {
   let inner;
   if (children) {
@@ -567,7 +593,7 @@ function GqlTypeLabel({
     inner = 'UNKNOWN';
   }
 
-  return <span className={classNames(className, 'truncate')}>{inner}</span>;
+  return <span className={classNames(className, !noTruncate && 'truncate')}>{inner}</span>;
 }
 
 function Subheading({ children, count }: { children: ReactNode; count?: number }) {
@@ -592,11 +618,13 @@ function GqlSchemaSearch({
   currentItem,
   setItem,
   className,
+  maxHeight,
 }: {
   currentItem: ExplorerItem | null;
   schema: GraphQLSchema;
   setItem: (t: ExplorerItem) => void;
   className?: string;
+  maxHeight: number;
 }) {
   const [activeResult, setActiveResult] = useStateWithDeps<SearchResult | null>(null, [
     currentItem,
@@ -686,15 +714,15 @@ function GqlSchemaSearch({
     [results, activeIndex, setActiveResult, activeResult, setItem, currentItem],
   );
 
-  if (!canSearch) return null;
+  if (!canSearch) return <span />;
 
   return (
     <div
       className={classNames(
         className,
-        'relative flex items-center bg-surface z-20',
-        !focused && 'w-[6rem] ml-auto',
-        focused && '!absolute top-0 left-1.5 right-1.5 bottom-0',
+        'relative flex items-center bg-surface z-20 min-w-0',
+        !focused && 'max-w-[6rem] ml-auto',
+        focused && '!absolute top-0 left-1.5 right-1.5 bottom-0 pt-1.5',
       )}
     >
       <PlainInput
@@ -722,9 +750,10 @@ function GqlSchemaSearch({
         }}
       />
       <div
+        style={{ maxHeight: maxHeight - 60}}
         className={classNames(
           'x-theme-menu absolute z-10 mt-0.5 p-1.5 top-full right-0 bg-surface',
-          'border border-border rounded-lg overflow-y-auto min-w-[20rem] max-h-[20rem] w-full shadow-lg',
+          'border border-border rounded-lg overflow-y-auto min-w-[20rem] w-full shadow-lg',
           !focused && 'hidden',
         )}
       >
@@ -752,7 +781,7 @@ function GqlSchemaSearch({
                   .
                 </>
               )}
-              <GqlTypeLabel item={item} className="text-notice" />
+              <GqlTypeLabel item={item} className="text-text" />
             </SearchResult>
           );
         })}
@@ -769,11 +798,21 @@ function SearchResult({
   isActive: boolean;
   children: ReactNode;
 } & HTMLAttributes<HTMLButtonElement>) {
+  const initRef = useCallback(
+    (el: HTMLButtonElement | null) => {
+      if (el === null) return;
+      if (isActive) {
+        el.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+      }
+    },
+    [isActive],
+  );
   return (
     <button
+      ref={initRef}
       className={classNames(
         className,
-        'px-3 truncate w-full text-left h-sm rounded',
+        'px-3 truncate w-full text-left h-sm rounded text-editor font-mono',
         isActive && 'bg-surface-highlight',
       )}
       {...extraProps}
