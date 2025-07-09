@@ -26,6 +26,7 @@ import { Fragment, memo, useCallback, useMemo, useRef, useState } from 'react';
 import { showGraphQLDocExplorerAtom } from '../atoms/graphqlSchemaAtom';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useRandomKey } from '../hooks/useRandomKey';
+import { useStateWithDeps } from '../hooks/useStateWithDeps';
 import { jotaiStore } from '../lib/jotai';
 import { CountBadge } from './core/CountBadge';
 import { Icon } from './core/Icon';
@@ -63,10 +64,10 @@ export const GraphQLDocsExplorer = memo(function GraphQLDocsExplorer({
 
   return (
     <div className={classNames(className, 'py-3 mx-3')} style={style}>
-      <div className="h-full border border-dashed border-border rounded-lg">
+      <div className="grid grid-rows-[auto_minmax(0,1fr)] h-full border border-dashed border-border rounded-lg">
         <GraphQLExplorerHeader item={activeItem} setItem={setActiveItem} schema={schema} />
         {activeItem == null ? (
-          <div className="flex flex-col gap-3 overflow-y-auto h-full w-full p-3">
+          <div className="flex flex-col gap-3 overflow-y-auto h-full w-full px-3 pb-6">
             <Heading>Root Types</Heading>
             <GqlTypeRow
               name={{ value: 'query', color: 'primary' }}
@@ -105,7 +106,7 @@ export const GraphQLDocsExplorer = memo(function GraphQLDocsExplorer({
         ) : (
           <div
             key={activeItem.type.toString()} // Reset scroll position to top
-            className="overflow-y-auto h-full w-full px-3 grid grid-cols-[minmax(0,1fr)]"
+            className="overflow-y-auto h-full w-full p-3 grid grid-cols-[minmax(0,1fr)]"
           >
             <GqlTypeInfo item={activeItem} setItem={setActiveItem} schema={schema} />
           </div>
@@ -597,7 +598,9 @@ function GqlSchemaSearch({
   setItem: (t: ExplorerItem) => void;
   className?: string;
 }) {
-  const [activeResult, setActiveResult] = useState<SearchResult | null>(null);
+  const [activeResult, setActiveResult] = useStateWithDeps<SearchResult | null>(null, [
+    currentItem,
+  ]);
   const [forceRefreshKey, regenerateForceRefreshKey] = useRandomKey();
   const [focused, setFocused] = useState<boolean>(false);
   const [value, setValue] = useState<string>('');
@@ -680,7 +683,7 @@ function GqlSchemaSearch({
         }
       }
     },
-    [results, activeIndex, activeResult, setItem, currentItem],
+    [results, activeIndex, setActiveResult, activeResult, setItem, currentItem],
   );
 
   if (!canSearch) return null;
@@ -709,15 +712,13 @@ function GqlSchemaSearch({
         }
         onChange={setValue}
         onKeyDownCapture={handleKeyDown}
+        onFocus={() => setFocused(true)}
         onBlur={() => {
+          setValue('');
+          regenerateForceRefreshKey();
           setTimeout(() => {
             setFocused(false);
-            setValue('');
-            regenerateForceRefreshKey();
           }, 100);
-        }}
-        onFocus={() => {
-          setFocused(true);
         }}
       />
       <div
