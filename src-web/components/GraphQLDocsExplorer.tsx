@@ -753,7 +753,7 @@ function GqlSchemaSearch({
         style={{ maxHeight: maxHeight - 60}}
         className={classNames(
           'x-theme-menu absolute z-10 mt-0.5 p-1.5 top-full right-0 bg-surface',
-          'border border-border rounded-lg overflow-y-auto min-w-[20rem] w-full shadow-lg',
+          'border border-border rounded-lg overflow-y-auto w-full shadow-lg',
           !focused && 'hidden',
         )}
       >
