@@ -268,15 +268,22 @@ pub async fn send_http_request<R: Runtime>(
         if body_type == "graphql" {
             let query = get_str_h(&request_body, "query");
             let variables = get_str_h(&request_body, "variables");
-            let body = if variables.trim().is_empty() {
-                format!(r#"{{"query":{}}}"#, serde_json::to_string(query).unwrap_or_default())
+            if request.method.to_lowercase() == "get" {
+                request_builder = request_builder.query(&[("query", query)]);
+                if !variables.trim().is_empty() {
+                    request_builder = request_builder.query(&[("variables", variables)]);
+                }
             } else {
-                format!(
-                    r#"{{"query":{},"variables":{variables}}}"#,
-                    serde_json::to_string(query).unwrap_or_default()
-                )
-            };
-            request_builder = request_builder.body(body.to_owned());
+                let body = if variables.trim().is_empty() {
+                    format!(r#"{{"query":{}}}"#, serde_json::to_string(query).unwrap_or_default())
+                } else {
+                    format!(
+                        r#"{{"query":{},"variables":{variables}}}"#,
+                        serde_json::to_string(query).unwrap_or_default()
+                    )
+                };
+                request_builder = request_builder.body(body.to_owned());
+            }
         } else if body_type == "application/x-www-form-urlencoded"
             && request_body.contains_key("form")
         {
