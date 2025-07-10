@@ -167,9 +167,9 @@ pub async fn send_http_request<R: Runtime>(
             let cookies = cj
                 .cookies
                 .iter()
-                .map(|cookie| {
-                    let json_cookie = serde_json::to_value(cookie).unwrap();
-                    serde_json::from_value(json_cookie).expect("Failed to deserialize cookie")
+                .filter_map(|cookie| {
+                    let json_cookie = serde_json::to_value(cookie).ok()?;
+                    serde_json::from_value(json_cookie).ok()?
                 })
                 .map(|c| Ok(c))
                 .collect::<Vec<Result<_>>>();

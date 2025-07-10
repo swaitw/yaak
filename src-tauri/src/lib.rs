@@ -837,13 +837,18 @@ async fn cmd_call_http_request_action<R: Runtime>(
     req: CallHttpRequestActionRequest,
     plugin_manager: State<'_, PluginManager>,
 ) -> YaakResult<()> {
-    Ok(plugin_manager.call_http_request_action(&window, CallHttpRequestActionRequest {
-        args: CallHttpRequestActionArgs {
-            http_request: resolve_http_request(&window, &req.args.http_request)?.0,
-            ..req.args
-        },
-        ..req
-    }).await?)
+    Ok(plugin_manager
+        .call_http_request_action(
+            &window,
+            CallHttpRequestActionRequest {
+                args: CallHttpRequestActionArgs {
+                    http_request: resolve_http_request(&window, &req.args.http_request)?.0,
+                    ..req.args
+                },
+                ..req
+            },
+        )
+        .await?)
 }
 
 #[tauri::command]
@@ -852,13 +857,18 @@ async fn cmd_call_grpc_request_action<R: Runtime>(
     req: CallGrpcRequestActionRequest,
     plugin_manager: State<'_, PluginManager>,
 ) -> YaakResult<()> {
-    Ok(plugin_manager.call_grpc_request_action(&window, CallGrpcRequestActionRequest {
-        args: CallGrpcRequestActionArgs {
-            grpc_request: resolve_grpc_request(&window, &req.args.grpc_request)?.0,
-            ..req.args
-        },
-        ..req
-    }).await?)
+    Ok(plugin_manager
+        .call_grpc_request_action(
+            &window,
+            CallGrpcRequestActionRequest {
+                args: CallGrpcRequestActionArgs {
+                    grpc_request: resolve_grpc_request(&window, &req.args.grpc_request)?.0,
+                    ..req.args
+                },
+                ..req
+            },
+        )
+        .await?)
 }
 
 #[tauri::command]
@@ -980,7 +990,31 @@ async fn cmd_send_http_request<R: Runtime>(
         None => None,
     };
 
-    send_http_request(&window, &request, &response, environment, cookie_jar, &mut cancel_rx).await
+    let r = match send_http_request(
+        &window,
+        &request,
+        &response,
+        environment,
+        cookie_jar,
+        &mut cancel_rx,
+    )
+    .await
+    {
+        Ok(r) => r,
+        Err(e) => {
+            let resp = app_handle.db().get_http_response(&response.id)?;
+            app_handle.db().upsert_http_response(
+                &HttpResponse {
+                    state: HttpResponseState::Closed,
+                    error: Some(e.to_string()),
+                    ..resp
+                },
+                &UpdateSource::from_window(&window),
+            )?
+        }
+    };
+
+    Ok(r)
 }
 
 fn response_err<R: Runtime>(
