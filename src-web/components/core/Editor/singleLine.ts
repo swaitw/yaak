@@ -1,6 +1,19 @@
 import type { Extension, TransactionSpec } from '@codemirror/state';
 import { EditorSelection, EditorState, Transaction } from '@codemirror/state';
 
+/**
+ * A CodeMirror extension that forces single-line input by stripping
+ * all newline characters from user input, including pasted content.
+ *
+ * This extension uses a transaction filter to intercept user input,
+ * removes any newline characters, and adjusts the selection to the end
+ * of the inserted text.
+ *
+ * IME composition events are ignored to preserve proper input behavior
+ * for non-Latin languages.
+ *
+ * @returns A CodeMirror extension that enforces single-line editing.
+ */
 export function singleLineExtensions(): Extension {
   return EditorState.transactionFilter.of(
     (tr: Transaction): TransactionSpec | readonly TransactionSpec[] => {
