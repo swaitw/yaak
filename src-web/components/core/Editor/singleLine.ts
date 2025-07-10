@@ -1,33 +1,34 @@
-import type {Extension, Transaction, TransactionSpec} from '@codemirror/state';
-import { EditorSelection, EditorState } from '@codemirror/state';
+import type { Extension, TransactionSpec } from '@codemirror/state';
+import { EditorSelection, EditorState, Transaction } from '@codemirror/state';
 
 export function singleLineExtensions(): Extension {
   return EditorState.transactionFilter.of(
-    (tr: Transaction): TransactionSpec | TransactionSpec[] => {
-      if (!tr.isUserEvent('input')) return tr;
+    (tr: Transaction): TransactionSpec | readonly TransactionSpec[] => {
+      if (!tr.isUserEvent('input') || tr.isUserEvent('input.type.compose')) return tr;
 
-      // when composing text via IME, return
-      if (tr.isUserEvent('input.type.compose')) return tr;
+      const changes: { from: number; to: number; insert: string }[] = [];
 
-      const specs: TransactionSpec[] = [];
-      tr.changes.iterChanges((_, toA, fromB, toB, inserted) => {
+      tr.changes.iterChanges((_fromA, toA, fromB, _toB, inserted) => {
         let insert = '';
-        let newlinesRemoved = 0;
-        for (const line of inserted) {
-          const newLine = line.replace('\n', '');
-          newlinesRemoved += line.length - newLine.length;
-          insert += newLine;
+        for (const line of inserted.iterLines()) {
+          insert += line.replace(/\n/g, '');
         }
 
-        // Update cursor position based on how many newlines were removed
-        const cursor = EditorSelection.cursor(toB - newlinesRemoved);
-        const selection = EditorSelection.create([cursor], 0);
-
-        const changes = [{ from: fromB, to: toA, insert }];
-        specs.push({ ...tr, selection, changes });
+        if (insert !== inserted.toString()) {
+          changes.push({ from: fromB, to: toA, insert });
+        }
       });
 
-      return specs;
+      const lastChange = changes[changes.length - 1];
+      if (lastChange == null) return tr;
+
+      const selection = EditorSelection.cursor(lastChange.from + lastChange.insert.length);
+
+      return {
+        changes,
+        selection,
+        userEvent: tr.annotation(Transaction.userEvent) ?? undefined,
+      };
     },
   );
 }
