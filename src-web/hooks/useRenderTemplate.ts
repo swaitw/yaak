@@ -10,7 +10,7 @@ export function useRenderTemplate(template: string) {
   return useQuery<string>({
     placeholderData: (prev) => prev, // Keep previous data on refetch
     refetchOnWindowFocus: false,
-    queryKey: ['render_template', template],
+    queryKey: ['render_template', template, workspaceId, environmentId],
     queryFn: () => renderTemplate({ template, workspaceId, environmentId }),
   });
 }
