@@ -679,7 +679,7 @@ pub async fn send_http_request<R: Runtime>(
     })
 }
 
-fn resolve_http_request<R: Runtime>(
+pub fn resolve_http_request<R: Runtime>(
     window: &WebviewWindow<R>,
     request: &HttpRequest,
 ) -> Result<(HttpRequest, String)> {

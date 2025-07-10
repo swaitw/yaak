@@ -2,7 +2,7 @@ extern crate core;
 use crate::encoding::read_response_body;
 use crate::error::Error::GenericError;
 use crate::grpc::{build_metadata, metadata_to_map, resolve_grpc_request};
-use crate::http_request::send_http_request;
+use crate::http_request::{resolve_http_request, send_http_request};
 use crate::import::import_data;
 use crate::notifications::YaakNotifier;
 use crate::render::{render_grpc_request, render_template};
@@ -36,7 +36,8 @@ use yaak_models::models::{
 use yaak_models::query_manager::QueryManagerExt;
 use yaak_models::util::{BatchUpsertResult, UpdateSource, get_workspace_export_resources};
 use yaak_plugins::events::{
-    CallGrpcRequestActionRequest, CallHttpRequestActionRequest, FilterResponse,
+    CallGrpcRequestActionArgs, CallGrpcRequestActionRequest, CallHttpAuthenticationActionArgs,
+    CallHttpRequestActionArgs, CallHttpRequestActionRequest, FilterResponse,
     GetGrpcRequestActionsResponse, GetHttpAuthenticationConfigResponse,
     GetHttpAuthenticationSummaryResponse, GetHttpRequestActionsResponse,
     GetTemplateFunctionsResponse, InternalEvent, InternalEventPayload, JsonPrimitive,
@@ -836,7 +837,13 @@ async fn cmd_call_http_request_action<R: Runtime>(
     req: CallHttpRequestActionRequest,
     plugin_manager: State<'_, PluginManager>,
 ) -> YaakResult<()> {
-    Ok(plugin_manager.call_http_request_action(&window, req).await?)
+    Ok(plugin_manager.call_http_request_action(&window, CallHttpRequestActionRequest {
+        args: CallHttpRequestActionArgs {
+            http_request: resolve_http_request(&window, &req.args.http_request)?.0,
+            ..req.args
+        },
+        ..req
+    }).await?)
 }
 
 #[tauri::command]
@@ -845,7 +852,13 @@ async fn cmd_call_grpc_request_action<R: Runtime>(
     req: CallGrpcRequestActionRequest,
     plugin_manager: State<'_, PluginManager>,
 ) -> YaakResult<()> {
-    Ok(plugin_manager.call_grpc_request_action(&window, req).await?)
+    Ok(plugin_manager.call_grpc_request_action(&window, CallGrpcRequestActionRequest {
+        args: CallGrpcRequestActionArgs {
+            grpc_request: resolve_grpc_request(&window, &req.args.grpc_request)?.0,
+            ..req.args
+        },
+        ..req
+    }).await?)
 }
 
 #[tauri::command]
