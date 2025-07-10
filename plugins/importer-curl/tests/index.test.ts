@@ -1,4 +1,4 @@
-import { HttpRequest, Workspace } from '@yaakapp/api';
+import type { HttpRequest, Workspace } from '@yaakapp/api';
 import { describe, expect, test } from 'vitest';
 import { convertCurl } from '../src';
 
@@ -221,20 +221,20 @@ describe('importer-curl', () => {
   });
 
   test('Imports post data into URL', () => {
-    expect(
-      convertCurl('curl -G https://api.stripe.com/v1/payment_links -d limit=3'),
-    ).toEqual({
+    expect(convertCurl('curl -G https://api.stripe.com/v1/payment_links -d limit=3')).toEqual({
       resources: {
         workspaces: [baseWorkspace()],
         httpRequests: [
           baseRequest({
             method: 'GET',
             url: 'https://api.stripe.com/v1/payment_links',
-            urlParameters: [{
-              enabled: true,
-              name: 'limit',
-              value: '3',
-            }],
+            urlParameters: [
+              {
+                enabled: true,
+                name: 'limit',
+                value: '3',
+              },
+            ],
           }),
         ],
       },
@@ -243,7 +243,9 @@ describe('importer-curl', () => {
 
   test('Imports multi-line JSON', () => {
     expect(
-      convertCurl(`curl -H Content-Type:application/json -d $'{\n  "foo":"bar"\n}' https://yaak.app`),
+      convertCurl(
+        `curl -H Content-Type:application/json -d $'{\n  "foo":"bar"\n}' https://yaak.app`,
+      ),
     ).toEqual({
       resources: {
         workspaces: [baseWorkspace()],
@@ -358,6 +360,31 @@ describe('importer-curl', () => {
             urlParameters: [
               { name: 'foo', value: 'bar', enabled: true },
               { name: 'baz', value: 'a a', enabled: true },
+            ],
+          }),
+        ],
+      },
+    });
+  });
+
+  test('Imports weird body', () => {
+    expect(convertCurl(`curl 'https://yaak.app' -X POST --data-raw 'foo=bar=baz'`)).toEqual({
+      resources: {
+        workspaces: [baseWorkspace()],
+        httpRequests: [
+          baseRequest({
+            url: 'https://yaak.app',
+            method: "POST",
+            bodyType: 'application/x-www-form-urlencoded',
+            body: {
+              form: [{ name: 'foo', value: 'bar=baz', enabled: true }],
+            },
+            headers: [
+              {
+                enabled: true,
+                name: 'Content-Type',
+                value: 'application/x-www-form-urlencoded',
+              },
             ],
           }),
         ],

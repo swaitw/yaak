@@ -1,5 +1,6 @@
-import { Context, Environment, Folder, HttpRequest, HttpUrlParameter, PluginDefinition, Workspace } from '@yaakapp/api';
-import { ControlOperator, parse, ParseEntry } from 'shell-quote';
+import type { Context, Environment, Folder, HttpRequest, HttpUrlParameter, PluginDefinition, Workspace } from '@yaakapp/api';
+import type { ControlOperator, ParseEntry } from 'shell-quote';
+import { parse } from 'shell-quote';
 
 type AtLeast<T, K extends keyof T> = Partial<T> & Pick<T, K>;
 
@@ -40,6 +41,7 @@ export const plugin: PluginDefinition = {
     name: 'cURL',
     description: 'Import cURL commands',
     onImport(_ctx: Context, args: { text: string }) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return convertCurl(args.text) as any;
     },
   },
@@ -177,19 +179,15 @@ function importCommand(parseEntries: ParseEntry[], workspaceId: string) {
   // Build the request //
   // ~~~~~~~~~~~~~~~~~ //
 
-  // Url and Parameters
-  let urlParameters: HttpUrlParameter[];
-  let url: string;
-
   const urlArg = getPairValue(flagsByName, (singletons[0] as string) || '', ['url']);
   const [baseUrl, search] = splitOnce(urlArg, '?');
-  urlParameters =
+  const urlParameters: HttpUrlParameter[] =
     search?.split('&').map((p) => {
       const v = splitOnce(p, '=');
       return { name: decodeURIComponent(v[0] ?? ''), value: decodeURIComponent(v[1] ?? ''), enabled: true };
     }) ?? [];
 
-  url = baseUrl ?? urlArg;
+  const url = baseUrl ?? urlArg;
 
   // Query params
   for (const p of flagsByName['url-query'] ?? []) {
@@ -375,7 +373,7 @@ interface DataParameter {
 }
 
 function pairsToDataParameters(keyedPairs: FlagsByName): DataParameter[] {
-  let dataParameters: DataParameter[] = [];
+  const dataParameters: DataParameter[] = [];
 
   for (const flagName of DATA_FLAGS) {
     const pairs = keyedPairs[flagName];
@@ -386,9 +384,9 @@ function pairsToDataParameters(keyedPairs: FlagsByName): DataParameter[] {
 
     for (const p of pairs) {
       if (typeof p !== 'string') continue;
-      let params = p.split("&");
+      const params = p.split("&");
       for (const param of params) {
-        const [name, value] = param.split('=');
+        const [name, value] = splitOnce(param, '=');
         if (param.startsWith('@')) {
           // Yaak doesn't support files in url-encoded data, so
           dataParameters.push({
