@@ -165,11 +165,11 @@ export function HttpResponsePane({ style, className, activeRequestId }: Props) {
                     {activeResponse.state === 'initialized' ? (
                       <EmptyStateText>
                         <VStack space={3}>
-                          <HStack space={3} className="text-lg">
-                            <LoadingIcon size="lg" className="text-text-subtlest" />
+                          <HStack space={3}>
+                            <LoadingIcon className="text-text-subtlest" />
                             Sending Request
                           </HStack>
-                          <Button variant="border" onClick={() => cancel.mutate()}>Cancel</Button>
+                          <Button size="sm" variant="border" onClick={() => cancel.mutate()}>Cancel</Button>
                         </VStack>
                       </EmptyStateText>
                     ) : activeResponse.state === 'closed' && activeResponse.contentLength === 0 ? (
