@@ -24,9 +24,9 @@ import {
 import type { CSSProperties, HTMLAttributes, KeyboardEvent, ReactNode } from 'react';
 import { Fragment, memo, useCallback, useMemo, useRef, useState } from 'react';
 import { showGraphQLDocExplorerAtom } from '../atoms/graphqlSchemaAtom';
+import { useClickOutside } from '../hooks/useClickOutside';
 import { useContainerSize } from '../hooks/useContainerQuery';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
-import { useRandomKey } from '../hooks/useRandomKey';
 import { useStateWithDeps } from '../hooks/useStateWithDeps';
 import { jotaiStore } from '../lib/jotai';
 import { CountBadge } from './core/CountBadge';
@@ -165,6 +165,7 @@ function GraphQLExplorerHeader({
           })}
         </div>
         <GqlSchemaSearch
+          key={item?.type.toString()} // Force reset when changing items
           maxHeight={containerHeight}
           currentItem={item}
           schema={schema}
@@ -629,10 +630,10 @@ function GqlSchemaSearch({
   const [activeResult, setActiveResult] = useStateWithDeps<SearchResult | null>(null, [
     currentItem,
   ]);
-  const [forceRefreshKey, regenerateForceRefreshKey] = useRandomKey();
-  const [focused, setFocused] = useState<boolean>(false);
+  const [focused, setOpen] = useState<boolean>(false);
   const [value, setValue] = useState<string>('');
   const debouncedValue = useDebouncedValue(value, 300);
+  const menuRef = useRef<HTMLDivElement>(null);
   const canSearch =
     currentItem == null ||
     (isNamedType(currentItem.type) &&
@@ -681,7 +682,7 @@ function GqlSchemaSearch({
         }
       }
     });
-    return results.slice(0, 40);
+    return results.slice(0, 100);
   }, [currentItem, schema, debouncedValue, value]);
 
   const activeIndex = useMemo(() => {
@@ -690,6 +691,7 @@ function GqlSchemaSearch({
   }, [activeResult, results]);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  useClickOutside(menuRef, () => setOpen(false));
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLInputElement>) => {
@@ -732,7 +734,6 @@ function GqlSchemaSearch({
         hideLabel
         defaultValue={value}
         placeholder={focused ? 'Search ' + (currentItem?.type.toString() ?? 'Schema') : 'Search'}
-        forceUpdateKey={forceRefreshKey}
         leftSlot={
           <div className="w-10 flex justify-center items-center">
             <Icon size="sm" icon="search" color="secondary" />
@@ -740,17 +741,13 @@ function GqlSchemaSearch({
         }
         onChange={setValue}
         onKeyDownCapture={handleKeyDown}
-        onFocus={() => setFocused(true)}
-        onBlur={() => {
-          setValue('');
-          regenerateForceRefreshKey();
-          setTimeout(() => {
-            setFocused(false);
-          }, 100);
+        onFocus={() => {
+          setOpen(true);
         }}
       />
       <div
-        style={{ maxHeight: maxHeight - 60}}
+        ref={menuRef}
+        style={{ maxHeight: maxHeight - 60 }}
         className={classNames(
           'x-theme-menu absolute z-10 mt-0.5 p-1.5 top-full right-0 bg-surface',
           'border border-border rounded-lg overflow-y-auto w-full shadow-lg',
@@ -768,7 +765,10 @@ function GqlSchemaSearch({
           return (
             <SearchResult
               key={`${i}::${r.type.name}`}
-              onClick={() => setItem(item)}
+              onMouseDown={() => {
+                setItem(item);
+                setOpen(false);
+              }}
               onMouseEnter={() => setActiveResult(r)}
               isActive={i === activeIndex}
             >
