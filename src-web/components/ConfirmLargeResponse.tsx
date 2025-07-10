@@ -1,5 +1,5 @@
 import type { HttpResponse } from '@yaakapp-internal/models';
-import { useMemo, type ReactNode } from 'react';
+import { type ReactNode, useMemo } from 'react';
 import { useSaveResponse } from '../hooks/useSaveResponse';
 import { useToggle } from '../hooks/useToggle';
 import { isProbablyTextContentType } from '../lib/contentType';
@@ -17,8 +17,7 @@ interface Props {
   response: HttpResponse;
 }
 
-const LARGE_TEXT_BYTES = 2 * 1000 * 1000;
-const LARGE_OTHER_BYTES = 10 * 1000 * 1000;
+const LARGE_BYTES = 2 * 1000 * 1000;
 
 export function ConfirmLargeResponse({ children, response }: Props) {
   const { mutate: saveResponse } = useSaveResponse(response);
@@ -29,15 +28,14 @@ export function ConfirmLargeResponse({ children, response }: Props) {
   }, [response.headers]);
 
   const contentLength = response.contentLength ?? 0;
-  const tooLargeBytes = isProbablyText ? LARGE_TEXT_BYTES : LARGE_OTHER_BYTES;
-  const isLarge = contentLength > tooLargeBytes;
+  const isLarge = contentLength > LARGE_BYTES;
   if (!showLargeResponse && isLarge) {
     return (
       <Banner color="primary" className="flex flex-col gap-3">
         <p>
           Showing responses over{' '}
           <InlineCode>
-            <SizeTag contentLength={tooLargeBytes} />
+            <SizeTag contentLength={LARGE_BYTES} />
           </InlineCode>{' '}
           may impact performance
         </p>
@@ -49,7 +47,12 @@ export function ConfirmLargeResponse({ children, response }: Props) {
             Save to File
           </Button>
           {isProbablyText && (
-            <CopyButton color="secondary" variant="border" size="xs" text={() => getResponseBodyText(response)} />
+            <CopyButton
+              color="secondary"
+              variant="border"
+              size="xs"
+              text={() => getResponseBodyText(response)}
+            />
           )}
         </HStack>
       </Banner>
