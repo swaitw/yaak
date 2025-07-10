@@ -9,7 +9,7 @@ export function useFilterResponse({
   responseId: string | null;
   filter: string;
 }) {
-  return useQuery<string | null, string>({
+  return useQuery({
     queryKey: ['filter_response', responseId, filter],
     queryFn: async () => {
       if (filter === '') {
@@ -21,7 +21,7 @@ export function useFilterResponse({
         filter,
       })) as FilterResponse;
 
-      return result.content;
+      return result;
     },
   });
 }

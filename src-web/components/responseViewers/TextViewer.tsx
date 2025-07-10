@@ -27,7 +27,7 @@ const useFilterText = createGlobalState<Record<string, string | null>>({});
 export function TextViewer({ language, text, responseId, requestId, pretty, className }: Props) {
   const [filterTextMap, setFilterTextMap] = useFilterText();
   const filterText = filterTextMap[requestId] ?? null;
-  const debouncedFilterText = useDebouncedValue(filterText, 200);
+  const debouncedFilterText = useDebouncedValue(filterText);
   const setFilterText = useCallback(
     (v: string | null) => {
       setFilterTextMap((m) => ({ ...m, [requestId]: v }));
@@ -58,7 +58,7 @@ export function TextViewer({ language, text, responseId, requestId, pretty, clas
         <div key="input" className="w-full !opacity-100">
           <Input
             key={requestId}
-            validate={!filteredResponse.error}
+            validate={!(filteredResponse.error || filteredResponse.data?.error)}
             hideLabel
             autoFocus
             containerClassName="bg-surface"
@@ -79,6 +79,7 @@ export function TextViewer({ language, text, responseId, requestId, pretty, clas
       <IconButton
         key="icon"
         size="sm"
+        isLoading={filteredResponse.isPending}
         icon={isSearching ? 'x' : 'filter'}
         title={isSearching ? 'Close filter' : 'Filter response'}
         onClick={toggleSearch}
@@ -90,7 +91,9 @@ export function TextViewer({ language, text, responseId, requestId, pretty, clas
   }, [
     canFilter,
     filterText,
+    filteredResponse.data?.error,
     filteredResponse.error,
+    filteredResponse.isPending,
     isSearching,
     language,
     requestId,
@@ -109,7 +112,7 @@ export function TextViewer({ language, text, responseId, requestId, pretty, clas
     if (filteredResponse.error) {
       body = '';
     } else {
-      body = filteredResponse.data != null ? filteredResponse.data : '';
+      body = filteredResponse.data?.content != null ? filteredResponse.data.content : '';
     }
   } else {
     body = formattedBody;

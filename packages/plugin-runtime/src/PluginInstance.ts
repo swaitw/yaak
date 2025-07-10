@@ -7,7 +7,8 @@ import {
   GetCookieValueRequest,
   GetCookieValueResponse,
   GetHttpRequestByIdResponse,
-  GetKeyValueResponse, GrpcRequestAction,
+  GetKeyValueResponse,
+  GrpcRequestAction,
   HttpAuthenticationAction,
   HttpRequestAction,
   InternalEvent,
@@ -15,8 +16,8 @@ import {
   ListCookieNamesResponse,
   PluginWindowContext,
   PromptTextResponse,
-  RenderHttpRequestResponse,
   RenderGrpcRequestResponse,
+  RenderHttpRequestResponse,
   SendHttpRequestResponse,
   TemplateFunction,
   TemplateFunctionArg,
@@ -138,11 +139,7 @@ export class PluginInstance {
           payload: payload.content,
           mimeType: payload.type,
         });
-        const replyPayload: InternalEventPayload = {
-          type: 'filter_response',
-          content: reply.filtered,
-        };
-        this.#sendPayload(windowContext, replyPayload, replyId);
+        this.#sendPayload(windowContext, { type: 'filter_response', ...reply }, replyId);
         return;
       }
 

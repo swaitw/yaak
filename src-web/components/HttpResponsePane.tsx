@@ -3,6 +3,7 @@ import classNames from 'classnames';
 import type { CSSProperties, ReactNode } from 'react';
 import React, { useCallback, useMemo } from 'react';
 import { useLocalStorage } from 'react-use';
+import { useCancelHttpResponse } from '../hooks/useCancelHttpResponse';
 import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
 import { useResponseViewMode } from '../hooks/useResponseViewMode';
 import { getMimeTypeFromContentType } from '../lib/contentType';
@@ -14,7 +15,7 @@ import { HttpResponseDurationTag } from './core/HttpResponseDurationTag';
 import { HotKeyList } from './core/HotKeyList';
 import { LoadingIcon } from './core/LoadingIcon';
 import { SizeTag } from './core/SizeTag';
-import { HStack } from './core/Stacks';
+import { HStack, VStack } from './core/Stacks';
 import { HttpStatusTag } from './core/HttpStatusTag';
 import type { TabItem } from './core/Tabs/Tabs';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
@@ -31,6 +32,7 @@ import { PdfViewer } from './responseViewers/PdfViewer';
 import { SvgViewer } from './responseViewers/SvgViewer';
 import { VideoViewer } from './responseViewers/VideoViewer';
 import { ErrorBoundary } from './ErrorBoundary';
+import { Button } from './core/Button';
 
 interface Props {
   style?: CSSProperties;
@@ -89,6 +91,8 @@ export function HttpResponsePane({ style, className, activeRequestId }: Props) {
     },
     [activeRequestId, setActiveTabs],
   );
+
+  const cancel = useCancelHttpResponse(activeResponse?.id ?? null);
 
   return (
     <div
@@ -160,7 +164,13 @@ export function HttpResponsePane({ style, className, activeRequestId }: Props) {
                   <ConfirmLargeResponse response={activeResponse}>
                     {activeResponse.state === 'initialized' ? (
                       <EmptyStateText>
-                        <LoadingIcon size="xl" className="text-text-subtlest" />
+                        <VStack space={3}>
+                          <HStack space={3} className="text-lg">
+                            <LoadingIcon size="lg" className="text-text-subtlest" />
+                            Sending Request
+                          </HStack>
+                          <Button variant="border" onClick={() => cancel.mutate()}>Cancel</Button>
+                        </VStack>
                       </EmptyStateText>
                     ) : activeResponse.state === 'closed' && activeResponse.contentLength === 0 ? (
                       <EmptyStateText>Empty </EmptyStateText>

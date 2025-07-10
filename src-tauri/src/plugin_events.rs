@@ -1,6 +1,6 @@
 use crate::http_request::send_http_request;
 use crate::render::{render_grpc_request, render_http_request, render_json_value};
-use crate::window::{create_window, CreateWindowConfig};
+use crate::window::{CreateWindowConfig, create_window};
 use crate::{
     call_frontend, cookie_jar_from_window, environment_from_window, get_window_from_window_context,
     workspace_from_window,
@@ -13,7 +13,13 @@ use tauri_plugin_clipboard_manager::ClipboardExt;
 use yaak_models::models::{HttpResponse, Plugin};
 use yaak_models::query_manager::QueryManagerExt;
 use yaak_models::util::UpdateSource;
-use yaak_plugins::events::{Color, DeleteKeyValueResponse, EmptyPayload, FindHttpResponsesResponse, GetCookieValueResponse, GetHttpRequestByIdResponse, GetKeyValueResponse, Icon, InternalEvent, InternalEventPayload, ListCookieNamesResponse, PluginWindowContext, RenderGrpcRequestResponse, RenderHttpRequestResponse, SendHttpRequestResponse, SetKeyValueResponse, ShowToastRequest, TemplateRenderResponse, WindowNavigateEvent};
+use yaak_plugins::events::{
+    Color, DeleteKeyValueResponse, EmptyPayload, FindHttpResponsesResponse, GetCookieValueResponse,
+    GetHttpRequestByIdResponse, GetKeyValueResponse, Icon, InternalEvent, InternalEventPayload,
+    ListCookieNamesResponse, PluginWindowContext, RenderGrpcRequestResponse,
+    RenderHttpRequestResponse, SendHttpRequestResponse, SetKeyValueResponse, ShowToastRequest,
+    TemplateRenderResponse, WindowNavigateEvent,
+};
 use yaak_plugins::manager::PluginManager;
 use yaak_plugins::plugin_handle::PluginHandle;
 use yaak_plugins::template_callback::PluginTemplateCallback;
@@ -80,8 +86,8 @@ pub(crate) async fn handle_plugin_event<R: Runtime>(
                 environment.as_ref(),
                 &cb,
             )
-                .await
-                .expect("Failed to render grpc request");
+            .await
+            .expect("Failed to render grpc request");
             Some(InternalEventPayload::RenderGrpcRequestResponse(RenderGrpcRequestResponse {
                 grpc_request,
             }))
@@ -104,8 +110,8 @@ pub(crate) async fn handle_plugin_event<R: Runtime>(
                 environment.as_ref(),
                 &cb,
             )
-                .await
-                .expect("Failed to render http request");
+            .await
+            .expect("Failed to render http request");
             Some(InternalEventPayload::RenderHttpRequestResponse(RenderHttpRequestResponse {
                 http_request,
             }))
@@ -206,7 +212,7 @@ pub(crate) async fn handle_plugin_event<R: Runtime>(
                 cookie_jar,
                 &mut tokio::sync::watch::channel(false).1, // No-op cancel channel
             )
-                .await;
+            .await;
 
             let http_response = match result {
                 Ok(r) => r,

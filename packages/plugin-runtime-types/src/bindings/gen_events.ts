@@ -65,7 +65,7 @@ extensions: Array<string>, };
 
 export type FilterRequest = { content: string, filter: string, };
 
-export type FilterResponse = { content: string, };
+export type FilterResponse = { content: string, error?: string, };
 
 export type FindHttpResponsesRequest = { requestId: string, limit?: number, };
 

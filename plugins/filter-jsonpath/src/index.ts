@@ -1,4 +1,4 @@
-import { PluginDefinition } from '@yaakapp/api';
+import type { PluginDefinition } from '@yaakapp/api';
 import { JSONPath } from 'jsonpath-plus';
 
 export const plugin: PluginDefinition = {
@@ -7,8 +7,12 @@ export const plugin: PluginDefinition = {
     description: 'Filter JSONPath',
     onFilter(_ctx, args) {
       const parsed = JSON.parse(args.payload);
-      const filtered = JSONPath({ path: args.filter, json: parsed });
-      return { filtered: JSON.stringify(filtered, null, 2) };
+      try {
+        const filtered = JSONPath({ path: args.filter, json: parsed });
+        return { content: JSON.stringify(filtered, null, 2) };
+      } catch (err) {
+        return { content: '', error: `Invalid filter: ${err}` };
+      }
     },
   },
 };

@@ -216,6 +216,8 @@ pub struct FilterRequest {
 #[ts(export, export_to = "gen_events.ts")]
 pub struct FilterResponse {
     pub content: String,
+    #[ts(optional)]
+    pub error: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
