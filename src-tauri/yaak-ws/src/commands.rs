@@ -283,10 +283,26 @@ pub(crate) async fn connect<R: Runtime>(
     let (receive_tx, mut receive_rx) = mpsc::channel::<Message>(128);
     let mut ws_manager = ws_manager.lock().await;
 
-    let (url, url_parameters) = apply_path_placeholders(&request.url, request.url_parameters);
+    let (mut url, url_parameters) = apply_path_placeholders(&request.url, request.url_parameters);
+    if !url.starts_with("ws://") && !url.starts_with("wss://") {
+        url.insert_str(0, "ws://");
+    }
 
     // Add URL parameters to URL
-    let mut url = Url::parse(&url).unwrap();
+    let mut url = match Url::parse(&url) {
+        Ok(url) => url,
+        Err(e) => {
+            return Ok(app_handle.db().upsert_websocket_connection(
+                &WebsocketConnection {
+                    error: Some(format!("Failed to parse URL {}", e.to_string())),
+                    state: WebsocketConnectionState::Closed,
+                    ..connection
+                },
+                &UpdateSource::from_window(&window),
+            )?);
+        }
+    };
+
     {
         let valid_query_pairs = url_parameters
             .into_iter()
