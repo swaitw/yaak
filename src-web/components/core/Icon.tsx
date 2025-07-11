@@ -45,6 +45,7 @@ const icons = {
   download: lucide.DownloadIcon,
   ellipsis: lucide.EllipsisIcon,
   external_link: lucide.ExternalLinkIcon,
+  expand: lucide.ExpandIcon,
   eye: lucide.EyeIcon,
   eye_closed: lucide.EyeOffIcon,
   file_code: lucide.FileCodeIcon,
