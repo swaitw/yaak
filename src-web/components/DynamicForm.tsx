@@ -319,8 +319,9 @@ function EditorArg({
                 onClick={() => {
                   showDialog({
                     id: 'id',
-                    size: 'dynamic',
+                    size: 'full',
                     title: 'Edit Value',
+                    className: '!max-w-[50rem] !max-h-[60rem]',
                     description: (
                       <Label
                         htmlFor={id}
@@ -338,25 +339,21 @@ function EditorArg({
                     },
                     render() {
                       return (
-                        <div className="w-[100vw] max-w-[40rem] h-[calc(100vh-10rem)] max-h-[40rem]">
-                          <Editor
-                            id={id}
-                            autocomplete={
-                              arg.completionOptions ? { options: arg.completionOptions } : undefined
-                            }
-                            disabled={arg.disabled}
-                            language={arg.language}
-                            onChange={onChange}
-                            defaultValue={
-                              value === DYNAMIC_FORM_NULL_ARG ? arg.defaultValue : value
-                            }
-                            placeholder={arg.placeholder ?? undefined}
-                            autocompleteFunctions={autocompleteFunctions}
-                            autocompleteVariables={autocompleteVariables}
-                            stateKey={stateKey}
-                            forceUpdateKey={forceUpdateKey}
-                          />
-                        </div>
+                        <Editor
+                          id={id}
+                          autocomplete={
+                            arg.completionOptions ? { options: arg.completionOptions } : undefined
+                          }
+                          disabled={arg.disabled}
+                          language={arg.language}
+                          onChange={onChange}
+                          defaultValue={value === DYNAMIC_FORM_NULL_ARG ? arg.defaultValue : value}
+                          placeholder={arg.placeholder ?? undefined}
+                          autocompleteFunctions={autocompleteFunctions}
+                          autocompleteVariables={autocompleteVariables}
+                          stateKey={stateKey}
+                          forceUpdateKey={forceUpdateKey}
+                        />
                       );
                     },
                   });
