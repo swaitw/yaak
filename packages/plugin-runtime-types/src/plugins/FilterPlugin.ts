@@ -1,6 +1,5 @@
+import { FilterResponse } from '../bindings/gen_events';
 import type { Context } from './Context';
-
-type FilterPluginResponse = { filtered: string };
 
 export type FilterPlugin = {
   name: string;
@@ -8,5 +7,5 @@ export type FilterPlugin = {
   onFilter(
     ctx: Context,
     args: { payload: string; filter: string; mimeType: string },
-  ): Promise<FilterPluginResponse> | FilterPluginResponse;
+  ): Promise<FilterResponse> | FilterResponse;
 };

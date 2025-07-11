@@ -8,7 +8,7 @@ import { useContainerSize } from '../../hooks/useContainerQuery';
 import { clamp } from '../../lib/clamp';
 import { ResizeHandle } from '../ResizeHandle';
 
-interface SlotProps {
+export interface SlotProps {
   orientation: 'horizontal' | 'vertical';
   style: CSSProperties;
 }
@@ -25,9 +25,10 @@ interface Props {
   layout?: 'responsive' | 'vertical' | 'horizontal';
 }
 
-const areaL = { gridArea: 'left' };
-const areaR = { gridArea: 'right' };
-const areaD = { gridArea: 'drag' };
+const baseProperties = { minWidth: 0 };
+const areaL = { ...baseProperties, gridArea: 'left' };
+const areaR = { ...baseProperties, gridArea: 'right' };
+const areaD = { ...baseProperties, gridArea: 'drag' };
 
 const STACK_VERTICAL_WIDTH = 500;
 
@@ -78,7 +79,7 @@ export function SplitLayout({
           `
         : `
             ' ${areaL.gridArea} ${areaD.gridArea} ${areaR.gridArea}' minmax(0,1fr)
-            / ${1 - width}fr   0                ${width}fr           
+            / ${1 - width}fr    0                 ${width}fr           
           `,
     };
   }, [style, vertical, height, minHeightPx, width]);
@@ -144,7 +145,11 @@ export function SplitLayout({
   const containerQueryReady = size.width > 0 || size.height > 0;
 
   return (
-    <div ref={containerRef} style={styles} className={classNames(className, 'grid w-full h-full overflow-hidden')}>
+    <div
+      ref={containerRef}
+      style={styles}
+      className={classNames(className, 'grid w-full h-full overflow-hidden')}
+    >
       {containerQueryReady && (
         <>
           {firstSlot({ style: areaL, orientation: vertical ? 'vertical' : 'horizontal' })}

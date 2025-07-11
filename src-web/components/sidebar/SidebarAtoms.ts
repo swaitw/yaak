@@ -6,7 +6,7 @@ import {
   type WebsocketRequest,
 } from '@yaakapp-internal/models';
 
-// This is an atom so we can use it in the child items to avoid re-rendering the entire list
+// This is an atom, so we can use it in the child items to avoid re-rendering the entire list
 import { atom } from 'jotai';
 import { activeWorkspaceAtom } from '../../hooks/useActiveWorkspace';
 import { allRequestsAtom } from '../../hooks/useAllRequests';

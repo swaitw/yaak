@@ -15,7 +15,7 @@ pub enum Error {
     #[error("Yaml error: {0}")]
     YamlParseError(#[from] serde_yaml::Error),
 
-    #[error("Yaml error: {0}")]
+    #[error(transparent)]
     ModelError(#[from] yaak_models::error::Error),
 
     #[error("Sync error: {0}")]
@@ -24,10 +24,10 @@ pub enum Error {
     #[error("I/o error: {0}")]
     IoError(#[from] io::Error),
 
-    #[error("Yaml error: {0}")]
+    #[error("JSON error: {0}")]
     JsonParseError(#[from] serde_json::Error),
 
-    #[error("Yaml error: {0}")]
+    #[error("UTF8 error: {0}")]
     Utf8ConversionError(#[from] FromUtf8Error),
 
     #[error("Git error: {0}")]

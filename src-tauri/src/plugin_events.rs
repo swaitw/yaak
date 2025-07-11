@@ -1,11 +1,12 @@
 use crate::http_request::send_http_request;
-use crate::render::{render_http_request, render_json_value};
+use crate::render::{render_grpc_request, render_http_request, render_json_value};
 use crate::window::{CreateWindowConfig, create_window};
 use crate::{
     call_frontend, cookie_jar_from_window, environment_from_window, get_window_from_window_context,
     workspace_from_window,
 };
 use chrono::Utc;
+use cookie::Cookie;
 use log::warn;
 use tauri::{AppHandle, Emitter, Manager, Runtime, State};
 use tauri_plugin_clipboard_manager::ClipboardExt;
@@ -13,10 +14,11 @@ use yaak_models::models::{HttpResponse, Plugin};
 use yaak_models::query_manager::QueryManagerExt;
 use yaak_models::util::UpdateSource;
 use yaak_plugins::events::{
-    Color, DeleteKeyValueResponse, EmptyPayload, FindHttpResponsesResponse,
+    Color, DeleteKeyValueResponse, EmptyPayload, FindHttpResponsesResponse, GetCookieValueResponse,
     GetHttpRequestByIdResponse, GetKeyValueResponse, Icon, InternalEvent, InternalEventPayload,
-    PluginWindowContext, RenderHttpRequestResponse, SendHttpRequestResponse, SetKeyValueResponse,
-    ShowToastRequest, TemplateRenderResponse, WindowNavigateEvent,
+    ListCookieNamesResponse, PluginWindowContext, RenderGrpcRequestResponse,
+    RenderHttpRequestResponse, SendHttpRequestResponse, SetKeyValueResponse, ShowToastRequest,
+    TemplateRenderResponse, WindowNavigateEvent,
 };
 use yaak_plugins::manager::PluginManager;
 use yaak_plugins::plugin_handle::PluginHandle;
@@ -66,6 +68,30 @@ pub(crate) async fn handle_plugin_event<R: Runtime>(
                 http_request,
             }))
         }
+        InternalEventPayload::RenderGrpcRequestRequest(req) => {
+            let window = get_window_from_window_context(app_handle, &window_context)
+                .expect("Failed to find window for render grpc request");
+
+            let workspace =
+                workspace_from_window(&window).expect("Failed to get workspace_id from window URL");
+            let environment = environment_from_window(&window);
+            let base_environment = app_handle
+                .db()
+                .get_base_environment(&workspace.id)
+                .expect("Failed to get base environment");
+            let cb = PluginTemplateCallback::new(app_handle, &window_context, req.purpose);
+            let grpc_request = render_grpc_request(
+                &req.grpc_request,
+                &base_environment,
+                environment.as_ref(),
+                &cb,
+            )
+            .await
+            .expect("Failed to render grpc request");
+            Some(InternalEventPayload::RenderGrpcRequestResponse(RenderGrpcRequestResponse {
+                grpc_request,
+            }))
+        }
         InternalEventPayload::RenderHttpRequestRequest(req) => {
             let window = get_window_from_window_context(app_handle, &window_context)
                 .expect("Failed to find window for render http request");
@@ -113,7 +139,7 @@ pub(crate) async fn handle_plugin_event<R: Runtime>(
                 &InternalEventPayload::ShowToastRequest(ShowToastRequest {
                     message: format!(
                         "Plugin error from {}: {}",
-                        plugin_handle.name().await,
+                        plugin_handle.info().name,
                         resp.error
                     ),
                     color: Some(Color::Danger),
@@ -124,7 +150,7 @@ pub(crate) async fn handle_plugin_event<R: Runtime>(
             Box::pin(handle_plugin_event(app_handle, &toast_event, plugin_handle)).await;
             None
         }
-        InternalEventPayload::ReloadResponse(_) => {
+        InternalEventPayload::ReloadResponse(r) => {
             let plugins = app_handle.db().list_plugins().unwrap();
             for plugin in plugins {
                 if plugin.directory != plugin_handle.dir {
@@ -140,7 +166,7 @@ pub(crate) async fn handle_plugin_event<R: Runtime>(
             let toast_event = plugin_handle.build_event_to_send(
                 &window_context,
                 &InternalEventPayload::ShowToastRequest(ShowToastRequest {
-                    message: format!("Reloaded plugin {}", plugin_handle.dir),
+                    message: format!("Reloaded plugin {}@{}", r.name, r.version),
                     icon: Some(Icon::Info),
                     ..Default::default()
                 }),
@@ -255,19 +281,46 @@ pub(crate) async fn handle_plugin_event<R: Runtime>(
             None
         }
         InternalEventPayload::SetKeyValueRequest(req) => {
-            let name = plugin_handle.name().await;
+            let name = plugin_handle.info().name;
             app_handle.db().set_plugin_key_value(&name, &req.key, &req.value);
             Some(InternalEventPayload::SetKeyValueResponse(SetKeyValueResponse {}))
         }
         InternalEventPayload::GetKeyValueRequest(req) => {
-            let name = plugin_handle.name().await;
+            let name = plugin_handle.info().name;
             let value = app_handle.db().get_plugin_key_value(&name, &req.key).map(|v| v.value);
             Some(InternalEventPayload::GetKeyValueResponse(GetKeyValueResponse { value }))
         }
         InternalEventPayload::DeleteKeyValueRequest(req) => {
-            let name = plugin_handle.name().await;
+            let name = plugin_handle.info().name;
             let deleted = app_handle.db().delete_plugin_key_value(&name, &req.key).unwrap();
             Some(InternalEventPayload::DeleteKeyValueResponse(DeleteKeyValueResponse { deleted }))
+        }
+        InternalEventPayload::ListCookieNamesRequest(_req) => {
+            let window = get_window_from_window_context(app_handle, &window_context)
+                .expect("Failed to find window for listing cookies");
+            let names = match cookie_jar_from_window(&window) {
+                None => Vec::new(),
+                Some(j) => j
+                    .cookies
+                    .into_iter()
+                    .filter_map(|c| Cookie::parse(c.raw_cookie).ok().map(|c| c.name().to_string()))
+                    .collect(),
+            };
+            Some(InternalEventPayload::ListCookieNamesResponse(ListCookieNamesResponse { names }))
+        }
+        InternalEventPayload::GetCookieValueRequest(req) => {
+            let window = get_window_from_window_context(app_handle, &window_context)
+                .expect("Failed to find window for listing cookies");
+            let value = match cookie_jar_from_window(&window) {
+                None => None,
+                Some(j) => j.cookies.into_iter().find_map(|c| match Cookie::parse(c.raw_cookie) {
+                    Ok(c) if c.name().to_string().eq(&req.name) => {
+                        Some(c.value_trimmed().to_string())
+                    }
+                    _ => None,
+                }),
+            };
+            Some(InternalEventPayload::GetCookieValueResponse(GetCookieValueResponse { value }))
         }
         _ => None,
     };

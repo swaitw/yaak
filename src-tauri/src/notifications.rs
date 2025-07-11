@@ -1,13 +1,15 @@
 use std::time::SystemTime;
 
 use crate::error::Result;
-use crate::history::{get_num_launches, get_os};
-use chrono::{DateTime, Duration, Utc};
+use crate::history::get_num_launches;
+use chrono::{DateTime, Utc};
 use log::debug;
 use reqwest::Method;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use tauri::{AppHandle, Emitter, Manager, Runtime, WebviewWindow};
+use yaak_common::api_client::yaak_api_client;
+use yaak_common::platform::get_os;
+use yaak_license::{LicenseCheckStatus, check_license};
 use yaak_models::query_manager::QueryManagerExt;
 use yaak_models::util::UpdateSource;
 
@@ -26,6 +28,7 @@ pub struct YaakNotifier {
 #[serde(default, rename_all = "camelCase")]
 pub struct YaakNotification {
     timestamp: DateTime<Utc>,
+    timeout: Option<f64>,
     id: String,
     message: String,
     action: Option<YaakNotificationAction>,
@@ -60,7 +63,7 @@ impl YaakNotifier {
         Ok(())
     }
 
-    pub async fn check<R: Runtime>(&mut self, window: &WebviewWindow<R>) -> Result<()> {
+    pub async fn maybe_check<R: Runtime>(&mut self, window: &WebviewWindow<R>) -> Result<()> {
         let app_handle = window.app_handle();
         let ignore_check = self.last_check.elapsed().unwrap().as_secs() < MAX_UPDATE_CHECK_SECONDS;
 
@@ -70,13 +73,22 @@ impl YaakNotifier {
 
         self.last_check = SystemTime::now();
 
+        let license_check = match check_license(window).await? {
+            LicenseCheckStatus::PersonalUse { .. } => "personal".to_string(),
+            LicenseCheckStatus::CommercialUse => "commercial".to_string(),
+            LicenseCheckStatus::InvalidLicense => "invalid_license".to_string(),
+            LicenseCheckStatus::Trialing { .. } => "trialing".to_string(),
+        };
+        let settings = window.db().get_settings();
         let num_launches = get_num_launches(app_handle).await;
         let info = app_handle.package_info().clone();
-        let req = reqwest::Client::default()
+        let req = yaak_api_client(app_handle)?
             .request(Method::GET, "https://notify.yaak.app/notifications")
             .query(&[
                 ("version", info.version.to_string().as_str()),
                 ("launches", num_launches.to_string().as_str()),
+                ("installed", settings.created_at.format("%Y-%m-%d").to_string().as_str()),
+                ("license", &license_check),
                 ("platform", get_os()),
             ]);
         let resp = req.send().await?;
@@ -85,22 +97,9 @@ impl YaakNotifier {
             return Ok(());
         }
 
-        let result = resp.json::<Value>().await?;
-
-        // Support both single and multiple notifications.
-        // TODO: Remove support for single after April 2025
-        let notifications = match result {
-            Value::Array(a) => a
-                .into_iter()
-                .map(|a| serde_json::from_value(a).unwrap())
-                .collect::<Vec<YaakNotification>>(),
-            a @ _ => vec![serde_json::from_value(a).unwrap()],
-        };
-
-        for notification in notifications {
-            let age = notification.timestamp.signed_duration_since(Utc::now());
+        for notification in resp.json::<Vec<YaakNotification>>().await? {
             let seen = get_kv(app_handle).await?;
-            if seen.contains(&notification.id) || (age > Duration::days(2)) {
+            if seen.contains(&notification.id) {
                 debug!("Already seen notification {}", notification.id);
                 continue;
             }

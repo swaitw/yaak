@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import type { FocusEvent, HTMLAttributes } from 'react';
-import { useCallback, useRef, useState } from 'react';
+import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react';
 import { useStateWithDeps } from '../../hooks/useStateWithDeps';
 import { IconButton } from './IconButton';
 import type { InputProps } from './Input';
@@ -15,38 +15,46 @@ export type PlainInputProps = Omit<InputProps, 'wrapLines' | 'onKeyDown' | 'type
     hideObscureToggle?: boolean;
   };
 
-export function PlainInput({
-  className,
-  containerClassName,
-  defaultValue,
-  forceUpdateKey,
-  hideLabel,
-  label,
-  labelClassName,
-  labelPosition = 'top',
-  leftSlot,
-  name,
-  onBlur,
-  onChange,
-  onFocus,
-  onPaste,
-  required,
-  rightSlot,
-  hideObscureToggle,
-  size = 'md',
-  type = 'text',
-  tint,
-  validate,
-  autoSelect,
-  placeholder,
-  autoFocus,
-  onKeyDownCapture,
-  onFocusRaw,
-}: PlainInputProps) {
+export const PlainInput = forwardRef<{ focus: () => void }, PlainInputProps>(function PlainInput(
+  {
+    autoFocus,
+    autoSelect,
+    className,
+    containerClassName,
+    defaultValue,
+    forceUpdateKey,
+    help,
+    hideLabel,
+    hideObscureToggle,
+    label,
+    labelClassName,
+    labelPosition = 'top',
+    leftSlot,
+    name,
+    onBlur,
+    onChange,
+    onFocus,
+    onFocusRaw,
+    onKeyDownCapture,
+    onPaste,
+    placeholder,
+    required,
+    rightSlot,
+    size = 'md',
+    tint,
+    type = 'text',
+    validate,
+  },
+  ref,
+) {
   const [obscured, setObscured] = useStateWithDeps(type === 'password', [type]);
   const [focused, setFocused] = useState(false);
-  const [hasChanged, setHasChanged] = useState<boolean>(false);
+  const [hasChanged, setHasChanged] = useStateWithDeps<boolean>(false, [forceUpdateKey]);
   const inputRef = useRef<HTMLInputElement>(null);
+  useImperativeHandle<{ focus: () => void } | null, { focus: () => void } | null>(
+    ref,
+    () => inputRef.current,
+  );
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleFocus = useCallback(
@@ -86,7 +94,7 @@ export function PlainInput({
       };
       inputRef.current?.setCustomValidity(isValid(value) ? '' : 'Invalid value');
     },
-    [onChange, required, validate],
+    [onChange, required, setHasChanged, validate],
   );
 
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -101,7 +109,13 @@ export function PlainInput({
         labelPosition === 'top' && 'flex-row gap-0.5',
       )}
     >
-      <Label htmlFor={id} className={labelClassName} visuallyHidden={hideLabel} required={required}>
+      <Label
+        htmlFor={id}
+        className={labelClassName}
+        visuallyHidden={hideLabel}
+        required={required}
+        help={help}
+      >
         {label}
       </Label>
       <HStack
@@ -116,6 +130,7 @@ export function PlainInput({
           size === 'md' && 'min-h-md',
           size === 'sm' && 'min-h-sm',
           size === 'xs' && 'min-h-xs',
+          size === '2xs' && 'min-h-2xs',
         )}
       >
         {tint != null && (
@@ -147,7 +162,7 @@ export function PlainInput({
             autoCorrect="off"
             onChange={(e) => handleChange(e.target.value)}
             onPaste={(e) => onPaste?.(e.clipboardData.getData('Text'))}
-            className={classNames(commonClassName, 'h-auto')}
+            className={classNames(commonClassName, 'h-full')}
             onFocus={handleFocus}
             onBlur={handleBlur}
             required={required}
@@ -171,7 +186,7 @@ export function PlainInput({
       </HStack>
     </div>
   );
-}
+});
 
 function validateRequire(v: string) {
   return v.length > 0;

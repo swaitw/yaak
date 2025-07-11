@@ -27,7 +27,7 @@ const useFilterText = createGlobalState<Record<string, string | null>>({});
 export function TextViewer({ language, text, responseId, requestId, pretty, className }: Props) {
   const [filterTextMap, setFilterTextMap] = useFilterText();
   const filterText = filterTextMap[requestId] ?? null;
-  const debouncedFilterText = useDebouncedValue(filterText, 200);
+  const debouncedFilterText = useDebouncedValue(filterText);
   const setFilterText = useCallback(
     (v: string | null) => {
       setFilterTextMap((m) => ({ ...m, [requestId]: v }));
@@ -58,7 +58,7 @@ export function TextViewer({ language, text, responseId, requestId, pretty, clas
         <div key="input" className="w-full !opacity-100">
           <Input
             key={requestId}
-            validate={!filteredResponse.error}
+            validate={!(filteredResponse.error || filteredResponse.data?.error)}
             hideLabel
             autoFocus
             containerClassName="bg-surface"
@@ -79,6 +79,7 @@ export function TextViewer({ language, text, responseId, requestId, pretty, clas
       <IconButton
         key="icon"
         size="sm"
+        isLoading={filteredResponse.isPending}
         icon={isSearching ? 'x' : 'filter'}
         title={isSearching ? 'Close filter' : 'Filter response'}
         onClick={toggleSearch}
@@ -90,7 +91,9 @@ export function TextViewer({ language, text, responseId, requestId, pretty, clas
   }, [
     canFilter,
     filterText,
+    filteredResponse.data?.error,
     filteredResponse.error,
+    filteredResponse.isPending,
     isSearching,
     language,
     requestId,
@@ -100,8 +103,7 @@ export function TextViewer({ language, text, responseId, requestId, pretty, clas
   ]);
 
   const formattedBody = useFormatText({ text, language, pretty });
-
-  if (formattedBody.data == null) {
+  if (formattedBody == null) {
     return null;
   }
 
@@ -110,10 +112,16 @@ export function TextViewer({ language, text, responseId, requestId, pretty, clas
     if (filteredResponse.error) {
       body = '';
     } else {
-      body = filteredResponse.data != null ? filteredResponse.data : '';
+      body = filteredResponse.data?.content != null ? filteredResponse.data.content : '';
     }
   } else {
-    body = formattedBody.data;
+    body = formattedBody;
+  }
+
+  // Decode unicode sequences in the text to readable characters
+  if (language === 'json' && pretty) {
+    body = decodeUnicodeLiterals(body);
+    body = body.replace(/\\\//g, '/'); // Hide unnecessary escaping of '/' by some older frameworks
   }
 
   return (
@@ -127,4 +135,12 @@ export function TextViewer({ language, text, responseId, requestId, pretty, clas
       stateKey={null}
     />
   );
+}
+
+/** Convert \uXXXX to actual Unicode characters */
+function decodeUnicodeLiterals(text: string): string {
+  return text.replace(/\\u([0-9a-fA-F]{4})/g, (_, hex) => {
+    const charCode = parseInt(hex, 16);
+    return String.fromCharCode(charCode);
+  });
 }

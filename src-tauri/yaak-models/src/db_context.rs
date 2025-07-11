@@ -1,14 +1,17 @@
 use crate::connection_or_tx::ConnectionOrTx;
-use crate::error::Error::RowNotFound;
+use crate::error::Error::ModelNotFound;
+use crate::error::Result;
 use crate::models::{AnyModel, UpsertModelInfo};
 use crate::util::{ModelChangeEvent, ModelPayload, UpdateSource};
+use log::error;
 use rusqlite::OptionalExtension;
 use sea_query::{
     Asterisk, Expr, IntoColumnRef, IntoIden, IntoTableRef, OnConflict, Query, SimpleExpr,
     SqliteQueryBuilder,
 };
 use sea_query_rusqlite::RusqliteBinder;
-use tokio::sync::mpsc;
+use std::fmt::Debug;
+use std::sync::mpsc;
 
 pub struct DbContext<'a> {
     pub(crate) events_tx: mpsc::Sender<ModelPayload>,
@@ -18,15 +21,32 @@ pub struct DbContext<'a> {
 impl<'a> DbContext<'a> {
     pub(crate) fn find_one<'s, M>(
         &self,
-        col: impl IntoColumnRef,
-        value: impl Into<SimpleExpr>,
-    ) -> crate::error::Result<M>
+        col: impl IntoColumnRef + IntoIden + Clone,
+        value: impl Into<SimpleExpr> + Debug,
+    ) -> Result<M>
     where
         M: Into<AnyModel> + Clone + UpsertModelInfo,
     {
-        match self.find_optional::<M>(col, value) {
-            Some(v) => Ok(v),
-            None => Err(RowNotFound),
+        let value_debug = format!("{:?}", value);
+
+        let value_expr = value.into();
+        let (sql, params) = Query::select()
+            .from(M::table_name())
+            .column(Asterisk)
+            .cond_where(Expr::col(col.clone()).eq(value_expr))
+            .build_rusqlite(SqliteQueryBuilder);
+        let mut stmt = self.conn.prepare(sql.as_str()).expect("Failed to prepare query");
+        match stmt.query_row(&*params.as_params(), M::from_row) {
+            Ok(result) => Ok(result),
+            Err(rusqlite::Error::QueryReturnedNoRows) => {
+                Err(ModelNotFound(format!(
+                    r#"table "{}" {} == {}"#,
+                    M::table_name().into_iden().to_string(),
+                    col.into_iden().to_string(),
+                    value_debug
+                )))
+            }
+            Err(e) => Err(crate::error::Error::SqlError(e)),
         }
     }
 
@@ -150,16 +170,15 @@ impl<'a> DbContext<'a> {
             update_source: source.clone(),
             change: ModelChangeEvent::Upsert,
         };
-        self.events_tx.try_send(payload).unwrap();
+
+        if let Err(e) = self.events_tx.send(payload.clone()) {
+            error!("Failed to send model change {source:?}: {e:?}");
+        }
 
         Ok(m)
     }
 
-    pub(crate) fn delete<'s, M>(
-        &self,
-        m: &M,
-        update_source: &UpdateSource,
-    ) -> crate::error::Result<M>
+    pub(crate) fn delete<'s, M>(&self, m: &M, source: &UpdateSource) -> crate::error::Result<M>
     where
         M: Into<AnyModel> + Clone + UpsertModelInfo,
     {
@@ -171,11 +190,13 @@ impl<'a> DbContext<'a> {
 
         let payload = ModelPayload {
             model: m.clone().into(),
-            update_source: update_source.clone(),
+            update_source: source.clone(),
             change: ModelChangeEvent::Delete,
         };
 
-        self.events_tx.try_send(payload).unwrap();
+        if let Err(e) = self.events_tx.send(payload) {
+            error!("Failed to send model change {source:?}: {e:?}");
+        }
         Ok(m.clone())
     }
 }

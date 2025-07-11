@@ -6,9 +6,8 @@ use crate::util::ModelPayload;
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
 use rusqlite::TransactionBehavior;
-use std::sync::{Arc, Mutex};
+use std::sync::{mpsc, Arc, Mutex};
 use tauri::{Manager, Runtime, State};
-use tokio::sync::mpsc;
 
 pub trait QueryManagerExt<'a, R> {
     fn db_manager(&'a self) -> State<'a, QueryManager>;

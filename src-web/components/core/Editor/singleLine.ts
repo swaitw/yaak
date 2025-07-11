@@ -1,30 +1,47 @@
-import type {Extension, Transaction, TransactionSpec} from '@codemirror/state';
-import { EditorSelection, EditorState } from '@codemirror/state';
+import type { Extension, TransactionSpec } from '@codemirror/state';
+import { EditorSelection, EditorState, Transaction } from '@codemirror/state';
 
+/**
+ * A CodeMirror extension that forces single-line input by stripping
+ * all newline characters from user input, including pasted content.
+ *
+ * This extension uses a transaction filter to intercept user input,
+ * removes any newline characters, and adjusts the selection to the end
+ * of the inserted text.
+ *
+ * IME composition events are ignored to preserve proper input behavior
+ * for non-Latin languages.
+ *
+ * @returns A CodeMirror extension that enforces single-line editing.
+ */
 export function singleLineExtensions(): Extension {
   return EditorState.transactionFilter.of(
-    (tr: Transaction): TransactionSpec | TransactionSpec[] => {
-      if (!tr.isUserEvent('input')) return tr;
+    (tr: Transaction): TransactionSpec | readonly TransactionSpec[] => {
+      if (!tr.isUserEvent('input') || tr.isUserEvent('input.type.compose')) return tr;
 
-      const specs: TransactionSpec[] = [];
-      tr.changes.iterChanges((_, toA, fromB, toB, inserted) => {
+      const changes: { from: number; to: number; insert: string }[] = [];
+
+      tr.changes.iterChanges((_fromA, toA, fromB, _toB, inserted) => {
         let insert = '';
-        let newlinesRemoved = 0;
-        for (const line of inserted) {
-          const newLine = line.replace('\n', '');
-          newlinesRemoved += line.length - newLine.length;
-          insert += newLine;
+        for (const line of inserted.iterLines()) {
+          insert += line.replace(/\n/g, '');
         }
 
-        // Update cursor position based on how many newlines were removed
-        const cursor = EditorSelection.cursor(toB - newlinesRemoved);
-        const selection = EditorSelection.create([cursor], 0);
-
-        const changes = [{ from: fromB, to: toA, insert }];
-        specs.push({ ...tr, selection, changes });
+        if (insert !== inserted.toString()) {
+          changes.push({ from: fromB, to: toA, insert });
+        }
       });
 
-      return specs;
+      const lastChange = changes[changes.length - 1];
+      if (lastChange == null) return tr;
+
+      const selection = EditorSelection.cursor(lastChange.from + lastChange.insert.length);
+
+      return {
+        changes,
+        selection,
+        userEvent: tr.annotation(Transaction.userEvent) ?? undefined,
+      };
     },
   );
 }

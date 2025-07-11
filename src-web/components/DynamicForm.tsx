@@ -14,11 +14,14 @@ import classNames from 'classnames';
 import { useAtomValue } from 'jotai';
 import { useCallback } from 'react';
 import { useActiveRequest } from '../hooks/useActiveRequest';
+import { useRandomKey } from '../hooks/useRandomKey';
 import { capitalize } from '../lib/capitalize';
+import { showDialog } from '../lib/dialog';
 import { resolvedModelName } from '../lib/resolvedModelName';
 import { Banner } from './core/Banner';
 import { Checkbox } from './core/Checkbox';
 import { Editor } from './core/Editor/Editor';
+import { IconButton } from './core/IconButton';
 import { Input } from './core/Input';
 import { Label } from './core/Label';
 import { Select } from './core/Select';
@@ -237,6 +240,7 @@ function TextArg({
       defaultValue={value === DYNAMIC_FORM_NULL_ARG ? arg.defaultValue : value}
       required={!arg.optional}
       disabled={arg.disabled}
+      help={arg.description}
       type={arg.password ? 'password' : 'text'}
       label={arg.label ?? arg.name}
       size={INPUT_SIZE}
@@ -270,38 +274,96 @@ function EditorArg({
 
   // Read-only editor force refresh for every defaultValue change
   // Should this be built into the <Editor/> component?
-  const forceUpdateKey = arg.readOnly ? arg.defaultValue + stateKey : stateKey;
+  const [popoutKey, regeneratePopoutKey] = useRandomKey();
+  const forceUpdateKey = popoutKey + (arg.readOnly ? arg.defaultValue + stateKey : stateKey);
 
   return (
-    <div className=" w-full grid grid-cols-1 grid-rows-[auto_minmax(0,1fr)]">
+    <div className="w-full grid grid-cols-1 grid-rows-[auto_minmax(0,1fr)]">
       <Label
         htmlFor={id}
         required={!arg.optional}
         visuallyHidden={arg.hideLabel}
+        help={arg.description}
         tags={arg.language ? [capitalize(arg.language)] : undefined}
       >
         {arg.label}
       </Label>
-      <Editor
-        id={id}
+      <div
         className={classNames(
           'border border-border rounded-md overflow-hidden px-2 py-1',
           'focus-within:border-border-focus',
-          'max-h-[15rem]', // So it doesn't take up too much space
+          'max-h-[10rem]', // So it doesn't take up too much space
         )}
-        autocomplete={arg.completionOptions ? { options: arg.completionOptions } : undefined}
-        disabled={arg.disabled}
-        language={arg.language}
-        onChange={onChange}
-        heightMode="auto"
-        defaultValue={value === DYNAMIC_FORM_NULL_ARG ? arg.defaultValue : value}
-        placeholder={arg.placeholder ?? undefined}
-        autocompleteFunctions={autocompleteFunctions}
-        autocompleteVariables={autocompleteVariables}
-        stateKey={stateKey}
-        forceUpdateKey={forceUpdateKey}
-        hideGutter
-      />
+      >
+        <Editor
+          id={id}
+          autocomplete={arg.completionOptions ? { options: arg.completionOptions } : undefined}
+          disabled={arg.disabled}
+          language={arg.language}
+          onChange={onChange}
+          heightMode="auto"
+          defaultValue={value === DYNAMIC_FORM_NULL_ARG ? arg.defaultValue : value}
+          placeholder={arg.placeholder ?? undefined}
+          autocompleteFunctions={autocompleteFunctions}
+          autocompleteVariables={autocompleteVariables}
+          stateKey={stateKey}
+          forceUpdateKey={forceUpdateKey}
+          actions={
+            <div>
+              <IconButton
+                variant="border"
+                size="sm"
+                className="my-0.5 opacity-60 group-hover:opacity-100"
+                icon="expand"
+                title="Pop out to large editor"
+                onClick={() => {
+                  showDialog({
+                    id: 'id',
+                    size: 'full',
+                    title: 'Edit Value',
+                    className: '!max-w-[50rem] !max-h-[60rem]',
+                    description: (
+                      <Label
+                        htmlFor={id}
+                        required={!arg.optional}
+                        visuallyHidden={arg.hideLabel}
+                        help={arg.description}
+                        tags={arg.language ? [capitalize(arg.language)] : undefined}
+                      >
+                        {arg.label}
+                      </Label>
+                    ),
+                    onClose() {
+                      // Force the main editor to update on close
+                      regeneratePopoutKey();
+                    },
+                    render() {
+                      return (
+                        <Editor
+                          id={id}
+                          autocomplete={
+                            arg.completionOptions ? { options: arg.completionOptions } : undefined
+                          }
+                          disabled={arg.disabled}
+                          language={arg.language}
+                          onChange={onChange}
+                          defaultValue={value === DYNAMIC_FORM_NULL_ARG ? arg.defaultValue : value}
+                          placeholder={arg.placeholder ?? undefined}
+                          autocompleteFunctions={autocompleteFunctions}
+                          autocompleteVariables={autocompleteVariables}
+                          stateKey={stateKey}
+                          forceUpdateKey={forceUpdateKey}
+                        />
+                      );
+                    },
+                  });
+                }}
+              />
+            </div>
+          }
+          hideGutter
+        />
+      </div>
     </div>
   );
 }
@@ -319,6 +381,7 @@ function SelectArg({
     <Select
       label={arg.label ?? arg.name}
       name={arg.name}
+      help={arg.description}
       onChange={onChange}
       hideLabel={arg.hideLabel}
       value={value}
@@ -341,6 +404,7 @@ function FileArg({
   return (
     <SelectFile
       disabled={arg.disabled}
+      help={arg.description}
       onChange={({ filePath }) => onChange(filePath)}
       filePath={filePath === '__NULL__' ? null : filePath}
       directory={!!arg.directory}
@@ -365,6 +429,7 @@ function HttpRequestArg({
       label={arg.label ?? arg.name}
       name={arg.name}
       onChange={onChange}
+      help={arg.description}
       value={value}
       disabled={arg.disabled}
       options={[
@@ -412,6 +477,7 @@ function CheckboxArg({
     <Checkbox
       onChange={onChange}
       checked={value}
+      help={arg.description}
       disabled={arg.disabled}
       title={arg.label ?? arg.name}
       hideLabel={arg.label == null}

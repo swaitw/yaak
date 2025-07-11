@@ -12,7 +12,7 @@ import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from '
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
 import { activeRequestAtom } from '../../hooks/useActiveRequest';
-import {allRequestsAtom} from "../../hooks/useAllRequests";
+import { allRequestsAtom } from '../../hooks/useAllRequests';
 import { useScrollIntoView } from '../../hooks/useScrollIntoView';
 import { useSidebarItemCollapsed } from '../../hooks/useSidebarItemCollapsed';
 import { jotaiStore } from '../../lib/jotai';
@@ -20,14 +20,12 @@ import { HttpMethodTag } from '../core/HttpMethodTag';
 import { HttpStatusTag } from '../core/HttpStatusTag';
 import { Icon } from '../core/Icon';
 import { LoadingIcon } from '../core/LoadingIcon';
+import type { DragItem} from './dnd';
+import { ItemTypes } from './dnd';
 import type { SidebarTreeNode } from './Sidebar';
 import { sidebarSelectedIdAtom } from './SidebarAtoms';
 import { SidebarItemContextMenu } from './SidebarItemContextMenu';
 import type { SidebarItemsProps } from './SidebarItems';
-
-enum ItemTypes {
-  REQUEST = 'request',
-}
 
 export type SidebarItemProps = {
   className?: string;
@@ -43,11 +41,6 @@ export type SidebarItemProps = {
   latestGrpcConnection: GrpcConnection | null;
   latestWebsocketConnection: WebsocketConnection | null;
 } & Pick<SidebarItemsProps, 'onSelect'>;
-
-type DragItem = {
-  id: string;
-  itemName: string;
-};
 
 export const SidebarItem = memo(function SidebarItem({
   itemName,
@@ -69,9 +62,10 @@ export const SidebarItem = memo(function SidebarItem({
 
   const [, connectDrop] = useDrop<DragItem, void>(
     {
-      accept: ItemTypes.REQUEST,
+      accept: [ItemTypes.REQUEST, ItemTypes.SIDEBAR],
       hover: (_, monitor) => {
         if (!ref.current) return;
+        if (!monitor.isOver()) return;
         const hoverBoundingRect = ref.current?.getBoundingClientRect();
         const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
         const clientOffset = monitor.getClientOffset();
@@ -214,16 +208,19 @@ export const SidebarItem = memo(function SidebarItem({
     return null;
   }
 
+  const opacitySubtle = 'opacity-80';
+
   const itemPrefix = item.model !== 'folder' && (
     <HttpMethodTag
+      short
       request={item}
-      className={classNames(!(active || selected) && 'text-text-subtlest')}
+      className={classNames('text-xs', !(active || selected) && opacitySubtle)}
     />
   );
 
   return (
     <li ref={ref} draggable>
-      <div className={classNames(className, 'block relative group/item px-1.5 pb-0.5')}>
+      <div className={classNames(className, 'block relative group/item pl-2 pb-0.5')}>
         {showContextMenu && (
           <SidebarItemContextMenu
             child={child}
@@ -287,7 +284,11 @@ export const SidebarItem = memo(function SidebarItem({
               {latestHttpResponse.state !== 'closed' ? (
                 <LoadingIcon size="sm" className="text-text-subtlest" />
               ) : (
-                <HttpStatusTag className="text-xs" response={latestHttpResponse} />
+                <HttpStatusTag
+                  short
+                  className={classNames('text-xs', !(active || selected) && opacitySubtle)}
+                  response={latestHttpResponse}
+                />
               )}
             </div>
           ) : null}

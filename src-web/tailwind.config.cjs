@@ -5,9 +5,10 @@ const sizes = {
   xs: '1.8rem',
   sm: '2.0rem',
   md: '2.3rem',
+  lg: '2.6rem',
 };
 
-/** @type {import("tailwindcss").Config} */
+/** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ['class', '[data-resolved-appearance="dark"]'],
   content: [
@@ -43,6 +44,7 @@ module.exports = {
     },
     fontFamily: {
       mono: [
+        'var(--font-family-editor)',
         'JetBrains Mono',
         'ui-monospace',
         'SFMono-Regular',
@@ -58,6 +60,7 @@ module.exports = {
         'monospace',
       ],
       sans: [
+        'var(--font-family-interface)',
         'Inter UI',
         '-apple-system',
         'BlinkMacSystemFont',

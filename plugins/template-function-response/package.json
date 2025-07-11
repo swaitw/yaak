@@ -1,0 +1,20 @@
+{
+  "name": "@yaak/template-function-response",
+  "displayName": "Response Template Functions",
+  "description": "Template functions for request chaining",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "build": "yaakcli build",
+    "dev": "yaakcli dev",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "jsonpath-plus": "^10.3.0",
+    "xpath": "^0.0.34",
+    "@xmldom/xmldom": "^0.8.10"
+  },
+  "devDependencies": {
+    "@types/jsonpath": "^0.2.4"
+  }
+}

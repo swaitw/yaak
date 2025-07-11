@@ -9,9 +9,8 @@ export async function tryFormatJson(text: string): Promise<string> {
   try {
     const result = await invokeCmd<string>('cmd_format_json', { text });
     return result;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (err) {
-    console.warn("Failed to format JSON", err);
+    console.warn('Failed to format JSON', err);
     // Nothing
   }
 

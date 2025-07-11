@@ -1,30 +1,34 @@
-import { PluginWindowContext, TemplateFunctionArg } from '@yaakapp-internal/plugins';
-import type {
+import {
   BootRequest,
-  Context,
+  BootResponse,
   DeleteKeyValueResponse,
   FindHttpResponsesResponse,
   FormInput,
+  GetCookieValueRequest,
+  GetCookieValueResponse,
   GetHttpRequestByIdResponse,
   GetKeyValueResponse,
+  GrpcRequestAction,
   HttpAuthenticationAction,
   HttpRequestAction,
   InternalEvent,
   InternalEventPayload,
-  JsonPrimitive,
-  PluginDefinition,
+  ListCookieNamesResponse,
+  PluginWindowContext,
   PromptTextResponse,
+  RenderGrpcRequestResponse,
   RenderHttpRequestResponse,
   SendHttpRequestResponse,
   TemplateFunction,
+  TemplateFunctionArg,
   TemplateRenderResponse,
-} from '@yaakapp/api';
+} from '@yaakapp-internal/plugins';
+import { Context, PluginDefinition } from '@yaakapp/api';
+import { JsonValue } from '@yaakapp/api/lib/bindings/serde_json/JsonValue';
 import console from 'node:console';
 import { readFileSync, type Stats, statSync, watch } from 'node:fs';
 import path from 'node:path';
-// import util from 'node:util';
 import { EventChannel } from './EventChannel';
-// import { interceptStdout } from './interceptStdout';
 import { migrateTemplateFunctionSelectOptions } from './migrations';
 
 export interface PluginWorkerData {
@@ -51,21 +55,28 @@ export class PluginInstance {
 
     // Reload plugin if the JS or package.json changes
     const windowContextNone: PluginWindowContext = { type: 'none' };
+
+    this.#mod = {};
+    this.#pkg = JSON.parse(readFileSync(this.#pathPkg(), 'utf8'));
+
+    const bootResponse: BootResponse = {
+      name: this.#pkg.name ?? 'unknown',
+      version: this.#pkg.version ?? '0.0.1',
+    };
+
     const fileChangeCallback = async () => {
       this.#importModule();
-      return this.#sendPayload(windowContextNone, { type: 'reload_response' }, null);
+      return this.#sendPayload(
+        windowContextNone,
+        { type: 'reload_response', ...bootResponse },
+        null,
+      );
     };
 
     if (this.#workerData.bootRequest.watch) {
       watchFile(this.#pathMod(), fileChangeCallback);
       watchFile(this.#pathPkg(), fileChangeCallback);
     }
-
-    this.#mod = {};
-    this.#pkg = JSON.parse(readFileSync(this.#pathPkg(), 'utf8'));
-
-    // TODO: Re-implement this now that we're not using workers
-    // prefixStdout(`[plugin][${this.#pkg.name}] %s`);
 
     this.#importModule();
   }
@@ -128,9 +139,23 @@ export class PluginInstance {
           payload: payload.content,
           mimeType: payload.type,
         });
+        this.#sendPayload(windowContext, { type: 'filter_response', ...reply }, replyId);
+        return;
+      }
+
+      if (
+        payload.type === 'get_grpc_request_actions_request' &&
+        Array.isArray(this.#mod?.grpcRequestActions)
+      ) {
+        const reply: GrpcRequestAction[] = this.#mod.grpcRequestActions.map((a) => ({
+          ...a,
+          // Add everything except onSelect
+          onSelect: undefined,
+        }));
         const replyPayload: InternalEventPayload = {
-          type: 'filter_response',
-          content: reply.filtered,
+          type: 'get_grpc_request_actions_response',
+          pluginRefId: this.#workerData.pluginRefId,
+          actions: reply,
         };
         this.#sendPayload(windowContext, replyPayload, replyId);
         return;
@@ -149,6 +174,15 @@ export class PluginInstance {
           type: 'get_http_request_actions_response',
           pluginRefId: this.#workerData.pluginRefId,
           actions: reply,
+        };
+        this.#sendPayload(windowContext, replyPayload, replyId);
+        return;
+      }
+
+      if (payload.type === 'get_themes_request' && Array.isArray(this.#mod?.themes)) {
+        const replyPayload: InternalEventPayload = {
+          type: 'get_themes_response',
+          themes: this.#mod.themes,
         };
         this.#sendPayload(windowContext, replyPayload, replyId);
         return;
@@ -190,13 +224,12 @@ export class PluginInstance {
       if (payload.type === 'get_http_authentication_config_request' && this.#mod?.authentication) {
         const { args, actions } = this.#mod.authentication;
         const resolvedArgs: FormInput[] = [];
-        for (let i = 0; i < args.length; i++) {
-          let v = args[i];
-          if ('dynamic' in v) {
+        for (const v of args) {
+          if (v && 'dynamic' in v) {
             const dynamicAttrs = await v.dynamic(ctx, payload);
             const { dynamic, ...other } = v;
             resolvedArgs.push({ ...other, ...dynamicAttrs } as FormInput);
-          } else {
+          } else if (v) {
             resolvedArgs.push(v);
           }
         }
@@ -258,6 +291,18 @@ export class PluginInstance {
       }
 
       if (
+        payload.type === 'call_grpc_request_action_request' &&
+        Array.isArray(this.#mod.grpcRequestActions)
+      ) {
+        const action = this.#mod.grpcRequestActions[payload.index];
+        if (typeof action?.onSelect === 'function') {
+          await action.onSelect(ctx, payload.args);
+          this.#sendEmpty(windowContext, replyId);
+          return;
+        }
+      }
+
+      if (
         payload.type === 'call_template_function_request' &&
         Array.isArray(this.#mod?.templateFunctions)
       ) {
@@ -281,15 +326,9 @@ export class PluginInstance {
         this.#importModule();
       }
     } catch (err) {
-      console.log('Plugin call threw exception', payload.type, err);
-      this.#sendPayload(
-        windowContext,
-        {
-          type: 'error_response',
-          error: `${err}`,
-        },
-        replyId,
-      );
+      const error = `${err}`.replace(/^Error:\s*/g, '');
+      console.log('Plugin call threw exception', payload.type, '→', error);
+      this.#sendPayload(windowContext, { type: 'error_response', error }, replyId);
       return;
     }
 
@@ -460,6 +499,19 @@ export class PluginInstance {
           return httpResponses;
         },
       },
+      grpcRequest: {
+        render: async (args) => {
+          const payload = {
+            type: 'render_grpc_request_request',
+            ...args,
+          } as const;
+          const { grpcRequest } = await this.#sendAndWaitForReply<RenderGrpcRequestResponse>(
+            event.windowContext,
+            payload,
+          );
+          return grpcRequest;
+        },
+      },
       httpRequest: {
         getById: async (args) => {
           const payload = {
@@ -493,6 +545,27 @@ export class PluginInstance {
             payload,
           );
           return httpRequest;
+        },
+      },
+      cookies: {
+        getValue: async (args: GetCookieValueRequest) => {
+          const payload = {
+            type: 'get_cookie_value_request',
+            ...args,
+          } as const;
+          const { value } = await this.#sendAndWaitForReply<GetCookieValueResponse>(
+            event.windowContext,
+            payload,
+          );
+          return value;
+        },
+        listNames: async () => {
+          const payload = { type: 'list_cookie_names_request' } as const;
+          const { names } = await this.#sendAndWaitForReply<ListCookieNamesResponse>(
+            event.windowContext,
+            payload,
+          );
+          return names;
         },
       },
       templates: {
@@ -552,7 +625,7 @@ function genId(len = 5): string {
 /** Recursively apply form input defaults to a set of values */
 function applyFormInputDefaults(
   inputs: TemplateFunctionArg[],
-  values: { [p: string]: JsonPrimitive | undefined },
+  values: { [p: string]: JsonValue | undefined },
 ) {
   for (const input of inputs) {
     if ('inputs' in input) {
@@ -563,20 +636,20 @@ function applyFormInputDefaults(
   }
 }
 
-const watchedFiles: Record<string, Stats> = {};
+const watchedFiles: Record<string, Stats | null> = {};
 
 /**
- * Watch a file and trigger callback on change.
+ * Watch a file and trigger a callback on change.
  *
  * We also track the stat for each file because fs.watch() will
- * trigger a "change" event when the access date changes
+ * trigger a "change" event when the access date changes.
  */
-function watchFile(filepath: string, cb: (filepath: string) => void) {
+function watchFile(filepath: string, cb: () => void) {
   watch(filepath, () => {
-    const stat = statSync(filepath);
-    if (stat.mtimeMs !== watchedFiles[filepath]?.mtimeMs) {
-      cb(filepath);
+    const stat = statSync(filepath, { throwIfNoEntry: false });
+    if (stat == null || stat.mtimeMs !== watchedFiles[filepath]?.mtimeMs) {
+      watchedFiles[filepath] = stat ?? null;
+      cb();
     }
-    watchedFiles[filepath] = stat;
   });
 }

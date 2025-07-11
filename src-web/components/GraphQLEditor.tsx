@@ -1,15 +1,18 @@
+import type { EditorView } from '@codemirror/view';
 import type { HttpRequest } from '@yaakapp-internal/models';
 import { updateSchema } from 'cm6-graphql';
-import type { EditorView } from 'codemirror';
 
 import { formatSdl } from 'format-graphql';
+import { useAtom } from 'jotai';
 import { useEffect, useMemo, useRef } from 'react';
 import { useLocalStorage } from 'react-use';
+import { showGraphQLDocExplorerAtom } from '../atoms/graphqlSchemaAtom';
 import { useIntrospectGraphQL } from '../hooks/useIntrospectGraphQL';
 import { useStateWithDeps } from '../hooks/useStateWithDeps';
 import { showDialog } from '../lib/dialog';
 import { Banner } from './core/Banner';
 import { Button } from './core/Button';
+import type { DropdownItem } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
 import type { EditorProps } from './core/Editor/Editor';
 import { Editor } from './core/Editor/Editor';
@@ -45,6 +48,7 @@ export function GraphQLEditor({ request, onChange, baseRequest, ...extraEditorPr
 
     return { query: request.body.query ?? '', variables: request.body.variables ?? '' };
   }, [extraEditorProps.forceUpdateKey]);
+  const [isDocOpen, setGraphqlDocStateAtomValue] = useAtom(showGraphQLDocExplorerAtom);
 
   const handleChangeQuery = (query: string) => {
     const newBody = { query, variables: currentBody.variables || undefined };
@@ -60,102 +64,117 @@ export function GraphQLEditor({ request, onChange, baseRequest, ...extraEditorPr
 
   // Refetch the schema when the URL changes
   useEffect(() => {
-    if (editorViewRef.current === null) return;
+    if (editorViewRef.current == null) return;
     updateSchema(editorViewRef.current, schema ?? undefined);
   }, [schema]);
 
   const actions = useMemo<EditorProps['actions']>(
     () => [
-      <div key="introspection" className="!opacity-100">
-        {schema === undefined ? null /* Initializing */ : (
-          <Dropdown
-            items={[
-              {
-                hidden: !error,
-                label: (
-                  <Banner color="danger">
-                    <p className="mb-1">Schema introspection failed</p>
-                    <Button
-                      size="xs"
-                      color="danger"
-                      variant="border"
-                      onClick={() => {
-                        showDialog({
-                          title: 'Introspection Failed',
-                          size: 'sm',
-                          id: 'introspection-failed',
-                          render: ({ hide }) => (
-                            <>
-                              <FormattedError>{error ?? 'unknown'}</FormattedError>
-                              <div className="w-full my-4">
-                                <Button
-                                  onClick={async () => {
-                                    hide();
-                                    await refetch();
-                                  }}
-                                  className="ml-auto"
-                                  color="primary"
-                                  size="sm"
-                                >
-                                  Retry Request
-                                </Button>
-                              </div>
-                            </>
-                          ),
-                        });
-                      }}
-                    >
-                      View Error
-                    </Button>
-                  </Banner>
-                ),
-                type: 'content',
-              },
-              {
-                label: 'Refetch',
-                leftSlot: <Icon icon="refresh" />,
-                onSelect: refetch,
-              },
-              {
-                label: 'Clear',
-                onSelect: clear,
-                hidden: !schema,
-                color: 'danger',
-                leftSlot: <Icon icon="trash" />,
-              },
-              { type: 'separator', label: 'Setting' },
-              {
-                label: 'Automatic Introspection',
-                onSelect: () => {
-                  setAutoIntrospectDisabled({
-                    ...autoIntrospectDisabled,
-                    [baseRequest.id]: !autoIntrospectDisabled?.[baseRequest.id],
-                  });
+      <div key="actions" className="flex flex-row !opacity-100 !shadow">
+        <div key="introspection" className="!opacity-100">
+          {schema === undefined ? null /* Initializing */ : (
+            <Dropdown
+              items={[
+                ...((schema != null
+                  ? [
+                      {
+                        label: 'Clear',
+                        onSelect: clear,
+                        color: 'danger',
+                        leftSlot: <Icon icon="trash" />,
+                      },
+                      { type: 'separator' },
+                    ]
+                  : []) satisfies DropdownItem[]),
+                {
+                  hidden: !error,
+                  label: (
+                    <Banner color="danger">
+                      <p className="mb-1">Schema introspection failed</p>
+                      <Button
+                        size="xs"
+                        color="danger"
+                        variant="border"
+                        onClick={() => {
+                          showDialog({
+                            title: 'Introspection Failed',
+                            size: 'sm',
+                            id: 'introspection-failed',
+                            render: ({ hide }) => (
+                              <>
+                                <FormattedError>{error ?? 'unknown'}</FormattedError>
+                                <div className="w-full my-4">
+                                  <Button
+                                    onClick={async () => {
+                                      hide();
+                                      await refetch();
+                                    }}
+                                    className="ml-auto"
+                                    color="primary"
+                                    size="sm"
+                                  >
+                                    Retry Request
+                                  </Button>
+                                </div>
+                              </>
+                            ),
+                          });
+                        }}
+                      >
+                        View Error
+                      </Button>
+                    </Banner>
+                  ),
+                  type: 'content',
                 },
-                leftSlot: (
-                  <Icon
-                    icon={
-                      autoIntrospectDisabled?.[baseRequest.id]
-                        ? 'check_square_unchecked'
-                        : 'check_square_checked'
-                    }
-                  />
-                ),
-              },
-            ]}
-          >
-            <Button
-              size="sm"
-              variant="border"
-              title="Refetch Schema"
-              isLoading={isLoading}
-              color={error ? 'danger' : 'default'}
-              forDropdown
+                {
+                  hidden: schema == null,
+                  label: `${isDocOpen ? 'Hide' : 'Show'} Documentation`,
+                  leftSlot: <Icon icon="book_open_text" />,
+                  onSelect: () => {
+                    setGraphqlDocStateAtomValue(!isDocOpen);
+                  },
+                },
+                {
+                  label: 'Introspect Schema',
+                  leftSlot: <Icon icon="refresh" spin={isLoading} />,
+                  keepOpenOnSelect: true,
+                  onSelect: refetch,
+                },
+                { type: 'separator', label: 'Setting' },
+                {
+                  label: 'Automatic Introspection',
+                  onSelect: () => {
+                    setAutoIntrospectDisabled({
+                      ...autoIntrospectDisabled,
+                      [baseRequest.id]: !autoIntrospectDisabled?.[baseRequest.id],
+                    });
+                  },
+                  leftSlot: (
+                    <Icon
+                      icon={
+                        autoIntrospectDisabled?.[baseRequest.id]
+                          ? 'check_square_unchecked'
+                          : 'check_square_checked'
+                      }
+                    />
+                  ),
+                },
+              ]}
             >
-              {error ? 'Introspection Failed' : schema ? 'Schema' : 'No Schema'}
-            </Button>
-          </Dropdown>
-        )}
+              <Button
+                size="sm"
+                variant="border"
+                title="Refetch Schema"
+                isLoading={isLoading}
+                color={error ? 'danger' : 'default'}
+                forDropdown
+              >
+                {error ? 'Introspection Failed' : schema ? 'Schema' : 'No Schema'}
+              </Button>
+            </Dropdown>
+          )}
+        </div>
       </div>,
     ],
     [
@@ -167,6 +186,8 @@ export function GraphQLEditor({ request, onChange, baseRequest, ...extraEditorPr
       clear,
       schema,
       setAutoIntrospectDisabled,
+      isDocOpen,
+      setGraphqlDocStateAtomValue,
     ],
   );
 

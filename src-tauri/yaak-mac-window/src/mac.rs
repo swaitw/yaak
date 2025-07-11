@@ -1,4 +1,5 @@
-use hex_color::HexColor;
+#![allow(deprecated)]
+use csscolorparser::Color;
 use objc::{msg_send, sel, sel_impl};
 use tauri::{Emitter, Runtime, Window};
 
@@ -34,12 +35,12 @@ pub(crate) fn update_window_title<R: Runtime>(window: Window<R>, title: String) 
     }
 }
 
-pub(crate) fn update_window_theme<R: Runtime>(window: Window<R>, color: HexColor) {
+pub(crate) fn update_window_theme<R: Runtime>(window: Window<R>, color: Color) {
     use cocoa::appkit::{
         NSAppearance, NSAppearanceNameVibrantDark, NSAppearanceNameVibrantLight, NSWindow,
     };
 
-    let brightness = (color.r as u64 + color.g as u64 + color.b as u64) / 3;
+    let brightness = (color.r as f64 + color.g as f64 + color.b as f64) / 3.0;
     let label = window.label().to_string();
 
     unsafe {
@@ -48,7 +49,7 @@ pub(crate) fn update_window_theme<R: Runtime>(window: Window<R>, color: HexColor
         let _ = window.run_on_main_thread(move || {
             let handle = window_handle;
 
-            let selected_appearance = if brightness >= 128 {
+            let selected_appearance = if brightness >= 0.5 {
                 NSAppearance(NSAppearanceNameVibrantLight)
             } else {
                 NSAppearance(NSAppearanceNameVibrantDark)
@@ -65,12 +66,7 @@ pub(crate) fn update_window_theme<R: Runtime>(window: Window<R>, color: HexColor
     }
 }
 
-fn position_traffic_lights(
-    ns_window_handle: UnsafeWindowHandle,
-    x: f64,
-    y: f64,
-    label: String,
-) {
+fn position_traffic_lights(ns_window_handle: UnsafeWindowHandle, x: f64, y: f64, label: String) {
     if !label.starts_with(MAIN_WINDOW_PREFIX) {
         return;
     }

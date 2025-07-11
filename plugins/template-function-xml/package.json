@@ -1,0 +1,16 @@
+{
+  "name": "@yaak/template-function-xml",
+  "displayName": "XML Template Functions",
+  "description": "Template functions for working with XML data",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "build": "yaakcli build",
+    "dev": "yaakcli dev",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@xmldom/xmldom": "^0.8.10",
+    "xpath": "^0.0.34"
+  }
+}

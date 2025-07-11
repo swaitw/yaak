@@ -1,6 +1,7 @@
 use crate::error::Result;
 use crate::manager::WebsocketManager;
-use crate::render::render_request;
+use crate::render::render_websocket_request;
+use crate::resolve::resolve_websocket_request;
 use log::{info, warn};
 use std::str::FromStr;
 use tauri::http::{HeaderMap, HeaderName};
@@ -119,8 +120,10 @@ pub(crate) async fn send<R: Runtime>(
     };
     let base_environment =
         app_handle.db().get_base_environment(&unrendered_request.workspace_id)?;
-    let request = render_request(
-        &unrendered_request,
+    let (resolved_request, _auth_context_id) =
+        resolve_websocket_request(&window, &unrendered_request)?;
+    let request = render_websocket_request(
+        &resolved_request,
         &base_environment,
         environment.as_ref(),
         &PluginTemplateCallback::new(
@@ -194,8 +197,11 @@ pub(crate) async fn connect<R: Runtime>(
     };
     let base_environment =
         app_handle.db().get_base_environment(&unrendered_request.workspace_id)?;
-    let request = render_request(
-        &unrendered_request,
+    let workspace = app_handle.db().get_workspace(&unrendered_request.workspace_id)?;
+    let (resolved_request, auth_context_id) =
+        resolve_websocket_request(&window, &unrendered_request)?;
+    let request = render_websocket_request(
+        &resolved_request,
         &base_environment,
         environment.as_ref(),
         &PluginTemplateCallback::new(
@@ -207,30 +213,55 @@ pub(crate) async fn connect<R: Runtime>(
     .await?;
 
     let mut headers = HeaderMap::new();
-    if let Some(auth_name) = request.authentication_type.clone() {
-        let auth = request.authentication.clone();
-        let plugin_req = CallHttpAuthenticationRequest {
-            context_id: format!("{:x}", md5::compute(request_id.to_string())),
-            values: serde_json::from_value(serde_json::to_value(&auth).unwrap()).unwrap(),
-            method: "POST".to_string(),
-            url: request.url.clone(),
-            headers: request
-                .headers
-                .clone()
-                .into_iter()
-                .map(|h| HttpHeader {
-                    name: h.name,
-                    value: h.value,
-                })
-                .collect(),
-        };
-        let plugin_result =
-            plugin_manager.call_http_authentication(&window, &auth_name, plugin_req).await?;
-        for header in plugin_result.set_headers {
-            headers.insert(
-                HeaderName::from_str(&header.name).unwrap(),
-                HeaderValue::from_str(&header.value).unwrap(),
-            );
+
+    for h in request.headers.clone() {
+        if h.name.is_empty() && h.value.is_empty() {
+            continue;
+        }
+
+        if !h.enabled {
+            continue;
+        }
+
+        headers.insert(
+            HeaderName::from_str(&h.name).unwrap(),
+            HeaderValue::from_str(&h.value).unwrap(),
+        );
+    }
+
+    match request.authentication_type {
+        None => {
+            // No authentication found. Not even inherited
+        }
+        Some(authentication_type) if authentication_type == "none" => {
+            // Explicitly no authentication
+        }
+        Some(authentication_type) => {
+            let auth = request.authentication.clone();
+            let plugin_req = CallHttpAuthenticationRequest {
+                context_id: format!("{:x}", md5::compute(auth_context_id)),
+                values: serde_json::from_value(serde_json::to_value(&auth).unwrap()).unwrap(),
+                method: "POST".to_string(),
+                url: request.url.clone(),
+                headers: request
+                    .headers
+                    .clone()
+                    .into_iter()
+                    .map(|h| HttpHeader {
+                        name: h.name,
+                        value: h.value,
+                    })
+                    .collect(),
+            };
+            let plugin_result = plugin_manager
+                .call_http_authentication(&window, &authentication_type, plugin_req)
+                .await?;
+            for header in plugin_result.set_headers {
+                headers.insert(
+                    HeaderName::from_str(&header.name).unwrap(),
+                    HeaderValue::from_str(&header.value).unwrap(),
+                );
+            }
         }
     }
 
@@ -252,10 +283,26 @@ pub(crate) async fn connect<R: Runtime>(
     let (receive_tx, mut receive_rx) = mpsc::channel::<Message>(128);
     let mut ws_manager = ws_manager.lock().await;
 
-    let (url, url_parameters) = apply_path_placeholders(&request.url, request.url_parameters);
+    let (mut url, url_parameters) = apply_path_placeholders(&request.url, request.url_parameters);
+    if !url.starts_with("ws://") && !url.starts_with("wss://") {
+        url.insert_str(0, "ws://");
+    }
 
     // Add URL parameters to URL
-    let mut url = Url::parse(&url).unwrap();
+    let mut url = match Url::parse(&url) {
+        Ok(url) => url,
+        Err(e) => {
+            return Ok(app_handle.db().upsert_websocket_connection(
+                &WebsocketConnection {
+                    error: Some(format!("Failed to parse URL {}", e.to_string())),
+                    state: WebsocketConnectionState::Closed,
+                    ..connection
+                },
+                &UpdateSource::from_window(&window),
+            )?);
+        }
+    };
+
     {
         let valid_query_pairs = url_parameters
             .into_iter()
@@ -270,7 +317,15 @@ pub(crate) async fn connect<R: Runtime>(
         }
     }
 
-    let response = match ws_manager.connect(&connection.id, url.as_str(), headers, receive_tx).await
+    let response = match ws_manager
+        .connect(
+            &connection.id,
+            url.as_str(),
+            headers,
+            receive_tx,
+            workspace.setting_validate_certificates,
+        )
+        .await
     {
         Ok(r) => r,
         Err(e) => {

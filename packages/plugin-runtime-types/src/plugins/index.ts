@@ -1,5 +1,6 @@
 import { AuthenticationPlugin } from './AuthenticationPlugin';
 import type { FilterPlugin } from './FilterPlugin';
+import { GrpcRequestActionPlugin } from './GrpcRequestActionPlugin';
 import type { HttpRequestActionPlugin } from './HttpRequestActionPlugin';
 import type { ImporterPlugin } from './ImporterPlugin';
 import type { TemplateFunctionPlugin } from './TemplateFunctionPlugin';
@@ -12,9 +13,10 @@ export type { Context } from './Context';
  */
 export type PluginDefinition = {
   importer?: ImporterPlugin;
-  theme?: ThemePlugin;
+  themes?: ThemePlugin[];
   filter?: FilterPlugin;
   authentication?: AuthenticationPlugin;
   httpRequestActions?: HttpRequestActionPlugin[];
+  grpcRequestActions?: GrpcRequestActionPlugin[];
   templateFunctions?: TemplateFunctionPlugin[];
 };

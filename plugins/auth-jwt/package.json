@@ -1,0 +1,18 @@
+{
+  "name": "@yaak/auth-jwt",
+  "displayName": "JWT Authentication",
+  "description": "Authenticate requests using JSON web tokens (JWT)",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "build": "yaakcli build",
+    "dev": "yaakcli dev",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.7"
+  }
+}

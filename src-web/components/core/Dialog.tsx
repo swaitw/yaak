@@ -47,7 +47,7 @@ export function Dialog({
       <div
         role="dialog"
         className={classNames(
-          'x-theme-dialog absolute inset-0 pointer-events-none',
+          'py-4 x-theme-dialog absolute inset-0 pointer-events-none',
           'h-full flex flex-col items-center justify-center',
           vAlign === 'top' && 'justify-start',
           vAlign === 'center' && 'justify-center',

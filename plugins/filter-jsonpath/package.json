@@ -1,0 +1,18 @@
+{
+  "name": "@yaak/filter-jsonpath",
+  "displayName": "JSONPath Filter",
+  "description": "Filter JSON response data using JSONPath expressions",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "build": "yaakcli build",
+    "dev": "yaakcli dev",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "jsonpath-plus": "^10.3.0"
+  },
+  "devDependencies": {
+    "@types/jsonpath": "^0.2.4"
+  }
+}

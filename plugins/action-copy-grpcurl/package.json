@@ -1,0 +1,12 @@
+{
+  "name": "@yaak/action-copy-grpcurl",
+  "displayName": "Copy as gRPCurl",
+  "description": "Copy gRPC request as a grpcurl command",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "build": "yaakcli build",
+    "dev": "yaakcli dev",
+    "lint": "tsc --noEmit"
+  }
+}

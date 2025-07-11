@@ -67,7 +67,7 @@ pub enum InternalEventPayload {
     BootResponse(BootResponse),
 
     ReloadRequest(EmptyPayload),
-    ReloadResponse(EmptyPayload),
+    ReloadResponse(BootResponse),
 
     TerminateRequest,
     TerminateResponse,
@@ -84,10 +84,20 @@ pub enum InternalEventPayload {
     SendHttpRequestRequest(SendHttpRequestRequest),
     SendHttpRequestResponse(SendHttpRequestResponse),
 
-    // Request Actions
+    ListCookieNamesRequest(ListCookieNamesRequest),
+    ListCookieNamesResponse(ListCookieNamesResponse),
+    GetCookieValueRequest(GetCookieValueRequest),
+    GetCookieValueResponse(GetCookieValueResponse),
+
+    // HTTP Request Actions
     GetHttpRequestActionsRequest(EmptyPayload),
     GetHttpRequestActionsResponse(GetHttpRequestActionsResponse),
     CallHttpRequestActionRequest(CallHttpRequestActionRequest),
+
+    // Grpc Request Actions
+    GetGrpcRequestActionsRequest(EmptyPayload),
+    GetGrpcRequestActionsResponse(GetGrpcRequestActionsResponse),
+    CallGrpcRequestActionRequest(CallGrpcRequestActionRequest),
 
     // Template Functions
     GetTemplateFunctionsRequest,
@@ -110,6 +120,9 @@ pub enum InternalEventPayload {
 
     RenderHttpRequestRequest(RenderHttpRequestRequest),
     RenderHttpRequestResponse(RenderHttpRequestResponse),
+
+    RenderGrpcRequestRequest(RenderGrpcRequestRequest),
+    RenderGrpcRequestResponse(RenderGrpcRequestResponse),
 
     GetKeyValueRequest(GetKeyValueRequest),
     GetKeyValueResponse(GetKeyValueResponse),
@@ -137,6 +150,9 @@ pub enum InternalEventPayload {
 
     FindHttpResponsesRequest(FindHttpResponsesRequest),
     FindHttpResponsesResponse(FindHttpResponsesResponse),
+
+    GetThemesRequest(GetThemesRequest),
+    GetThemesResponse(GetThemesResponse),
 
     /// Returned when a plugin doesn't get run, just so the server
     /// has something to listen for
@@ -200,6 +216,8 @@ pub struct FilterRequest {
 #[ts(export, export_to = "gen_events.ts")]
 pub struct FilterResponse {
     pub content: String,
+    #[ts(optional)]
+    pub error: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
@@ -232,6 +250,32 @@ pub struct SendHttpRequestResponse {
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default)]
+#[ts(export, type = "{}", export_to = "gen_events.ts")]
+pub struct ListCookieNamesRequest {}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "gen_events.ts")]
+pub struct ListCookieNamesResponse {
+    pub names: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "gen_events.ts")]
+pub struct GetCookieValueRequest {
+    pub name: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "gen_events.ts")]
+pub struct GetCookieValueResponse {
+    pub value: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export, export_to = "gen_events.ts")]
 pub struct CopyTextRequest {
@@ -251,6 +295,128 @@ pub struct RenderHttpRequestRequest {
 #[ts(export, export_to = "gen_events.ts")]
 pub struct RenderHttpRequestResponse {
     pub http_request: HttpRequest,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "gen_events.ts")]
+pub struct RenderGrpcRequestRequest {
+    pub grpc_request: GrpcRequest,
+    pub purpose: RenderPurpose,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "gen_events.ts")]
+pub struct RenderGrpcRequestResponse {
+    pub grpc_request: GrpcRequest,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "gen_events.ts")]
+pub struct GetThemesRequest {}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "gen_events.ts")]
+pub struct ThemeComponents {
+    #[ts(optional)]
+    pub dialog: Option<ThemeComponentColors>,
+    #[ts(optional)]
+    pub menu: Option<ThemeComponentColors>,
+    #[ts(optional)]
+    pub toast: Option<ThemeComponentColors>,
+    #[ts(optional)]
+    pub sidebar: Option<ThemeComponentColors>,
+    #[ts(optional)]
+    pub response_pane: Option<ThemeComponentColors>,
+    #[ts(optional)]
+    pub app_header: Option<ThemeComponentColors>,
+    #[ts(optional)]
+    pub button: Option<ThemeComponentColors>,
+    #[ts(optional)]
+    pub banner: Option<ThemeComponentColors>,
+    #[ts(optional)]
+    pub template_tag: Option<ThemeComponentColors>,
+    #[ts(optional)]
+    pub url_bar: Option<ThemeComponentColors>,
+    #[ts(optional)]
+    pub editor: Option<ThemeComponentColors>,
+    #[ts(optional)]
+    pub input: Option<ThemeComponentColors>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "gen_events.ts")]
+pub struct ThemeComponentColors {
+    #[ts(optional)]
+    pub surface: Option<String>,
+    #[ts(optional)]
+    pub surface_highlight: Option<String>,
+    #[ts(optional)]
+    pub surface_active: Option<String>,
+
+    #[ts(optional)]
+    pub text: Option<String>,
+    #[ts(optional)]
+    pub text_subtle: Option<String>,
+    #[ts(optional)]
+    pub text_subtlest: Option<String>,
+
+    #[ts(optional)]
+    pub border: Option<String>,
+    #[ts(optional)]
+    pub border_subtle: Option<String>,
+    #[ts(optional)]
+    pub border_focus: Option<String>,
+
+    #[ts(optional)]
+    pub shadow: Option<String>,
+    #[ts(optional)]
+    pub backdrop: Option<String>,
+    #[ts(optional)]
+    pub selection: Option<String>,
+
+    #[ts(optional)]
+    pub primary: Option<String>,
+    #[ts(optional)]
+    pub secondary: Option<String>,
+    #[ts(optional)]
+    pub info: Option<String>,
+    #[ts(optional)]
+    pub success: Option<String>,
+    #[ts(optional)]
+    pub notice: Option<String>,
+    #[ts(optional)]
+    pub warning: Option<String>,
+    #[ts(optional)]
+    pub danger: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "gen_events.ts")]
+pub struct Theme {
+    /// How the theme is identified. This should never be changed
+    pub id: String,
+    /// The friendly name of the theme to be displayed to the user
+    pub label: String,
+    /// Whether the theme will be used for dark or light appearance
+    pub dark: bool,
+    /// The default top-level colors for the theme
+    pub base: ThemeComponentColors,
+    /// Optionally override theme for individual UI components for more control
+    #[ts(optional)]
+    pub components: Option<ThemeComponents>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "gen_events.ts")]
+pub struct GetThemesResponse {
+    pub themes: Vec<Theme>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
@@ -563,6 +729,10 @@ pub struct FormInputBase {
 
     #[ts(optional)]
     pub disabled: Option<bool>,
+
+    /// Longer description of the input, likely shown in a tooltip
+    #[ts(optional)]
+    pub description: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
@@ -805,7 +975,7 @@ pub struct CallTemplateFunctionResponse {
 #[ts(export, export_to = "gen_events.ts")]
 pub struct CallTemplateFunctionArgs {
     pub purpose: RenderPurpose,
-    pub values: HashMap<String, String>,
+    pub values: HashMap<String, serde_json::Value>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -821,11 +991,6 @@ impl Default for RenderPurpose {
         RenderPurpose::Preview
     }
 }
-
-#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
-#[serde(default)]
-#[ts(export, export_to = "gen_events.ts")]
-pub struct GetHttpRequestActionsRequest {}
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
@@ -858,6 +1023,40 @@ pub struct CallHttpRequestActionRequest {
 #[ts(export, export_to = "gen_events.ts")]
 pub struct CallHttpRequestActionArgs {
     pub http_request: HttpRequest,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "gen_events.ts")]
+pub struct GetGrpcRequestActionsResponse {
+    pub actions: Vec<GrpcRequestAction>,
+    pub plugin_ref_id: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "gen_events.ts")]
+pub struct GrpcRequestAction {
+    pub label: String,
+    #[ts(optional)]
+    pub icon: Option<Icon>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "gen_events.ts")]
+pub struct CallGrpcRequestActionRequest {
+    pub index: i32,
+    pub plugin_ref_id: String,
+    pub args: CallGrpcRequestActionArgs,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "gen_events.ts")]
+pub struct CallGrpcRequestActionArgs {
+    pub grpc_request: GrpcRequest,
+    pub proto_files: Vec<String>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
